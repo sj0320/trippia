@@ -1,0 +1,119 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+
+<body>
+<div layout:fragment="content">
+    <div style="width: 1440px; height: 1024px; position: relative; background: #fff;">
+        <p style="position: absolute; left: 1920px; top: 108px; font-size: 15px; text-align: left; color: #000;">여행 코스 추천</p>
+        <div style="display: flex; gap: 20px; padding: 20px;">
+            <div style="width: 298px; height: 358px; border-radius: 19px; background: #f2f2f2;"></div>
+            <div style="width: 298px; height: 358px; border-radius: 19px; background: #f2f2f2;"></div>
+            <div style="width: 298px; height: 358px; border-radius: 19px; background: #f2f2f2;"></div>
+            <div style="width: 298px; height: 358px; border-radius: 19px; background: #f2f2f2;"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"-->
+<!--      layout:decorate="~{layout/default}">-->
+
+<!--<head>-->
+<!--    <style>-->
+<!--        .slider-container {-->
+<!--            position: relative;-->
+<!--            width: 1280px; /* 한 번에 보이는 전체 썸네일 영역 */-->
+<!--            overflow: hidden;-->
+<!--            margin: auto;-->
+<!--        }-->
+
+<!--        .slider-wrapper {-->
+<!--            display: flex;-->
+<!--            transition: transform 0.5s ease-in-out;-->
+<!--        }-->
+
+<!--        .thumbnail {-->
+<!--            width: 298px;-->
+<!--            height: 358px;-->
+<!--            border-radius: 19px;-->
+<!--            background: #f2f2f2;-->
+<!--            margin: 0 10px;-->
+<!--            flex-shrink: 0; /* 크기 고정 */-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            justify-content: center;-->
+<!--            text-decoration: none;-->
+<!--            color: #000;-->
+<!--            font-weight: bold;-->
+<!--            font-size: 18px;-->
+<!--            background-size: cover;-->
+<!--            background-position: center;-->
+<!--        }-->
+
+<!--        .arrow-btn {-->
+<!--            position: absolute;-->
+<!--            top: 50%;-->
+<!--            transform: translateY(-50%);-->
+<!--            background: rgba(0, 0, 0, 0.7);-->
+<!--            color: white;-->
+<!--            border: none;-->
+<!--            cursor: pointer;-->
+<!--            padding: 15px;-->
+<!--            font-size: 24px;-->
+<!--            border-radius: 50%;-->
+<!--            z-index: 10;-->
+<!--        }-->
+
+<!--        .prev-btn {-->
+<!--            left: 10px;-->
+<!--        }-->
+
+<!--        .next-btn {-->
+<!--            right: 10px;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+
+<!--<body>-->
+<!--<div layout:fragment="content">-->
+<!--    <div class="slider-container">-->
+<!--        <button class="arrow-btn prev-btn" onclick="moveSlide(-1)">‹</button>-->
+
+<!--        <div class="slider-wrapper">-->
+<!--            &lt;!&ndash; 사용자가 올린 게시물 개수만큼 동적으로 표시 &ndash;&gt;-->
+<!--            <a th:each="post : ${posts}" th:href="@{/post/{id}(id=${post.id})}"-->
+<!--               th:style="'background-image: url(' + ${post.thumbnailUrl} + ')'"-->
+<!--               class="thumbnail">-->
+<!--                <span th:text="${post.title}"></span>-->
+<!--            </a>-->
+<!--        </div>-->
+
+<!--        <button class="arrow-btn next-btn" onclick="moveSlide(1)">›</button>-->
+<!--    </div>-->
+
+<!--    <script>-->
+<!--        let currentIndex = 0;-->
+<!--        const slideWidth = 318; // 썸네일 하나의 크기 + margin 포함-->
+<!--        const slider = document.querySelector('.slider-wrapper');-->
+<!--        const totalSlides = document.querySelectorAll('.thumbnail').length;-->
+<!--        const visibleSlides = 4; // 한 번에 보이는 썸네일 개수-->
+
+<!--        function moveSlide(direction) {-->
+<!--            const maxIndex = totalSlides - visibleSlides;-->
+<!--            currentIndex += direction;-->
+
+<!--            if (currentIndex < 0) currentIndex = 0;-->
+<!--            if (currentIndex > maxIndex) currentIndex = maxIndex;-->
+
+<!--            slider.style.transform = `translateX(${-currentIndex * slideWidth}px)`;-->
+<!--        }-->
+<!--    </script>-->
+<!--</div>-->
+<!--</body>-->
+<!--</html>-->

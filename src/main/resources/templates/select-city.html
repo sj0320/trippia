@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+
+<head>
+  <meta charset="UTF-8">
+  <title>여행 도시 선택</title>
+  <style>
+    .city-selection {
+      display: flex;
+      flex-direction: column; /* 나라 이름들을 위에서 아래로 나열 */
+      align-items: center;
+      padding: 20px;
+    }
+
+    .country-category {
+      width: 80%;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .country-category h3 {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .city-list {
+      display: flex;
+      flex-wrap: wrap; /* 도시들을 여러 줄로 표시 */
+      justify-content: center;
+      padding: 0;
+      list-style: none;
+    }
+
+    .city-item {
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 50px; /* 타원 형태 */
+      background-color: #fff;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      white-space: nowrap;
+      border: 1px solid #ccc; /* 테두리 추가 */
+    }
+
+    .city-item:hover {
+      background-color: #e0e0e0;
+    }
+  </style>
+</head>
+
+<body>
+<div layout:fragment="content">
+  <div style="width: 100%; max-width: 1440px; margin: 0 auto; padding: 20px; background: #fff;">
+    <h2 style="text-align: center; font-size: 24px; font-weight: bold;">여행 도시 선택</h2>
+
+    <div class="city-selection">
+
+      <!-- 대한민국 -->
+      <div class="country-category">
+        <h3>🇰🇷 대한민국</h3>
+        <ul class="city-list">
+          <li class="city-item" onclick="selectCity('서울')">서울</li>
+          <li class="city-item" onclick="selectCity('부산')">부산</li>
+          <li class="city-item" onclick="selectCity('제주')">제주</li>
+          <li class="city-item" onclick="selectCity('대구')">대구</li>
+          <li class="city-item" onclick="selectCity('인천')">인천</li>
+          <li class="city-item" onclick="selectCity('광주')">광주</li>
+          <li class="city-item" onclick="selectCity('수원')">수원</li>
+        </ul>
+      </div>
+
+      <!-- 일본 -->
+      <div class="country-category">
+        <h3>🇯🇵 일본</h3>
+        <ul class="city-list">
+          <li class="city-item" onclick="selectCity('도쿄')">도쿄</li>
+          <li class="city-item" onclick="selectCity('오사카')">오사카</li>
+          <li class="city-item" onclick="selectCity('교토')">교토</li>
+          <li class="city-item" onclick="selectCity('후쿠오카')">후쿠오카</li>
+          <li class="city-item" onclick="selectCity('삿포로')">삿포로</li>
+          <li class="city-item" onclick="selectCity('나고야')">나고야</li>
+          <li class="city-item" onclick="selectCity('히로시마')">히로시마</li>
+          <li class="city-item" onclick="selectCity('오키나와')">오키나와</li>
+        </ul>
+      </div>
+
+      <!-- 미국 -->
+      <div class="country-category">
+        <h3>🇺🇸 미국</h3>
+        <ul class="city-list">
+          <li class="city-item" onclick="selectCity('뉴욕')">뉴욕</li>
+          <li class="city-item" onclick="selectCity('로스앤젤레스')">로스앤젤레스</li>
+          <li class="city-item" onclick="selectCity('샌프란시스코')">샌프란시스코</li>
+          <li class="city-item" onclick="selectCity('시카고')">시카고</li>
+          <li class="city-item" onclick="selectCity('마이애미')">마이애미</li>
+          <li class="city-item" onclick="selectCity('보스턴')">보스턴</li>
+          <li class="city-item" onclick="selectCity('워싱턴DC')">워싱턴 DC</li>
+          <li class="city-item" onclick="selectCity('라스베이거스')">라스베이거스</li>
+          <li class="city-item" onclick="selectCity('애틀랜타')">애틀랜타</li>
+        </ul>
+      </div>
+
+      <!-- 유럽 -->
+      <div class="country-category">
+        <h3>🇪🇺 유럽</h3>
+        <ul class="city-list">
+          <li class="city-item" onclick="selectCity('파리')">파리</li>
+          <li class="city-item" onclick="selectCity('로마')">로마</li>
+          <li class="city-item" onclick="selectCity('런던')">런던</li>
+          <li class="city-item" onclick="selectCity('바르셀로나')">바르셀로나</li>
+          <li class="city-item" onclick="selectCity('베를린')">베를린</li>
+          <li class="city-item" onclick="selectCity('암스테르담')">암스테르담</li>
+          <li class="city-item" onclick="selectCity('프라하')">프라하</li>
+          <li class="city-item" onclick="selectCity('마드리드')">마드리드</li>
+          <li class="city-item" onclick="selectCity('브뤼셀')">브뤼셀</li>
+        </ul>
+      </div>
+
+      <!-- 아시아 -->
+      <div class="country-category">
+        <h3>🌏 아시아</h3>
+        <ul class="city-list">
+          <li class="city-item" onclick="selectCity('방콕')">방콕</li>
+          <li class="city-item" onclick="selectCity('싱가포르')">싱가포르</li>
+          <li class="city-item" onclick="selectCity('홍콩')">홍콩</li>
+          <li class="city-item" onclick="selectCity('하노이')">하노이</li>
+          <li class="city-item" onclick="selectCity('마닐라')">마닐라</li>
+          <li class="city-item" onclick="selectCity('자카르타')">자카르타</li>
+        </ul>
+      </div>
+
+      <!-- 호주 -->
+      <div class="country-category">
+        <h3>🇦🇺 호주</h3>
+        <ul class="city-list">
+          <li class="city-item" onclick="selectCity('시드니')">시드니</li>
+          <li class="city-item" onclick="selectCity('멜버른')">멜버른</li>
+          <li class="city-item" onclick="selectCity('브리즈번')">브리즈번</li>
+          <li class="city-item" onclick="selectCity('퍼스')">퍼스</li>
+          <li class="city-item" onclick="selectCity('애들레이드')">애들레이드</li>
+        </ul>
+      </div>
+
+      <!-- 중동 -->
+      <div class="country-category">
+        <h3>🇶🇦 중동</h3>
+        <ul class="city-list">
+          <li class="city-item" onclick="selectCity('두바이')">두바이</li>
+          <li class="city-item" onclick="selectCity('아부다비')">아부다비</li>
+          <li class="city-item" onclick="selectCity('리야드')">리야드</li>
+          <li class="city-item" onclick="selectCity('카이로')">카이로</li>
+        </ul>
+      </div>
+
+      <!-- 중국 -->
+      <div class="country-category">
+        <h3>🇨🇳 중국</h3>
+        <ul class="city-list">
+          <li class="city-item" onclick="selectCity('베이징')">베이징</li>
+          <li class="city-item" onclick="selectCity('상하이')">상하이</li>
+          <li class="city-item" onclick="selectCity('광저우')">광저우</li>
+          <li class="city-item" onclick="selectCity('선전')">선전</li>
+          <li class="city-item" onclick="selectCity('청두')">청두</li>
+          <li class="city-item" onclick="selectCity('하이커우')">하이커우</li>
+        </ul>
+      </div>
+
+      <!-- 베트남 -->
+      <div class="country-category">
+        <h3>🇻🇳 베트남</h3>
+        <ul class="city-list">
+          <li class="city-item" onclick="selectCity('하노이')">하노이</li>
+          <li class="city-item" onclick="selectCity('호찌민')">호찌민</li>
+          <li class="city-item" onclick="selectCity('다낭')">다낭</li>
+          <li class="city-item" onclick="selectCity('후에')">후에</li>
+          <li class="city-item" onclick="selectCity('나트랑')">나트랑</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+      <button onclick="submitCity()" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">확인</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function selectCity(city) {
+    alert(`선택된 도시: ${city}`);
+    // 선택된 도시를 처리하는 로직 추가
+  }
+
+  function submitCity() {
+      alert("도시를 선택하세요!");
+  }
+</script>
+
+</body>
+</html>
