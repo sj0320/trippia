@@ -16,4 +16,10 @@ public class TestController {
         return "calendar";
     }
 
+
+    @GetMapping("/")
+    public String home(){
+        return "index";
+    }
+
 }

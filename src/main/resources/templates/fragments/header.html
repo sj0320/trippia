@@ -7,24 +7,24 @@
             <p style="position: absolute; left: 75px; top: 20px; font-size: 24px; font-weight: 700; text-align: left; color: #000;">
                 <a href="#" style="color: #000; text-decoration: none;" onclick="window.location.reload();">TRIPPIA</a>
             </p>
-            <!-- 여행 일지 링크 -->
+
+            <!-- 여행 관련 링크 -->
             <a href="/diary" style="position: absolute; left: 225px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">여행 일지</a>
-
-            <!-- 여행 일정 링크 -->
             <a href="/schedule" style="position: absolute; left: 360px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">여행 일정</a>
-
-            <!-- 여행지 추천 링크 -->
             <a href="/destination" style="position: absolute; left: 495px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">여행지 추천</a>
-
-            <!-- 여행 코스 추천 링크 -->
             <a href="/course" style="position: absolute; left: 644px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">여행 코스 추천</a>
 
-            <!-- 로그인 링크 -->
-            <a href="/login" style="position: absolute; left: 1183px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">로그인</a>
+            <!-- 로그인 및 회원가입 버튼 (비로그인 상태에서만 보임) -->
+            <div th:if="${#authentication == null or #authentication.principal == 'anonymousUser'}">
+                <a href="/login" style="position: absolute; left: 1183px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">로그인</a>
+                <a href="/users/sign-up" style="position: absolute; left: 1250px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">회원가입</a>
+            </div>
 
-            <!-- 마이페이지 링크 -->
-            <a href="/mypage" style="position: absolute; left: 1246px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">마이페이지</a>
-
+            <!-- 마이페이지 (로그인한 사용자에게만 보임) -->
+            <div th:if="${#authentication != null and #authentication.principal != 'anonymousUser'}">
+                <a href="/mypage" style="position: absolute; left: 1246px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">마이페이지</a>
+                <a href="/logout" style="position: absolute; left: 1320px; top: 45px; font-size: 15px; text-align: left; color: red; text-decoration: none;">로그아웃</a>
+            </div>
         </div>
     </header>
 </div>

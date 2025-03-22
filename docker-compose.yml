@@ -1,0 +1,65 @@
+version: '3'
+
+services:
+  app:
+    image: openjdk:17-jdk-slim
+    container_name: trp_app
+    volumes:
+      - .:/app  # 호스트 디렉토리와 컨테이너의 /app 디렉토리 동기화
+      - trp_gradle_cache:/root/.gradle  # Gradle 캐시 저장
+    working_dir: /app  # 컨테이너 내에서 작업 디렉토리 설정
+    command: ./gradlew bootRun --no-daemon  # Gradle 데몬 비활성화로 불필요한 프로세스 감소
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mariadb
+      - redis
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/trippia
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: 1234
+      SPRING_DATASOURCE_DRIVER-CLASS-NAME: org.mariadb.jdbc.Driver
+      SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.MariaDBDialect
+      SPRING_JPA_HIBERNATE_DDL-AUTO: update  # 개발 환경에서는 "update"가 적합
+      SPRING_JPA_SHOW-SQL: "true"
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+    networks:
+      - backend_network
+    restart: always  # 자동 재시작 설정
+
+  mariadb:
+    image: mariadb:latest
+    container_name: trp-mariadb
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: trippia
+      MARIADB_USER: user
+      MARIADB_PASSWORD: 1234
+    ports:
+      - "3306:3306"
+    networks:
+      - backend_network
+    volumes:
+      - trp_mariadb_data:/var/lib/mysql
+
+  redis:
+    image: redis:latest
+    container_name: trp-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - backend_network
+    volumes:
+      - trp_redis_data:/data
+
+networks:
+  backend_network:
+    driver: bridge  # 성능을 위해 브리지 네트워크 사용
+
+volumes:
+  trp_mariadb_data:
+  trp_redis_data:
+  trp_gradle_cache:
