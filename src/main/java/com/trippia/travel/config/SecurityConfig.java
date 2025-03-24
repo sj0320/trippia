@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -28,16 +29,28 @@ public class SecurityConfig {
                 );
 
         http
-                .formLogin((auth) -> auth.loginPage("/users/login")
+                .formLogin(auth -> auth
+                        .loginPage("/users/login")
                         .loginProcessingUrl("/users/login")
-                        .failureUrl("/login-error.html")
-                        .usernameParameter("email")  // email 파라미터 사용
+                        .usernameParameter("email")
                         .passwordParameter("password")
                         .permitAll()
+                        .failureHandler((request, response, exception) -> {
+                            request.getSession().setAttribute("loginError", "이메일 또는 비밀번호가 올바르지 않습니다.");
+                            response.sendRedirect("/users/login"); // 같은 페이지로 리다이렉트
+                        })
                 );
 
         http
-                .csrf(csrf -> csrf.disable());
+                .logout(logout -> logout
+                        .logoutUrl("/users/logout")  // 기본 값이 "/logout"
+                        .logoutSuccessUrl("/") // 로그아웃 후 리다이렉트할 경로
+                        .invalidateHttpSession(true) // 세션 무효화
+                        .deleteCookies("JSESSIONID") // 특정 쿠키 삭제
+                );
+
+        http
+                .csrf(AbstractHttpConfigurer::disable);
 
         return http.build();
 

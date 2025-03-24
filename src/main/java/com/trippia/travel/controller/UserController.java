@@ -29,33 +29,33 @@ public class UserController {
 
     @GetMapping("/login")
     public String login(){
-        return "login";
+        return "auth/login";
     }
 
     @GetMapping("/sign-up")
     public String signUpForm(Model model) {
         model.addAttribute("user", new SaveRequest());
-        return "sign-up";
+        return "auth/sign-up";
     }
 
     @PostMapping("/sign-up")
     public String signUp(@Valid @ModelAttribute("user") SaveRequest request, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "sign-up";
+            return "auth/sign-up";
         }
         try {
             mailService.isEmailVerified(request.getEmail(), EmailAuthPurpose.REGISTER);
             userService.saveUser(request);
         } catch (UserException e) {
             bindingResult.rejectValue(e.getField(), e.getCode());
-            return "sign-up";
+            return "auth/sign-up";
         }
         return "index";
     }
 
     @GetMapping("/sns-sign-up")
     public String snsSignUpForm() {
-        return "social-sign-up";
+        return "auth/social-sign-up";
     }
 
 
