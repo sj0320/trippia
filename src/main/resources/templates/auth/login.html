@@ -22,6 +22,8 @@
 <div layout:fragment="content">
   <div class="container">
     <h2>로그인</h2>
+    <!-- 로그인 실패 메시지 표시 -->
+
     <form th:action="@{/users/login}" method="post">
       <div id="form-container">
         <div id="email-container">
@@ -33,6 +35,9 @@
           <label for="password">비밀번호</label>
           <input type="password" id="password" name="password" required>
         </div>
+      </div>
+      <div th:if="${session.loginError}" style="color: red; font-size: 14px;">
+        <p th:text="${session.loginError}"></p>
       </div>
       <button type="submit">로그인</button>
     </form>
