@@ -27,6 +27,11 @@ public class UserController {
     private final UserService userService;
     private final MailService mailService;
 
+    @GetMapping("/login")
+    public String login(){
+        return "login";
+    }
+
     @GetMapping("/sign-up")
     public String signUpForm(Model model) {
         model.addAttribute("user", new SaveRequest());

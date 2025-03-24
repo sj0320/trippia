@@ -4,6 +4,7 @@ import com.trippia.travel.domain.common.EmailAuthPurpose;
 import com.trippia.travel.exception.user.UserException;
 import com.trippia.travel.mail.MailService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,23 +16,29 @@ import static com.trippia.travel.domain.user.dto.UserDto.SaveRequest;
 @RequiredArgsConstructor
 public class UserService {
 
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserRepository userRepository;
     private final MailService mailService;
 
     @Transactional
-    public void saveUser(SaveRequest request){
-        if(userRepository.existsByEmail(request.getEmail())){
-            throw new UserException("email","duplicate.email");
+    public void saveUser(SaveRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new UserException("email", "duplicate.email");
         }
 
-        if(userRepository.existsByNickname(request.getNickname())){
-            throw new UserException("nickname","duplicate.nickname");
+        if (userRepository.existsByNickname(request.getNickname())) {
+            throw new UserException("nickname", "duplicate.nickname");
         }
-        User user = request.toEntity();
+
+        User user = User.builder()
+                .email(request.getEmail())
+                .password(bCryptPasswordEncoder.encode(request.getPassword()))
+                .nickname(request.getNickname())
+                .build();
         userRepository.save(user);
     }
 
-    public void sendCodeToEmail(String email, EmailAuthPurpose authPurpose){
+    public void sendCodeToEmail(String email, EmailAuthPurpose authPurpose) {
         String authCode = generateRandomCode();
         mailService.sendEmail(email, authPurpose, authCode);
     }
