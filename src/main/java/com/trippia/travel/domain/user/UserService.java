@@ -1,6 +1,7 @@
 package com.trippia.travel.domain.user;
 
 import com.trippia.travel.domain.common.EmailAuthPurpose;
+import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.exception.user.UserException;
 import com.trippia.travel.mail.MailService;
 import lombok.RequiredArgsConstructor;
@@ -34,8 +35,21 @@ public class UserService {
                 .email(request.getEmail())
                 .password(bCryptPasswordEncoder.encode(request.getPassword()))
                 .nickname(request.getNickname())
+                .loginType(LoginType.LOCAL)
                 .build();
         userRepository.save(user);
+    }
+
+    @Transactional
+    public void saveSocialUser(String email, String nickname){
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
+
+        if (userRepository.existsByNickname(nickname)) {
+            throw new UserException("nickname", "duplicate.nickname");
+        }
+        user.updateNickname(nickname);
+        user.completeRegistration();
     }
 
     public void sendCodeToEmail(String email, EmailAuthPurpose authPurpose) {

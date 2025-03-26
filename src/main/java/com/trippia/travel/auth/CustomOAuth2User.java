@@ -12,10 +12,11 @@ import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
+@Getter
 public class CustomOAuth2User implements OAuth2User {
 
     private final OAuth2UserInfo oAuth2UserInfo;
-    @Getter
+
     private final Role role;
 
     @Override

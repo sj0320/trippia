@@ -23,7 +23,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         if(oAuth2User.getRole() == Role.ROLE_GUEST){
             String email = oAuth2User.getEmail();
-            String redirectUrl = "/users/sns-sign-up?email=" + email;
+            String socialType = oAuth2User.getOAuth2UserInfo().getProvider();
+            String redirectUrl = "/users/sns-sign-up?email=" + email + "&socialType=" + socialType;
 
             response.sendRedirect(redirectUrl);
             return;

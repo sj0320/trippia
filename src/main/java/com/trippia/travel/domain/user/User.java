@@ -47,4 +47,14 @@ public class User {
     public void updateEmail(String email){
         this.email = email;
     }
+
+    public void updateNickname(String nickname){
+        this.nickname = nickname;
+    }
+
+    public void completeRegistration(){
+        if (this.role == Role.ROLE_GUEST) {
+            this.role = Role.ROLE_USER;
+        }
+    }
 }

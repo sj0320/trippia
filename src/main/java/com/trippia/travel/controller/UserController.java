@@ -1,5 +1,6 @@
 package com.trippia.travel.controller;
 
+import com.trippia.travel.annotation.CurrentUser;
 import com.trippia.travel.domain.common.EmailAuthPurpose;
 import com.trippia.travel.domain.user.UserService;
 import com.trippia.travel.exception.user.UserException;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.trippia.travel.domain.user.dto.UserDto.SaveRequest;
+import static com.trippia.travel.domain.user.dto.UserDto.SocialSaveRequest;
 import static com.trippia.travel.mail.MailDto.MailRequest;
 import static com.trippia.travel.mail.MailDto.MailVerificationRequest;
 
@@ -27,14 +29,15 @@ public class UserController {
     private final UserService userService;
     private final MailService mailService;
 
-    @GetMapping("/login")
-    public String login(){
-        return "auth/login";
+    @GetMapping("/test")
+    public String test(@CurrentUser String email){
+        System.out.println(email);
+        return "index";
     }
 
-    @GetMapping("/users/naver-login")
-    public String naverLogin() {
-        return "redirect:https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=bVjOZuT6ZT3FK3cU_4i6&scope=email&state=E3C5ezwN9Y9vZKlzlYZeQqKSD3Vk7hLcpPH0TPOXmrU%3D&redirect_uri=http://localhost:8080/login/oauth2/code/naver";  // 네이버 OAuth2 인증 경로로 리디렉션
+    @GetMapping("/login")
+    public String login() {
+        return "auth/login";
     }
 
     @GetMapping("/sign-up")
@@ -59,9 +62,22 @@ public class UserController {
     }
 
     @GetMapping("/sns-sign-up")
-    public String snsSignUpForm(@RequestParam("email")String email, Model model) {
-        model.addAttribute("email",email);
+    public String snsSignUpForm(@RequestParam("email") String email, @RequestParam("socialType")String socialType,
+                                Model model) {
+        SocialSaveRequest request = new SocialSaveRequest();
+        request.setEmail(email);
+        request.setSocialType(socialType);
+        model.addAttribute("user", request);
         return "auth/social-sign-up";
+    }
+
+    @PostMapping("/sns-sign-up")
+    public String snsSignUp(@Valid @ModelAttribute("user") SocialSaveRequest request, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "auth/social-sign-up";
+        }
+        userService.saveSocialUser(request.getEmail(), request.getNickname());
+        return "redirect:/oauth2/authorization/" + request.getSocialType();
     }
 
     @GetMapping("/select-login-method")
