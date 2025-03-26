@@ -4,13 +4,24 @@
       layout:decorate="~{layout/default}">
 
 <head>
-  <title>소셜 회원가입</title>
+  <title>회원가입</title>
+  <style>
+    input[type="email"],
+    input[type="nickname"] {
+      width: 10%;
+      min-width: 300px; /* 최소 너비 지정 */
+      padding: 12px;
+      font-size: 14px;
+      margin-bottom: 16px;
+      box-sizing: border-box;
+    }
+  </style>
 </head>
 
 <body>
 <div layout:fragment="content">
   <div class="container">
-    <h2>소셜 회원가입</h2>
+    <h2>회원가입</h2>
     <form th:action="@{/register/social}" method="post">
       <div id="form-container">
         <div id="email-container">

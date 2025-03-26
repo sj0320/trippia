@@ -83,23 +83,17 @@ button, .auth-button {
     margin-top: 15px;
 }
 
-.social-login-buttons img {
-    width: 100%;
-    max-width: 200px;
-    margin-top: 15px;
-    cursor: pointer;
-}
-
-/* 소셜 로그인 버튼들 수평 정렬 */
 .social-login-buttons {
     display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
+    justify-content: center;  /* 가운데 정렬 */
+    gap: 20px;  /* 버튼 간 간격 조정 */
+    margin-top: 10px;
 }
 
-.social-login-buttons a {
-    display: inline-block;
-    width: 48%; /* 버튼 간격을 위해 48%씩 */
+/* 소셜 로그인 버튼 내 이미지 크기 일괄 조정 */
+.social-login-buttons img {
+    width: 50px; /* 버튼 크기 동일하게 맞추기 */
+    height: auto;
 }
 
 #email[readonly] {
@@ -115,7 +109,6 @@ button, .auth-button {
     cursor: not-allowed;
     border: 1px solid #ccc;
 }
-
 
 .error-message {
     color: red;

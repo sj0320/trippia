@@ -32,6 +32,11 @@ public class UserController {
         return "auth/login";
     }
 
+    @GetMapping("/users/naver-login")
+    public String naverLogin() {
+        return "redirect:https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=bVjOZuT6ZT3FK3cU_4i6&scope=email&state=E3C5ezwN9Y9vZKlzlYZeQqKSD3Vk7hLcpPH0TPOXmrU%3D&redirect_uri=http://localhost:8080/login/oauth2/code/naver";  // 네이버 OAuth2 인증 경로로 리디렉션
+    }
+
     @GetMapping("/sign-up")
     public String signUpForm(Model model) {
         model.addAttribute("user", new SaveRequest());
@@ -54,8 +59,20 @@ public class UserController {
     }
 
     @GetMapping("/sns-sign-up")
-    public String snsSignUpForm() {
+    public String snsSignUpForm(@RequestParam("email")String email, Model model) {
+        model.addAttribute("email",email);
         return "auth/social-sign-up";
+    }
+
+    @GetMapping("/select-login-method")
+    public String selectLoginMethod(@RequestParam("email") String email,
+                                    @RequestParam("previousType") String previousType,
+                                    @RequestParam("newType") String newType,
+                                    Model model) {
+        model.addAttribute("email", email);
+        model.addAttribute("previousType", previousType);
+        model.addAttribute("newType", newType);
+        return "auth/select-login-method";
     }
 
 

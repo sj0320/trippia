@@ -16,7 +16,6 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // ROLE_USER와 같은 권한을 반환해야 합니다.
         return Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name()));
     }
 

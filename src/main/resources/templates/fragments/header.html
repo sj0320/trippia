@@ -14,14 +14,14 @@
             <a href="/destination" style="position: absolute; left: 495px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">여행지 추천</a>
             <a href="/course" style="position: absolute; left: 644px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">여행 코스 추천</a>
 
-            <!-- 로그인 및 회원가입 버튼 (비로그인 상태에서만 보임) -->
-            <div sec:authorize="isAnonymous()">
+            <!-- 로그인 및 회원가입 버튼 (ROLE_GUEST 또는 인증되지 않은 사용자만 보임) -->
+            <div sec:authorize="hasRole('ROLE_GUEST') or isAnonymous()">
                 <a href="/users/login" style="position: absolute; left: 1183px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">로그인</a>
                 <a href="/users/sign-up" style="position: absolute; left: 1250px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">회원가입</a>
             </div>
 
-            <!-- 마이페이지 및 로그아웃 버튼 (로그인한 사용자에게만 보임) -->
-            <div sec:authorize="isAuthenticated()">
+            <!-- 마이페이지 및 로그아웃 버튼 (ROLE_USER 또는 ROLE_ADMIN인 사용자만 보임) -->
+            <div sec:authorize="hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')">
                 <a href="/users/mypage" style="position: absolute; left: 1246px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">마이페이지</a>
                 <a href="/users/logout" style="position: absolute; left: 1320px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">로그아웃</a>
             </div>
