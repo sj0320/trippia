@@ -1,5 +1,6 @@
 package com.trippia.travel.domain.user;
 
+import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -12,8 +13,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="user_id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long id;
 
     @Column(unique = true, nullable = false)
@@ -22,19 +24,27 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     private String nickname;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
+    private LoginType loginType;
+
     private String profileImageUrl;
 
     @Builder
-    public User(String email, String password, String nickname, Role role) {
+    public User(String email, String password, String nickname, LoginType loginType, Role role) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
+        this.loginType = loginType;
         this.role = (role != null) ? role : Role.ROLE_USER;
+    }
+
+    public void updateEmail(String email){
+        this.email = email;
     }
 }
