@@ -5,47 +5,225 @@
     <meta charset="UTF-8">
     <title>게시글 작성</title>
     <link rel="stylesheet" href="/css/editor.css">
+    <link rel="stylesheet" href="/css/radiobutton.css">
     <script defer src="/js/editor.js"></script>
+    <style>
+        /* 부드러운 글씨체 적용 */
+        body {
+            font-family: 'Noto Sans', 'Roboto', 'Apple SD Gothic Neo', sans-serif;
+            line-height: 1.6;
+            font-size: 15px;
+            color: #333;
+        }
+
+        .input-container input, .button-container button {
+            font-family: 'Noto Sans', 'Roboto', 'Apple SD Gothic Neo', sans-serif;
+            font-size: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .input-section {
+            padding: 20px;
+            background-color: #f8f8f8;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+
+        .input-section .section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        .post-section {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+        }
+
+        /* 각 input-container에 여백 추가 */
+        .input-container {
+            margin-bottom: 15px;
+        }
+
+        /* 입력 필드 스타일 */
+        input[type="text"],
+        input[type="date"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        /* 라벨 스타일 */
+        label {
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 8px;
+            display: block;
+        }
+    </style>
+
 </head>
 <body>
 <div layout:fragment="content">
     <form th:action="@{/post/upload}" method="post" enctype="multipart/form-data">
-        <div class="input-container">
-            <input type="text" id="title" name="title" placeholder="게시글 제목을 입력해주세요" required/>
+        <!-- 필수 입력 정보 -->
+        <div class="input-section">
+            <h3 class="section-title">필수 입력 정보</h3>
+
+            <!-- 여행한 도시/지역 -->
+            <div class="input-container">
+                <label for="location">여행지 이름을 알려주세요!</label>
+                <input type="text" id="location" name="location" placeholder="어디로 여행을 다녀오셨나요?" required/>
+            </div>
+
+            <!-- 여행 기간 -->
+            <label style="flex-shrink: 0;">여행 기간은 언제부터 언제까지였나요?</label>
+            <div class="input-container" style="display: flex; gap: 10px; align-items: center;">
+                <input type="date" id="startDate" name="startDate" required style="flex-grow: 1;"/>
+                <span>~</span>
+                <input type="date" id="endDate" name="endDate" required style="flex-grow: 1;"/>
+            </div>
+
+            <!-- 여행 유형 -->
+            <div class="input-container">
+                <label>어떤 여행이었나요?</label>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="travelType" value="휴양" required>
+                        <span class="custom-radio"></span> 휴양
+                    </label>
+                    <label>
+                        <input type="radio" name="travelType" value="모험">
+                        <span class="custom-radio"></span> 모험
+                    </label>
+                    <label>
+                        <input type="radio" name="travelType" value="문화 탐방">
+                        <span class="custom-radio"></span> 문화 탐방
+                    </label>
+                    <label>
+                        <input type="radio" name="travelType" value="기타">
+                        <span class="custom-radio"></span> 기타
+                    </label>
+                </div>
+            </div>
+
+            <!-- 여행 만족도 -->
+            <div class="input-container">
+                <label>여행은 얼마나 즐거우셨나요?</label>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="rating" value="1" required>
+                        <span class="custom-radio"></span> ⭐
+                    </label>
+                    <label>
+                        <input type="radio" name="rating" value="2">
+                        <span class="custom-radio"></span> ⭐⭐
+                    </label>
+                    <label>
+                        <input type="radio" name="rating" value="3">
+                        <span class="custom-radio"></span> ⭐⭐⭐
+                    </label>
+                    <label>
+                        <input type="radio" name="rating" value="4">
+                        <span class="custom-radio"></span> ⭐⭐⭐⭐
+                    </label>
+                    <label>
+                        <input type="radio" name="rating" value="5">
+                        <span class="custom-radio"></span> ⭐⭐⭐⭐⭐
+                    </label>
+                </div>
+            </div>
+
+            <!-- 여행 동반자 -->
+            <div class="input-container">
+                <label>누구와 함께 여행을 떠나셨나요?</label>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="companion" value="혼자" required>
+                        <span class="custom-radio"></span> 혼자
+                    </label>
+                    <label>
+                        <input type="radio" name="companion" value="친구">
+                        <span class="custom-radio"></span> 친구
+                    </label>
+                    <label>
+                        <input type="radio" name="companion" value="가족">
+                        <span class="custom-radio"></span> 가족
+                    </label>
+                    <label>
+                        <input type="radio" name="companion" value="연인">
+                        <span class="custom-radio"></span> 연인
+                    </label>
+                    <label>
+                        <input type="radio" name="companion" value="기타">
+                        <span class="custom-radio"></span> 기타
+                    </label>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <label for="cost">경비는 얼마나 들었나요?</label>
+                <input type="number" id="cost" name="cost" placeholder="대략적인 비용을 입력해주세요" min="0" step="100000"/>
+            </div>
         </div>
 
-        <div class="toolbar">
-            <button type="button" onclick="formatText('bold')"><b>B</b></button>
-            <button type="button" onclick="formatText('italic')"><i>I</i></button>
-            <button type="button" onclick="formatText('underline')"><u>U</u></button>
-            <button type="button" onclick="formatText('foreColor', '#ff0000')">🔴</button>
-            <button type="button" onclick="formatText('foreColor', '#0000ff')">🔵</button>
-            <button type="button" onclick="formatText('foreColor', '#008000')">🟢</button>
-            <select onchange="formatText('fontSize', this.value)">
-                <option value="3">기본 크기</option>
-                <option value="1">작게</option>
-                <option value="5">크게</option>
-                <option value="7">아주 크게</option>
-            </select>
-            <button type="button" onclick="formatText('justifyLeft')">⬅</button>
-            <button type="button" onclick="formatText('justifyCenter')">⬆</button>
-            <button type="button" onclick="formatText('justifyRight')">➡</button>
-            <button type="button" onclick="formatText('justifyFull')">↔</button>
+        <!-- 게시물 작성 부분 -->
+        <div class="input-section post-section">
+            <!-- 게시글 제목 -->
+            <div class="input-container">
+                <input type="text" id="title" name="title" placeholder="게시글 제목을 입력해주세요!" required/>
+            </div>
+
+
+
+            <!-- 툴바 추가 -->
+            <div class="toolbar">
+                <button type="button" onclick="formatText('bold')">B</button>
+                <button type="button" onclick="formatText('italic')">I</button>
+                <button type="button" onclick="formatText('underline')">U</button>
+                <button type="button" onclick="formatText('foreColor', '#ff0000')">🔴</button>
+                <button type="button" onclick="formatText('foreColor', '#0000ff')">🔵</button>
+                <button type="button" onclick="formatText('foreColor', '#008000')">🟢</button>
+                <select onchange="formatText('fontSize', this.value)">
+                    <option value="3">기본 크기</option>
+                    <option value="1">작게</option>
+                    <option value="5">크게</option>
+                    <option value="7">아주 크게</option>
+                </select>
+                <button type="button" onclick="formatText('justifyLeft')">⬅</button>
+                <button type="button" onclick="formatText('justifyCenter')">⬆</button>
+                <button type="button" onclick="formatText('justifyRight')">➡</button>
+                <button type="button" onclick="formatText('justifyFull')">↔</button>
+            </div>
+
+            <!-- 게시글 내용 -->
+            <div class="input-container" style="position: relative;">
+                <div contenteditable="true" id="editor" class="editor"></div>
+                <div class="editor-placeholder" id="editorPlaceholder">여행 이야기를 자유롭게 작성해주세요!</div>
+                <input type="hidden" name="content" id="contentInput"/>
+            </div>
+
+            <!-- 이미지 추가 -->
+            <div class="input-container">
+                <input type="file" id="imageUpload" accept="image/*" style="display: none;"/>
+                <button type="button" onclick="document.getElementById('imageUpload').click();">여행 사진을 추가해보세요!</button>
+            </div>
         </div>
 
-        <div class="input-container" style="position: relative;">
-            <div contenteditable="true" id="editor" class="editor"></div>
-            <div class="editor-placeholder" id="editorPlaceholder">게시글 내용을 입력해주세요...</div>
-            <input type="hidden" name="content" id="contentInput"/>
-        </div>
-
-        <div class="input-container">
-            <input type="file" id="imageUpload" accept="image/*" style="display: none;"/>
-            <button type="button" onclick="document.getElementById('imageUpload').click();">이미지 추가</button>
-        </div>
-
+        <!-- 제출 버튼 -->
         <div class="button-container">
-            <button type="submit">게시글 작성</button>
+            <button type="submit">여행 후기 작성</button>
         </div>
     </form>
 </div>
