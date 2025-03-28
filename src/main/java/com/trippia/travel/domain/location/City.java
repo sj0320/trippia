@@ -1,5 +1,6 @@
 package com.trippia.travel.domain.location;
 
+import com.trippia.travel.domain.common.CityType;
 import jakarta.persistence.*;
 
 @Entity
@@ -9,11 +10,13 @@ public class City {
     @Column(name="city_id")
     private Long id;
 
+    private String name;
+
     @ManyToOne
     @JoinColumn(name = "country_id")
     private Country country;
 
-    private String name;
-
+    @Enumerated(EnumType.STRING)
+    private CityType cityType;
 
 }
