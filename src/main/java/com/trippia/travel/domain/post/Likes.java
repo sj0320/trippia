@@ -1,5 +1,6 @@
 package com.trippia.travel.domain.post;
 
+import com.trippia.travel.domain.post.diary.Diary;
 import com.trippia.travel.domain.user.User;
 import jakarta.persistence.*;
 
@@ -14,7 +15,7 @@ public class Likes {
 
     @ManyToOne
     @JoinColumn(name = "post_id")
-    private Post post;
+    private Diary diary;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

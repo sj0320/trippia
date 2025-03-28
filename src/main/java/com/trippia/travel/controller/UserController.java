@@ -1,6 +1,5 @@
 package com.trippia.travel.controller;
 
-import com.trippia.travel.annotation.CurrentUser;
 import com.trippia.travel.domain.common.EmailAuthPurpose;
 import com.trippia.travel.domain.user.UserService;
 import com.trippia.travel.exception.user.UserException;
@@ -28,12 +27,6 @@ public class UserController {
 
     private final UserService userService;
     private final MailService mailService;
-
-    @GetMapping("/test")
-    public String test(@CurrentUser String email){
-        System.out.println(email);
-        return "index";
-    }
 
     @GetMapping("/login")
     public String login() {
