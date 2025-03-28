@@ -1,6 +1,6 @@
 package com.trippia.travel.domain.travel;
 
-import com.trippia.travel.domain.location.City;
+import com.trippia.travel.domain.location.city.City;
 import jakarta.persistence.*;
 
 @Entity

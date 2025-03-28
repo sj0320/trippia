@@ -1,7 +1,7 @@
 package com.trippia.travel.domain.post.diary;
 
 import com.trippia.travel.domain.common.TripDuration;
-import com.trippia.travel.domain.location.City;
+import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.user.User;
 import jakarta.persistence.*;
 
