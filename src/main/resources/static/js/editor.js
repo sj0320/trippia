@@ -34,14 +34,13 @@ document.addEventListener("DOMContentLoaded", function () {
             reader.onload = function (e) {
                 const img = document.createElement("img");
                 img.src = e.target.result;
+                img.style.maxWidth = "60%"; // 이미지 크기 제한
 
-                const selection = window.getSelection();
-                const range = selection.getRangeAt(0);
-                range.deleteContents();
-                range.insertNode(img);
+                // 커서 위치에 이미지 삽입
+                insertImageAtCursor(img);
 
                 adjustEditorHeight();
-                imageUpload.value = '';
+                imageUpload.value = ''; // 파일 입력 초기화
             };
             reader.readAsDataURL(file);
         }
@@ -56,6 +55,43 @@ document.addEventListener("DOMContentLoaded", function () {
     function adjustEditorHeight() {
         editor.style.height = "auto";
         editor.style.height = editor.scrollHeight + "px";
+    }
+
+    // 커서 위치에 이미지를 삽입하는 함수
+    function insertImageAtCursor(img) {
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+
+        // 커서가 에디터 안에 있을 때
+        if (editor.contains(selection.anchorNode)) {
+            range.deleteContents();
+            range.insertNode(img);
+
+            // 삽입 후 커서를 이미지 뒤로 이동
+            const br = document.createElement("br");
+            range.insertNode(br);
+
+            // 커서 위치를 줄바꿈 뒤로 이동
+            const newRange = document.createRange();
+            newRange.setStartAfter(br);
+            newRange.setEndAfter(br);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+        } else {
+            // 커서가 에디터 외부에 있을 때는 에디터의 마지막 위치에 삽입
+            const br = document.createElement("br");
+            editor.appendChild(br); // 마지막에 줄바꿈 추가
+            editor.appendChild(img); // 이미지 삽입
+            editor.appendChild(br); // 이미지 뒤에 줄바꿈 추가
+
+            // 삽입 후 커서를 줄바꿈 뒤로 이동
+            const newRange = document.createRange();
+            newRange.setStartAfter(br); // 줄바꿈 뒤로 커서 이동
+            newRange.setEndAfter(br);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+        }
     }
 
     // 텍스트 포맷 함수
