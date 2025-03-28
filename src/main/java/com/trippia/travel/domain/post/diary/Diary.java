@@ -1,4 +1,4 @@
-package com.trippia.travel.domain.post;
+package com.trippia.travel.domain.post.diary;
 
 import com.trippia.travel.domain.common.TripDuration;
 import com.trippia.travel.domain.location.City;
@@ -8,7 +8,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-public class Post {
+public class Diary {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="post_id")

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 작성</title>
+    <link rel="stylesheet" href="/css/editor.css">
+    <script defer src="/js/editor.js"></script>
+</head>
+<body>
+<div layout:fragment="content">
+    <form th:action="@{/post/upload}" method="post" enctype="multipart/form-data">
+        <div class="input-container">
+            <input type="text" id="title" name="title" placeholder="게시글 제목을 입력해주세요" required/>
+        </div>
+
+        <div class="toolbar">
+            <button type="button" onclick="formatText('bold')"><b>B</b></button>
+            <button type="button" onclick="formatText('italic')"><i>I</i></button>
+            <button type="button" onclick="formatText('underline')"><u>U</u></button>
+            <button type="button" onclick="formatText('foreColor', '#ff0000')">🔴</button>
+            <button type="button" onclick="formatText('foreColor', '#0000ff')">🔵</button>
+            <button type="button" onclick="formatText('foreColor', '#008000')">🟢</button>
+            <select onchange="formatText('fontSize', this.value)">
+                <option value="3">기본 크기</option>
+                <option value="1">작게</option>
+                <option value="5">크게</option>
+                <option value="7">아주 크게</option>
+            </select>
+            <button type="button" onclick="formatText('justifyLeft')">⬅</button>
+            <button type="button" onclick="formatText('justifyCenter')">⬆</button>
+            <button type="button" onclick="formatText('justifyRight')">➡</button>
+            <button type="button" onclick="formatText('justifyFull')">↔</button>
+        </div>
+
+        <div class="input-container" style="position: relative;">
+            <div contenteditable="true" id="editor" class="editor"></div>
+            <div class="editor-placeholder" id="editorPlaceholder">게시글 내용을 입력해주세요...</div>
+            <input type="hidden" name="content" id="contentInput"/>
+        </div>
+
+        <div class="input-container">
+            <input type="file" id="imageUpload" accept="image/*" style="display: none;"/>
+            <button type="button" onclick="document.getElementById('imageUpload').click();">이미지 추가</button>
+        </div>
+
+        <div class="button-container">
+            <button type="submit">게시글 작성</button>
+        </div>
+    </form>
+</div>
+</body>
+</html>
