@@ -1,15 +1,28 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/default}">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>게시글 작성</title>
-    <link rel="stylesheet" href="/css/editor.css">
     <link rel="stylesheet" href="/css/radiobutton.css">
-    <link rel="stylesheet" href="/css/modal.css">
-    <script defer src="/js/editor.js"></script>
-    <script defer src="/js/modal.js"></script>
+    <link rel="stylesheet" href="/css/city-modal.css">
+    <link rel="stylesheet" href="/css/theme-modal.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script defer src="/js/city-modal.js"></script>
+    <script defer src="/js/theme-modal.js"></script>
+
+    <!-- CKEditor 5 스크립트 로드 -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/32.0.0/classic/ckeditor.js"></script>
     <style>
+        .ck-editor__editable{
+            min-height: 350px;
+
+        }
+
+        form {
+            text-align: left;
+            width: 60%;
+            margin: 0 auto;
+        }
 
         /* 부드러운 글씨체 적용 */
         body {
@@ -33,66 +46,39 @@
             padding: 20px;
             background-color: #f8f8f8;
             border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-        }
-
-        .input-section .section-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #ddd;
-            padding-bottom: 10px;
-        }
-
-        .post-section {
-            background-color: #ffffff;
+            margin-bottom: 25px;
             border: 1px solid #ddd;
         }
 
         /* 각 input-container에 여백 추가 */
         .input-container {
-            margin-bottom: 15px;
+            margin-bottom: 25px;
         }
 
-        /* 입력 필드 스타일 */
-        input[type="text"],
-        input[type="date"],
-        input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            font-size: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
 
-        /* 라벨 스타일 */
-        label {
-            font-weight: 600;
-            font-size: 18px;
-            margin-bottom: 8px;
-            display: block;
-        }
     </style>
-
 </head>
+
 <body>
-<div layout:fragment="content">
-    <form th:action="@{/post/upload}" method="post" enctype="multipart/form-data">
+<div id='wrapper'>
+    <div th:replace="~{fragments/header::header}"></div>
+
+    <form th:action="@{/diary/new}" method="post" th:object="${diary}" novalidate>
         <!-- 필수 입력 정보 -->
         <div class="input-section">
             <h3 class="section-title">필수 입력 정보</h3>
 
             <div class="input-container">
-                <label for="location">여행지 이름을 알려주세요!</label>
+                <label for="cityId">여행지 이름을 알려주세요!</label>
                 <div style="display: flex; gap: 10px;">
-                    <input type="text" id="location" name="location" placeholder="어디로 여행을 다녀오셨나요?" readonly required/>
+                    <input type="text" id="location" th:field="*{location}" placeholder="어디로 여행을 다녀오셨나요?" readonly/>
                     <button type="button" id="openCityModal">도시 선택</button>
                 </div>
+                <input type="hidden" id="cityId" th:field="*{cityId}" required/>
+                <p class="error-message" th:if="${#fields.hasErrors('cityId')}" th:errors="*{cityId}"></p>
             </div>
 
-            <!-- 모달 창 -->
+            <!-- 도시 선택 모달 -->
             <div id="cityModal" class="modal">
                 <div class="modal-content">
                     <span class="close" onclick="closeModal()">&times;</span>
@@ -102,8 +88,10 @@
                             <h4 th:text="${entry.key}">도시 유형</h4>
                             <ul>
                                 <li th:each="city : ${entry.value}">
-                                    <button type="button" th:text="${city.name}" th:attr="data-city=${city.name}"
-                                            onclick="selectCity(this)"></button>
+                                    <button type="button" th:text="${city.name}"
+                                            th:attr="data-city=${city.name}, data-id=${city.id}"
+                                            onclick="selectCity(this)">
+                                    </button>
                                 </li>
                             </ul>
                         </div>
@@ -113,32 +101,39 @@
 
             <!-- 여행 기간 -->
             <label style="flex-shrink: 0;">여행 기간은 언제부터 언제까지였나요?</label>
-            <div class="input-container" style="display: flex; gap: 10px; align-items: center;">
-                <input type="date" id="startDate" name="startDate" required style="flex-grow: 1;"/>
-                <span>~</span>
-                <input type="date" id="endDate" name="endDate" required style="flex-grow: 1;"/>
+            <div class="input-container">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="date" th:field="*{startDate}" required/>
+                    <span>~</span>
+                    <input type="date" th:field="*{endDate}" required/>
+                </div>
+                <p class="error-message" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></p>
             </div>
 
-            <!-- 여행 유형 -->
+
+            <!-- 여행 유형 입력 -->
             <div class="input-container">
-                <label>어떤 여행이었나요?</label>
-                <div class="radio-group">
-                    <label>
-                        <input type="radio" name="travelType" value="휴양" required>
-                        <span class="custom-radio"></span> 휴양
-                    </label>
-                    <label>
-                        <input type="radio" name="travelType" value="모험">
-                        <span class="custom-radio"></span> 모험
-                    </label>
-                    <label>
-                        <input type="radio" name="travelType" value="문화 탐방">
-                        <span class="custom-radio"></span> 문화 탐방
-                    </label>
-                    <label>
-                        <input type="radio" name="travelType" value="기타">
-                        <span class="custom-radio"></span> 기타
-                    </label>
+                <label for="themeInput">여행 유형을 선택해주세요!</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="themeInput" th:field="*{themeIds}" readonly required/>
+                    <button type="button" id="openThemeModal">여행 유형 선택</button>
+                </div>
+                <p class="error-message" th:if="${#fields.hasErrors('themeIds')}" th:errors="*{themeIds}"></p>
+            </div>
+
+            <!-- 여행 유형 선택 모달 -->
+            <div id="newThemeModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal()">&times;</span>
+                    <h3>여행 유형 선택</h3>
+                    <div class="theme-list">
+                        <div th:each="theme : ${themes}">
+                            <button type="button" th:text="${theme.name}"
+                                    th:attr="data-theme-id=${theme.id}, data-theme=${theme.name}"
+                                    onclick="selectTheme(this)"></button>
+                        </div>
+                    </div>
+                    <button type="button" onclick="submitSelectedThemes()">확인</button>
                 </div>
             </div>
 
@@ -147,26 +142,29 @@
                 <label>여행은 얼마나 즐거우셨나요?</label>
                 <div class="radio-group">
                     <label>
-                        <input type="radio" name="rating" value="1" required>
+                        <input type="radio" th:field="*{rating}" value="1" required>
                         <span class="custom-radio"></span> ⭐
                     </label>
                     <label>
-                        <input type="radio" name="rating" value="2">
+                        <input type="radio" th:field="*{rating}" value="2">
                         <span class="custom-radio"></span> ⭐⭐
                     </label>
                     <label>
-                        <input type="radio" name="rating" value="3">
+                        <input type="radio" th:field="*{rating}" value="3">
                         <span class="custom-radio"></span> ⭐⭐⭐
                     </label>
                     <label>
-                        <input type="radio" name="rating" value="4">
+                        <input type="radio" th:field="*{rating}" value="4">
                         <span class="custom-radio"></span> ⭐⭐⭐⭐
                     </label>
                     <label>
-                        <input type="radio" name="rating" value="5">
+                        <input type="radio" th:field="*{rating}" value="5">
                         <span class="custom-radio"></span> ⭐⭐⭐⭐⭐
                     </label>
                 </div>
+                <!-- 에러 메시지 표시 -->
+                <div class="error-message" th:if="${#fields.hasErrors('rating')}" th:errors="*{rating}"
+                     style="color: red;"></div>
             </div>
 
             <!-- 여행 동반자 -->
@@ -174,31 +172,40 @@
                 <label>누구와 함께 여행을 떠나셨나요?</label>
                 <div class="radio-group">
                     <label>
-                        <input type="radio" name="companion" value="혼자" required>
+                        <input type="radio" th:field="*{companion}" value="혼자" required>
                         <span class="custom-radio"></span> 혼자
                     </label>
                     <label>
-                        <input type="radio" name="companion" value="친구">
+                        <input type="radio" th:field="*{companion}" value="친구">
                         <span class="custom-radio"></span> 친구
                     </label>
                     <label>
-                        <input type="radio" name="companion" value="가족">
+                        <input type="radio" th:field="*{companion}" value="가족">
                         <span class="custom-radio"></span> 가족
                     </label>
                     <label>
-                        <input type="radio" name="companion" value="연인">
+                        <input type="radio" th:field="*{companion}" value="연인">
                         <span class="custom-radio"></span> 연인
                     </label>
                     <label>
-                        <input type="radio" name="companion" value="기타">
+                        <input type="radio" th:field="*{companion}" value="아이">
+                        <span class="custom-radio"></span> 아이
+                    </label>
+                    <label>
+                        <input type="radio" th:field="*{companion}" value="기타">
                         <span class="custom-radio"></span> 기타
                     </label>
                 </div>
+                <!-- 에러 메시지 표시 -->
+                <div class="error-message" th:if="${#fields.hasErrors('companion')}" th:errors="*{companion}"
+                     style="color: red;"></div>
             </div>
 
+            <!-- 경비 -->
             <div class="input-container">
-                <label for="cost">경비는 얼마나 들었나요?</label>
-                <input type="number" id="cost" name="cost" placeholder="대략적인 비용을 입력해주세요" min="0" step="100000"/>
+                <label for="totalBudget">경비는 얼마나 들었나요?</label>
+                <input type="number" th:field="*{totalBudget}" min="0" step="100000"/>
+                <p class="error-message" th:if="${#fields.hasErrors('totalBudget')}" th:errors="*{totalBudget}"></p>
             </div>
         </div>
 
@@ -206,36 +213,37 @@
         <div class="input-section post-section">
             <!-- 게시글 제목 -->
             <div class="input-container">
-                <input type="text" id="title" name="title" placeholder="게시글 제목을 입력해주세요!" required/>
+                <input type="text" th:field="*{title}" placeholder="게시글 제목을 입력해주세요!" required/>
+                <p class="error-message" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></p>
             </div>
 
-            <!-- 툴바 추가 -->
-            <div class="toolbar">
-                <button type="button" onclick="formatText('bold')">B</button>
-                <button type="button" onclick="formatText('italic')">I</button>
-                <button type="button" onclick="formatText('underline')">U</button>
-                <button type="button" onclick="formatText('foreColor', '#ff0000')">🔴</button>
-                <button type="button" onclick="formatText('foreColor', '#00ff00')">🟢</button>
-                <button type="button" onclick="formatText('foreColor', '#0000ff')">🔵</button>
-            </div>
-
-            <!-- 본문 내용 -->
+            <!-- CKEditor를 사용한 게시글 내용 -->
             <div class="input-container">
-                <textarea id="content" name="content" placeholder="본문을 입력하세요!" rows="10" required></textarea>
+                <textarea id="editor" name="content" th:field="*{content}" required></textarea>
+                <p class="error-message" th:if="${#fields.hasErrors('content')}" th:errors="*{content}"></p>
             </div>
 
-            <div class="button-container">
-                <button type="submit">저장</button>
-            </div>
+        </div>
+
+        <!-- 제출 버튼 -->
+        <div class="button-container">
+            <button type="submit">여행 후기 작성</button>
         </div>
     </form>
 </div>
-
+<div th:replace="~{fragments/footer::footer}"></div>
 <script>
-        // 텍스트 포맷팅
-        function formatText(command, value = null) {
-            document.execCommand(command, false, value);
-        }
+    ClassicEditor
+        .create(document.querySelector('#editor'), {
+            ckfinder: {
+                uploadUrl: '/api/file/upload'  // 이미지 업로드 API 엔드포인트
+            }
+        })
+        .catch(error => {
+            console.error(error);
+        });
 </script>
+
+
 </body>
 </html>

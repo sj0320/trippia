@@ -14,6 +14,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 @Slf4j
 public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolver {
+
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         return parameter.getParameterAnnotation(CurrentUser.class) != null

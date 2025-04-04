@@ -1,29 +1,18 @@
 package com.trippia.travel.exception.user;
 
-import lombok.Getter;
+import com.trippia.travel.exception.BaseException;
 
-@Getter
-public class UserException extends RuntimeException{
+public class UserException extends BaseException {
 
-    private String field;
-    private String code;
-    private String message;
-
-    public UserException(String field,String code,String message){
-        super(message);
-        this.code = code;
-        this.message = message;
-        this.field = field;
+    public UserException(String fieldName, String code, String message){
+        super(fieldName, code, message);
     }
 
-    public UserException(String field, String code){
-        this.field = field;
-        this.code = code;
+    public UserException(String fieldName, String code){
+        super(fieldName, code);
     }
 
     public UserException(String message){
         super(message);
-        this.message = message;
     }
-
 }
