@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Random;
 
 import static com.trippia.travel.domain.user.dto.UserDto.SaveRequest;
+import static com.trippia.travel.exception.ErrorMessageSource.*;
 
 @Service
 @RequiredArgsConstructor
@@ -24,11 +25,11 @@ public class UserService {
     @Transactional
     public void saveUser(SaveRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new UserException("email", "duplicate.email");
+            throw new UserException("email", DUPLICATE_EMAIL);
         }
 
         if (userRepository.existsByNickname(request.getNickname())) {
-            throw new UserException("nickname", "duplicate.nickname");
+            throw new UserException("nickname", DUPLICATE_NICKNAME);
         }
 
         User user = User.builder()
@@ -43,10 +44,10 @@ public class UserService {
     @Transactional
     public void saveSocialUser(String email, String nickname){
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserException(USER_NOT_FOUND_MESSAGE));
 
         if (userRepository.existsByNickname(nickname)) {
-            throw new UserException("nickname", "duplicate.nickname");
+            throw new UserException("nickname", DUPLICATE_NICKNAME);
         }
         user.updateNickname(nickname);
         user.completeRegistration();

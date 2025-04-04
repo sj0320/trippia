@@ -1,3 +1,22 @@
+-- 테마 데이터
+INSERT INTO theme (theme_id, name) VALUES (1, '힐링·휴양');
+INSERT INTO theme (theme_id, name) VALUES (2, '액티비티');
+INSERT INTO theme (theme_id, name) VALUES (3, '문화');
+INSERT INTO theme (theme_id, name) VALUES (4, '맛집 탐방');
+INSERT INTO theme (theme_id, name) VALUES (5, '자연경관');
+INSERT INTO theme (theme_id, name) VALUES (6, '역사 탐방');
+INSERT INTO theme (theme_id, name) VALUES (7, '쇼핑');
+INSERT INTO theme (theme_id, name) VALUES (8, '스포츠');
+INSERT INTO theme (theme_id, name) VALUES (9, '사진 촬영');
+INSERT INTO theme (theme_id, name) VALUES (10, '드라이브');
+INSERT INTO theme (theme_id, name) VALUES (11, '캠핑');
+INSERT INTO theme (theme_id, name) VALUES (12, '호캉스');
+INSERT INTO theme (theme_id, name) VALUES (13, '레저 활동');
+INSERT INTO theme (theme_id, name) VALUES (14, '테마파크');
+
+
+
+
 INSERT INTO country (country_id, name) VALUES (1, '일본');
 INSERT INTO country (country_id, name) VALUES (2, '한국');
 INSERT INTO country (country_id, name) VALUES (3, '중국');

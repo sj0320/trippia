@@ -46,10 +46,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // 폼 제출 시 내용 저장
-    document.querySelector("form").addEventListener("submit", function () {
-        contentInput.value = editor.innerHTML;
-    });
+document.querySelector("form").addEventListener("submit", function (event) {
+    const editor = document.getElementById("editor");
+    const contentInput = document.getElementById("contentInput");
+
+    // HTML 내용이 잘 저장되는지 확인
+    contentInput.value = editor.innerHTML;
+    console.log("전송되는 content 값:", contentInput.value); // 디버깅용
+    alert("폼 제출 직전 content 값:\n" + contentInput.value); // 팝업으로 값 확인
+    // content 값이 정상적으로 들어가는지 확인 후 서버로 전송
+});
 
     // 에디터 높이 자동 증가
     function adjustEditorHeight() {

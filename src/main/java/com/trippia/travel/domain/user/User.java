@@ -7,6 +7,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -34,6 +37,9 @@ public class User {
     private LoginType loginType;
 
     private String profileImageUrl;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
 
     @Builder
     public User(String email, String password, String nickname, LoginType loginType, Role role) {

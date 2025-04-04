@@ -11,13 +11,11 @@
 
 <div id='wrapper'>
     <div>
-        <!-- 수정된 부분: 새로운 Thymeleaf 문법 적용 -->
         <div th:replace="~{fragments/header::header}"></div>
         <div layout:fragment="content" class="content"></div>
     </div>
 </div>
 
-<!-- 수정된 부분: 새로운 Thymeleaf 문법 적용 -->
 <div th:replace="~{fragments/footer::footer}"></div>
 
 </body>

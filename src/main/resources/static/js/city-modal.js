@@ -16,7 +16,14 @@ document.addEventListener("DOMContentLoaded", function () {
         // 도시 선택
         window.selectCity = function(button) {
             const cityName = button.getAttribute("data-city");
-            document.getElementById("location").value = cityName;  // 입력폼에 도시 이름 설정
+            const cityId = button.getAttribute("data-id"); // data-id 속성에서 cityId 값을 가져옵니다.
+
+            // 선택한 도시 이름을 입력폼에 설정
+            document.getElementById("location").value = cityName;
+
+            // 선택한 cityId를 hidden 필드에 설정
+            document.getElementById("cityId").value = cityId;
+
             closeModal(); // 모달 닫기
         }
 

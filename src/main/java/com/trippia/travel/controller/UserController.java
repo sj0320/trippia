@@ -48,7 +48,7 @@ public class UserController {
             mailService.isEmailVerified(request.getEmail(), EmailAuthPurpose.REGISTER);
             userService.saveUser(request);
         } catch (UserException e) {
-            bindingResult.rejectValue(e.getField(), e.getCode());
+            bindingResult.rejectValue(e.getFieldName(), e.getCode());
             return "auth/sign-up";
         }
         return "index";
