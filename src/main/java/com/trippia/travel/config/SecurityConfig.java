@@ -1,6 +1,7 @@
 package com.trippia.travel.config;
 
 import com.trippia.travel.auth.CustomOAuth2UserService;
+import com.trippia.travel.auth.loginhandler.LocalAuthenticationSuccessHandler;
 import com.trippia.travel.auth.loginhandler.OAuth2LoginFailureHandler;
 import com.trippia.travel.auth.loginhandler.OAuth2LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +22,10 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
+    private final LocalAuthenticationSuccessHandler localAuthenticationSuccessHandler;
 
     @Bean
-    public BCryptPasswordEncoder passwordEncoder(){
+    public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
@@ -41,6 +43,7 @@ public class SecurityConfig {
                 .formLogin(auth -> auth
                         .loginPage("/users/login")
                         .loginProcessingUrl("/users/login")
+                        .successHandler(localAuthenticationSuccessHandler)
                         .usernameParameter("email")
                         .passwordParameter("password")
                         .permitAll()
