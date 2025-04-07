@@ -1,7 +1,7 @@
 package com.trippia.travel.domain.location.city;
 
 import com.trippia.travel.domain.common.CityType;
-import com.trippia.travel.domain.location.Country;
+import com.trippia.travel.domain.location.country.Country;
 import jakarta.persistence.*;
 import lombok.Getter;
 

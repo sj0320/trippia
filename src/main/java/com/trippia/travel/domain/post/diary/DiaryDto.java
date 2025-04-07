@@ -8,6 +8,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class DiaryDto {
@@ -50,6 +51,31 @@ public class DiaryDto {
         @NotNull(message = "여행 유형을 선택해주세요")
         private List<Long> themeIds; // 선택된 Theme ID 리스트
 
+    }
+
+    @Getter @Setter
+    @Builder
+    public static class DiaryListResponse{
+        private Long id;
+        private String authorNickname;
+        private String authorProfile;
+        private String title;
+        private String thumbnail;
+        private int viewCount;
+        private int likeCount;
+
+        public static List<DiaryListResponse> from(List<Diary> diaries) {
+            return diaries.stream()
+                    .map(diary -> DiaryListResponse.builder()
+                            .authorNickname(diary.getUser().getNickname())
+                            .authorProfile(diary.getUser().getProfileImageUrl())
+                            .title(diary.getTitle())
+                            .thumbnail(diary.getThumbnail())
+                            .viewCount(diary.getViewCount())
+                            .likeCount(diary.getLikeCount())
+                            .build())
+                    .collect(Collectors.toList());
+        }
     }
 
 

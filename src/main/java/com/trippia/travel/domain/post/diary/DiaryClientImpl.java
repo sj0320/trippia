@@ -48,4 +48,11 @@ public class DiaryClientImpl implements DiaryClient{
     public void saveDiaryThemes(List<DiaryTheme> diaryThemes) {
         diaryThemeRepository.saveAll(diaryThemes);
     }
+
+    @Override
+    public List<Diary> findAllDiary() {
+        return diaryRepository.findAll();
+    }
+
+
 }

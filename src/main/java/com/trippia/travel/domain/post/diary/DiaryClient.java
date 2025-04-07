@@ -15,5 +15,6 @@ public interface DiaryClient {
     List<Theme> findThemesByIds(List<Long> themeIds);
     void saveDiary(Diary diary);
     void saveDiaryThemes(List<DiaryTheme> diaryThemes);
+    List<Diary> findAllDiary();
 
 }

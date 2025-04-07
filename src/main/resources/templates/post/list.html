@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <meta charset="UTF-8">
+    <title>Diary List</title>
+    <link rel="stylesheet" href="/css/dropdown.css">
+    <link rel="stylesheet" href="/css/diary-list.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap');
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+
+
+.write-button {
+    font-size: 13px;
+    font-weight: 600;
+    color: #000; /* 검정색 텍스트 */
+    background-color: transparent; /* 배경 없음 */
+    border: 1px solid #000; /* 테두리 추가 */
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 5px 14px;
+    text-decoration: none;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.write-button:hover {
+    background-color: #000;
+    color: #fff;
+}
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="toolbar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+
+        <!-- 왼쪽: 카테고리 탭 -->
+        <div class="category-tabs" style="display: flex; gap: 24px;">
+            <!-- 테마 -->
+            <div class="category-group">
+                <div class="category-tab">여행 테마</div>
+                <div class="category-list">
+                    <a class="category-item"
+                       th:each="theme : ${themes}"
+                       th:href="@{/diary/list(theme=${theme.name})}"
+                       th:text="${theme.name}">힐링·휴양</a>
+                </div>
+            </div>
+
+            <!-- 국가 -->
+            <div class="category-group">
+                <div class="category-tab">국가</div>
+                <div class="category-list">
+                    <a class="category-item"
+                       th:each="country : ${countries}"
+                       th:href="@{/diary/list(country=${country.name})}"
+                       th:text="${country.name}">일본</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 오른쪽: 검색창, 정렬, 작성 버튼 -->
+        <div style="display: flex; align-items: center; gap: 12px;">
+
+            <!-- 검색창 -->
+            <form th:action="@{/diary/list}" method="get" style="position: relative;">
+                <input type="text" name="search" placeholder="검색어를 입력하세요">
+                <button type="submit"
+                        style="
+                            position: absolute;
+                            right: 8px;
+                            top: 10%;
+                            transform: translateY(-50%);
+                            background: none;
+                            border: none;
+                            cursor: pointer;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            height: 24px;
+                            width: 24px;
+                            padding: 0;
+                        ">
+                    <img src="/images/reading-glass.png" alt="검색" style="width: 18px; height: 18px;">
+                </button>
+            </form>
+
+            <!-- 정렬 드롭다운 -->
+            <form th:action="@{/diary/list}" method="get">
+                <select name="sort" onchange="this.form.submit()"
+                        style="padding: 6px 12px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px;">
+                    <option value="latest" th:selected="${sort == 'latest'}">최신순</option>
+                    <option value="popular" th:selected="${sort == 'popular'}">인기순</option>
+                    <option value="views" th:selected="${sort == 'views'}">조회순</option>
+                </select>
+            </form>
+
+            <!-- 작성 버튼 -->
+            <a href="/diary/new" class="write-button">
+                여행일지 작성
+            </a>
+        </div>
+    </div>
+
+    <!-- 여행일지 목록 -->
+    <div class="diary-container" style="margin-top: 24px;">
+        <div class="diary-item" th:each="diary : ${diaryList}">
+            <a th:href="@{/diary/details/{id}(id=${diary.id})}">
+                <img th:src="${diary.thumbnail}" alt="Thumbnail" class="thumbnail">
+            </a>
+            <div class="diary-info">
+                <h3 th:text="${diary.title}" style="margin-bottom: 10px;"></h3>
+                <div class="author-info">
+                    <img th:src="${diary.authorProfile}" alt="Author Profile" class="author-profile">
+                    <span class="nickname" th:text="${diary.authorNickname}"></span>
+                </div>
+                <div class="stats">
+                    <span th:text="'조회수: ' + ${diary.viewCount}"></span> |
+                    <span th:text="'좋아요: ' + ${diary.likeCount}"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
