@@ -1,5 +1,6 @@
 package com.trippia.travel.domain.post.diary;
 
+import com.trippia.travel.domain.theme.Theme;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -13,7 +14,8 @@ import java.util.stream.Collectors;
 
 public class DiaryDto {
 
-    @Getter @Setter
+    @Getter
+    @Setter
     @ToString
     @Builder
     @NoArgsConstructor
@@ -53,9 +55,10 @@ public class DiaryDto {
 
     }
 
-    @Getter @Setter
+    @Getter
+    @Setter
     @Builder
-    public static class DiaryListResponse{
+    public static class DiaryListResponse {
         private Long id;
         private String authorNickname;
         private String authorProfile;
@@ -67,6 +70,7 @@ public class DiaryDto {
         public static List<DiaryListResponse> from(List<Diary> diaries) {
             return diaries.stream()
                     .map(diary -> DiaryListResponse.builder()
+                            .id(diary.getId())
                             .authorNickname(diary.getUser().getNickname())
                             .authorProfile(diary.getUser().getProfileImageUrl())
                             .title(diary.getTitle())
@@ -76,6 +80,49 @@ public class DiaryDto {
                             .build())
                     .collect(Collectors.toList());
         }
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    public static class DiaryDetailResponse {
+        private String title;
+        private String content;
+        private String authorNickname;
+        private String authorProfile;
+        private String cityName;
+        private LocalDate startDate;
+        private LocalDate endDate;
+        private String companion;
+        private Integer rating;
+        private Integer totalBudget;
+        private List<String> theme;
+        private int viewCount;
+        private int likeCount;
+
+        public static DiaryDetailResponse from(Diary diary, List<Theme> themes) {
+            List<String> themeNames = themes.stream()
+                    .map(Theme::getName)
+                    .toList();
+
+            return DiaryDetailResponse.builder()
+                    .title(diary.getTitle())
+                    .content(diary.getContent())
+                    .authorNickname(diary.getUser().getNickname())
+                    .authorProfile(diary.getUser().getProfileImageUrl())
+                    .cityName(diary.getCity().getName())
+                    .startDate(diary.getStartDate())
+                    .endDate(diary.getEndDate())
+                    .companion(String.valueOf(diary.getCompanion().getDescription()))
+                    .rating(diary.getRating())
+                    .totalBudget(diary.getTotalBudget())
+                    .theme(themeNames)
+                    .viewCount(diary.getViewCount())
+                    .likeCount(diary.getLikeCount())
+                    .build();
+
+        }
+
     }
 
 

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${diary.title}">여행일지</title>
+    <link rel="stylesheet" href="/css/diary.css">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css"
+          rel="stylesheet"/>
+    <style>
+        body {
+            font-family: 'Pretendard Variable', sans-serif;
+            background-color: #f7f8fa;
+            padding: 2rem;
+        }
+
+        .diary-container {
+            background-color: #fff;
+            border-radius: 16px;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            max-width: 860px;
+            margin: auto;
+        }
+
+        .diary-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .diary-header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 1rem;
+        }
+
+        .author-info {
+            display: flex;
+            justify-content: flex-end; /* ← 여기만 변경 */
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .author-info img {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .author-info strong {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .diary-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.2rem;
+            background-color: #f1f3f5;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+            font-size: 0.95rem;
+            color: #343a40;
+        }
+
+        .diary-meta div {
+            line-height: 1.6;
+        }
+
+        .diary-meta strong {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #212529;
+        }
+
+        .themes span {
+            display: inline-block;
+            background-color: #dee2e6;
+            color: #495057;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+        }
+
+        .diary-content {
+            white-space: pre-wrap;
+            line-height: 1.8;
+            font-size: 1.05rem;
+            color: #343a40;
+            margin-bottom: 2.5rem;
+        }
+
+        .diary-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            margin: 2rem auto;
+            display: block;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
+
+        .diary-footer {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #868e96;
+            border-top: 1px solid #e9ecef;
+            padding-top: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .diary-container {
+                padding: 2rem 1.25rem;
+            }
+
+            .diary-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="diary-container">
+        <div class="diary-header">
+            <h1 th:text="${diary.title}">여행 제목</h1>
+            <div class="author-info">
+                <img th:src="${diary.authorProfile}" alt="프로필 이미지">
+                <strong th:text="${diary.authorNickname}">작성자</strong>
+            </div>
+        </div>
+
+        <div class="diary-meta">
+            <div><strong>📍 도시</strong><br><span th:text="${diary.cityName}">도시명</span></div>
+            <div><strong>🗓️ 여행기간</strong><br>
+                <span th:text="${diary.startDate}">시작</span> ~ <span th:text="${diary.endDate}">종료</span>
+            </div>
+            <div><strong>👫 동행</strong><br><span th:text="${diary.companion}">동행 정보</span></div>
+            <div><strong>💸 예산</strong><br><span th:text="${diary.totalBudget}">100000</span> 원</div>
+            <div><strong>⭐ 평점</strong><br><span th:text="${diary.rating}">4</span> / 5</div>
+            <div class="themes">
+                <strong>🎨 테마</strong><br>
+                <span th:each="t : ${diary.theme}" th:text="${t}">테마</span>
+            </div>
+        </div>
+
+        <div class="diary-content" th:utext="${diary.content}">
+            여행지에서 느낀 감정, 소소한 이야기, 그리고 남기고 싶은 추억들을 이곳에 담아보세요.
+        </div>
+
+        <div class="diary-footer">
+            <div>👀 조회수 <span th:text="${diary.viewCount}">0</span>회</div>
+            <div>❤️ 좋아요 <span th:text="${diary.likeCount}">0</span>개</div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

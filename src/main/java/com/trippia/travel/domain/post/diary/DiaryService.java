@@ -15,8 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.trippia.travel.domain.post.diary.DiaryDto.DiaryListResponse;
-import static com.trippia.travel.domain.post.diary.DiaryDto.SaveRequest;
+import static com.trippia.travel.domain.post.diary.DiaryDto.*;
 import static com.trippia.travel.exception.ErrorMessageSource.START_DATE_AFTER_END_DATE;
 import static com.trippia.travel.exception.ErrorMessageSource.START_DATE_BEFORE_TODAY;
 
@@ -30,21 +29,36 @@ public class DiaryService {
     private final FileService fileService;
 
     @Transactional
-    public void saveDiary(String email, SaveRequest request, MultipartFile thumbnail){
+    public Long saveDiary(String email, SaveRequest request, MultipartFile thumbnail) {
         validateDate(request.getStartDate(), request.getEndDate());
-        User user = diaryClient.findUserByEmail(email);
-        City city = diaryClient.findCityById(request.getCityId());
+        User user = diaryClient.findUserByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        City city = diaryClient.findCityById(request.getCityId())
+                .orElseThrow(() -> new IllegalArgumentException("도시 정보를 찾을 수 없습니다."));
         String thumbnailUrl = fileService.uploadFile(thumbnail).getUrl();
 
         Diary diary = Diary.createDiary(request, user, city, thumbnailUrl);
 
         diaryClient.saveDiary(diary);
         saveDiaryThemes(request.getThemeIds(), diary);
+        return diary.getId();
     }
 
-    public List<DiaryListResponse> getDiaryList(){
+    public List<DiaryListResponse> getDiaryList() {
         List<Diary> diaries = diaryClient.findAllDiary();
         return DiaryListResponse.from(diaries);
+    }
+
+    public DiaryDetailResponse getDiaryDetail(Long diaryId) {
+        Diary diary = diaryClient.findDiaryById(diaryId)
+                .orElseThrow(() -> new IllegalArgumentException("여행일지 데이터를 찾을 수 없습니다."));
+
+        List<DiaryTheme> diaryThemes = diaryClient.findDiaryThemesByDiaryId(diaryId);
+        List<Theme> themes = diaryThemes.stream()
+                .map(DiaryTheme::getTheme)
+                .toList();
+        return DiaryDetailResponse.from(diary, themes);
+
     }
 
 
@@ -57,7 +71,7 @@ public class DiaryService {
     }
 
     private void validateDate(LocalDate startDate, LocalDate endDate) {
-        if(startDate.isAfter(endDate)){
+        if (startDate.isAfter(endDate)) {
             throw new DiaryException("startDate", START_DATE_AFTER_END_DATE);
         }
 

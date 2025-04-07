@@ -5,12 +5,14 @@ import com.trippia.travel.domain.theme.Theme;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 public class DiaryTheme {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
