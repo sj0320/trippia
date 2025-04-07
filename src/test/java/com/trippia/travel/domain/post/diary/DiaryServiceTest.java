@@ -5,14 +5,19 @@ import com.trippia.travel.domain.post.diarytheme.DiaryThemeRepository;
 import com.trippia.travel.domain.user.User;
 import com.trippia.travel.domain.user.UserRepository;
 import com.trippia.travel.exception.diary.DiaryException;
+import com.trippia.travel.file.FileService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.multipart.MultipartFile;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -42,9 +47,14 @@ class DiaryServiceTest {
     @Autowired
     UserRepository userRepository;
 
+    @Mock
+    FileService fileService;
+
     @Autowired
     DiaryThemeRepository diaryThemeRepository;
 
+    @Mock
+    private MultipartFile thumbnail;
     @AfterEach
     void tearDown() {
         diaryThemeRepository.deleteAllInBatch();
@@ -70,7 +80,9 @@ class DiaryServiceTest {
         String email = user.getEmail();
 
         // when
-        diaryService.saveDiary(email, request);
+        MockMultipartFile thumbnail = getMockMultipartFile();
+
+        diaryService.saveDiary(email, request, thumbnail);
 
         // then
         Diary savedDiary = diaryRepository.findAll().get(0);
@@ -79,6 +91,15 @@ class DiaryServiceTest {
         assertThat(savedDiary.getCompanion()).isEqualTo(TravelCompanion.FRIEND);
         assertThat(savedDiary.getStartDate()).isEqualTo(request.getStartDate());
         assertThat(savedDiary.getEndDate()).isEqualTo(request.getEndDate());
+    }
+
+    private MockMultipartFile getMockMultipartFile() {
+        return new MockMultipartFile(
+                "test thumbnail",
+                "thumbnail.png",
+                MediaType.IMAGE_PNG_VALUE,
+                "thumbnail".getBytes()
+        );
     }
 
 
@@ -94,9 +115,9 @@ class DiaryServiceTest {
                 LocalDate.of(2024, 2, 1)); // endDate (startDate보다 이전)
 
         String email = user.getEmail();
-
+        MockMultipartFile thumbnail = getMockMultipartFile();
         // when & then
-        assertThatThrownBy(() -> diaryService.saveDiary(email, request))
+        assertThatThrownBy(() -> diaryService.saveDiary(email, request,thumbnail))
                 .isInstanceOf(DiaryException.class);
     }
 
@@ -114,8 +135,9 @@ class DiaryServiceTest {
                 pastDate,
                 endDate);
         String email = user.getEmail();
+        MockMultipartFile thumbnail = getMockMultipartFile();
         // when & then
-        assertThatThrownBy(()-> diaryService.saveDiary(email, request))
+        assertThatThrownBy(()-> diaryService.saveDiary(email, request, thumbnail))
                 .isInstanceOf(DiaryException.class);
     }
 

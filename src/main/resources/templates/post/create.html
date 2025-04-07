@@ -63,7 +63,7 @@
 <div id='wrapper'>
     <div th:replace="~{fragments/header::header}"></div>
 
-    <form th:action="@{/diary/new}" method="post" th:object="${diary}" novalidate>
+    <form th:action="@{/diary/new}" method="post" th:object="${diary}" novalidate enctype="multipart/form-data">
         <!-- 필수 입력 정보 -->
         <div class="input-section">
             <h3 class="section-title">필수 입력 정보</h3>
@@ -217,6 +217,12 @@
                 <p class="error-message" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></p>
             </div>
 
+            <div class="input-container">
+                <label for="thumbnail">썸네일 이미지</label>
+                <input type="file" id="thumbnail" name="thumbnail" accept="image/*" onchange="previewThumbnail(event)" required/>
+                <img id="thumbnail-preview" src="" alt="썸네일 미리보기" style="max-width: 200px; display: none; margin-top: 10px;"/>
+            </div>
+
             <!-- CKEditor를 사용한 게시글 내용 -->
             <div class="input-container">
                 <textarea id="editor" name="content" th:field="*{content}" required></textarea>
@@ -242,6 +248,19 @@
         .catch(error => {
             console.error(error);
         });
+
+    function previewThumbnail(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('thumbnail-preview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
 </script>
 
 

@@ -40,6 +40,8 @@ public class Diary {
 
     private String content;
 
+    private String thumbnail;
+
     private LocalDate startDate;
 
     private LocalDate endDate;
@@ -51,18 +53,23 @@ public class Diary {
 
     private Integer totalBudget;
 
+    private int viewCount;
+
+    private int likeCount;
+
     @CreatedDate
     private LocalDateTime createdAt;
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    public static Diary createDiary(SaveRequest request, User user, City city) {
+    public static Diary createDiary(SaveRequest request, User user, City city, String thumbnail) {
         return Diary.builder()
                 .user(user)
                 .city(city)
                 .title(request.getTitle())
                 .content(request.getContent())
+                .thumbnail(thumbnail)
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .companion(TravelCompanion.fromString(request.getCompanion()))
