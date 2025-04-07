@@ -7,14 +7,20 @@ import com.trippia.travel.domain.theme.Theme;
 import com.trippia.travel.domain.user.User;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface DiaryClient {
 
-    User findUserByEmail(String email);
-    City findCityById(Long cityId);
+    Optional<User> findUserByEmail(String email);
+
+    Optional<City> findCityById(Long cityId);
+
     List<Theme> findThemesByIds(List<Long> themeIds);
+
     void saveDiary(Diary diary);
     void saveDiaryThemes(List<DiaryTheme> diaryThemes);
     List<Diary> findAllDiary();
+    Optional<Diary> findDiaryById(Long id);
+    List<DiaryTheme> findDiaryThemesByDiaryId(Long diaryId);
 
 }

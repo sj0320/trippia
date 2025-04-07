@@ -3,6 +3,7 @@ package com.trippia.travel.controller;
 import com.trippia.travel.annotation.CurrentUser;
 import com.trippia.travel.domain.location.city.CityService;
 import com.trippia.travel.domain.location.country.CountryRepository;
+import com.trippia.travel.domain.post.diary.DiaryDto.DiaryDetailResponse;
 import com.trippia.travel.domain.post.diary.DiaryService;
 import com.trippia.travel.domain.theme.ThemeService;
 import com.trippia.travel.exception.diary.DiaryException;
@@ -46,18 +47,18 @@ public class DiaryController {
 
     @PostMapping("/new")
     public String createDiary(@Valid @ModelAttribute("diary") SaveRequest request,
-                              @RequestParam("thumbnail") MultipartFile thumbnail,
-                              BindingResult bindingResult, @CurrentUser String email) {
+                              BindingResult bindingResult, @RequestParam("thumbnail") MultipartFile thumbnail,
+                              @CurrentUser String email) {
         if (bindingResult.hasErrors()) {
             return "post/create";
         }
         try {
-            diaryService.saveDiary(email, request, thumbnail);
+            Long diaryId = diaryService.saveDiary(email, request, thumbnail);
+            return "redirect:/diary/" + diaryId;
         } catch (DiaryException | FileException e) {
             bindingResult.rejectValue(e.getFieldName(), e.getCode());
             return "post/create";
         }
-        return "index";
     }
 
     @GetMapping("/list")
@@ -66,5 +67,13 @@ public class DiaryController {
         model.addAttribute("diaryList", diaryList);
         return "post/list";
     }
+
+    @GetMapping("/{id}")
+    public String getDiaryDetails(@PathVariable Long id, Model model){
+        DiaryDetailResponse diaryDetails = diaryService.getDiaryDetail(id);
+        model.addAttribute("diary", diaryDetails);
+        return "post/details";
+    }
+
 
 }

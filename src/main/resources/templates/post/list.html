@@ -109,7 +109,7 @@
     <!-- 여행일지 목록 -->
     <div class="diary-container" style="margin-top: 24px;">
         <div class="diary-item" th:each="diary : ${diaryList}">
-            <a th:href="@{/diary/details/{id}(id=${diary.id})}">
+            <a th:href="@{/diary/{id}(id=${diary.id})}">
                 <img th:src="${diary.thumbnail}" alt="Thumbnail" class="thumbnail">
             </a>
             <div class="diary-info">

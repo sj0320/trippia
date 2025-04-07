@@ -1,5 +1,8 @@
 package com.trippia.travel.domain.common;
 
+import lombok.Getter;
+
+@Getter
 public enum TravelCompanion {
     SOLO("혼자"),
     FRIEND("친구"),

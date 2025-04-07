@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -25,13 +26,13 @@ public class DiaryClientImpl implements DiaryClient{
 
 
     @Override
-    public User findUserByEmail(String email) {
-        return userRepository.findByEmail(email).orElseThrow();
+    public Optional<User> findUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     @Override
-    public City findCityById(Long cityId) {
-        return cityRepository.findById(cityId).orElseThrow();
+    public Optional<City> findCityById(Long cityId) {
+        return cityRepository.findById(cityId);
     }
 
     @Override
@@ -52,6 +53,16 @@ public class DiaryClientImpl implements DiaryClient{
     @Override
     public List<Diary> findAllDiary() {
         return diaryRepository.findAll();
+    }
+
+    @Override
+    public Optional<Diary> findDiaryById(Long id){
+        return diaryRepository.findById(id);
+    }
+
+    @Override
+    public List<DiaryTheme> findDiaryThemesByDiaryId(Long diaryId){
+        return diaryThemeRepository.findByDiaryId(diaryId);
     }
 
 
