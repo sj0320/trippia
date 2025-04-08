@@ -21,6 +21,7 @@ public class UserService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserRepository userRepository;
     private final MailService mailService;
+    private static final String DEFAULT_PROFILE_IMAGE = "https://trippia-storage.s3.ap-northeast-2.amazonaws.com/default-image-trrippia.png";
 
     @Transactional
     public void saveUser(SaveRequest request) {
@@ -37,7 +38,9 @@ public class UserService {
                 .password(bCryptPasswordEncoder.encode(request.getPassword()))
                 .nickname(request.getNickname())
                 .loginType(LoginType.LOCAL)
+                .profileImageUrl(DEFAULT_PROFILE_IMAGE)
                 .build();
+
         userRepository.save(user);
     }
 
@@ -50,6 +53,7 @@ public class UserService {
             throw new UserException("nickname", DUPLICATE_NICKNAME);
         }
         user.updateNickname(nickname);
+        user.updateProfile(DEFAULT_PROFILE_IMAGE);
         user.completeRegistration();
     }
 

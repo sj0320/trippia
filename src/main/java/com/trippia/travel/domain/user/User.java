@@ -42,12 +42,13 @@ public class User {
     private LocalDateTime createdAt;
 
     @Builder
-    public User(String email, String password, String nickname, LoginType loginType, Role role) {
+    public User(String email, String password, String nickname, LoginType loginType, Role role, String profileImageUrl) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
         this.loginType = loginType;
         this.role = (role != null) ? role : Role.ROLE_USER;
+        this.profileImageUrl = profileImageUrl;
     }
 
     public void updateEmail(String email){
@@ -56,6 +57,10 @@ public class User {
 
     public void updateNickname(String nickname){
         this.nickname = nickname;
+    }
+
+    public void updateProfile(String profileImageUrl){
+        this.profileImageUrl = profileImageUrl;
     }
 
     public void completeRegistration(){
