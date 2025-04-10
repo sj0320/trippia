@@ -2,6 +2,7 @@ package com.trippia.travel.domain.user;
 
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
+import com.trippia.travel.domain.post.diary.Diary;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -51,21 +52,27 @@ public class User {
         this.profileImageUrl = profileImageUrl;
     }
 
-    public void updateEmail(String email){
+    public void updateEmail(String email) {
         this.email = email;
     }
 
-    public void updateNickname(String nickname){
+    public void updateNickname(String nickname) {
         this.nickname = nickname;
     }
 
-    public void updateProfile(String profileImageUrl){
+    public void updateProfile(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
     }
 
-    public void completeRegistration(){
+    public void completeRegistration() {
         if (this.role == Role.ROLE_GUEST) {
             this.role = Role.ROLE_USER;
+        }
+    }
+
+    public void validateAuthorOf(Diary diary) {
+        if(!this.equals(diary.getUser())){
+            throw new IllegalArgumentException("접근 권한이 없습니다.");
         }
     }
 }

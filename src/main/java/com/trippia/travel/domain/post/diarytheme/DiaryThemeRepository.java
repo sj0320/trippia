@@ -7,5 +7,6 @@ import java.util.List;
 public interface DiaryThemeRepository extends JpaRepository<DiaryTheme, Long> {
 
     List<DiaryTheme> findByDiaryId(Long diaryId);
+    void deleteByDiaryId(Long diaryId);
 
 }
