@@ -4,6 +4,7 @@ import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.post.diarytheme.DiaryTheme;
 import com.trippia.travel.domain.theme.Theme;
 import com.trippia.travel.domain.user.User;
+import com.trippia.travel.domain.user.UserRepository;
 import com.trippia.travel.exception.diary.DiaryException;
 import com.trippia.travel.file.FileService;
 import lombok.RequiredArgsConstructor;
@@ -26,13 +27,13 @@ import static com.trippia.travel.exception.ErrorMessageSource.START_DATE_BEFORE_
 public class DiaryService {
 
     private final DiaryClient diaryClient;
+    private final UserRepository userRepository;
     private final FileService fileService;
 
     @Transactional
     public Long saveDiary(String email, SaveRequest request, MultipartFile thumbnail) {
         validateDate(request.getStartDate(), request.getEndDate());
-        User user = diaryClient.findUserByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        User user = getUserByEmail(email);
         City city = diaryClient.findCityById(request.getCityId())
                 .orElseThrow(() -> new IllegalArgumentException("도시 정보를 찾을 수 없습니다."));
         String thumbnailUrl = fileService.uploadFile(thumbnail).getUrl();
@@ -42,6 +43,20 @@ public class DiaryService {
         diaryClient.saveDiary(diary);
         saveDiaryThemes(request.getThemeIds(), diary);
         return diary.getId();
+    }
+
+    @Transactional
+    public void editDiary(String email, Long diaryId, UpdateRequest request, MultipartFile thumbnail) {
+        validateDate(request.getStartDate(), request.getEndDate());
+        Diary diary = diaryClient.findDiaryById(diaryId)
+                .orElseThrow(() -> new IllegalArgumentException("여행일지 데이터를 찾을 수 없습니다."));
+        User user = getUserByEmail(email);
+        user.validateAuthorOf(diary);
+        City city = diaryClient.findCityById(request.getCityId())
+                .orElseThrow(() -> new IllegalArgumentException("도시 정보를 찾을 수 없습니다."));
+
+        String thumbnailUrl = fileService.uploadFile(thumbnail).getUrl();
+
     }
 
     public List<DiaryListResponse> getDiaryList() {
@@ -59,6 +74,37 @@ public class DiaryService {
                 .toList();
         return DiaryDetailResponse.from(diary, themes);
 
+    }
+
+    public EditFormResponse getEditForm(String email, Long diaryId) {
+        User user = getUserByEmail(email);
+        Diary diary = diaryClient.findDiaryById(diaryId)
+                .orElseThrow(() -> new IllegalArgumentException("여행일지 데이터를 찾을 수 없습니다."));
+        user.validateAuthorOf(diary);
+        List<DiaryTheme> diaryThemes = diaryClient.findDiaryThemesByDiaryId(diaryId);
+        List<Theme> themes = diaryThemes.stream()
+                .map(DiaryTheme::getTheme)
+                .toList();
+        return EditFormResponse.from(diary, themes);
+
+    }
+
+    @Transactional
+    public void deleteDiary(String email, Long diaryId) {
+        Diary diary = diaryClient.findDiaryById(diaryId)
+                .orElseThrow(() -> new IllegalArgumentException("여행일지 데이터를 찾을 수 없습니다."));
+        User user = getUserByEmail(email);
+        user.validateAuthorOf(diary);
+        log.info("userEmail={}",user.getEmail());
+
+        diaryClient.deleteDiaryThemeByDiaryId(diaryId);
+        diaryClient.deleteDiaryById(diaryId);
+    }
+
+
+    private User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
     }
 
 

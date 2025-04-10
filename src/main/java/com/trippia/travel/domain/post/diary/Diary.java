@@ -14,6 +14,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import static com.trippia.travel.domain.post.diary.DiaryDto.*;
 import static com.trippia.travel.domain.post.diary.DiaryDto.SaveRequest;
 
 @Entity
@@ -28,7 +29,7 @@ public class Diary {
     @Column(name = "diary_id")
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
@@ -77,5 +78,10 @@ public class Diary {
                 .totalBudget(request.getTotalBudget())
                 .build();
     }
+
+    public void update(UpdateRequest request, City city, String thumbnail){
+
+    }
+
 
 }

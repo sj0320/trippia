@@ -6,8 +6,6 @@ import com.trippia.travel.domain.post.diarytheme.DiaryTheme;
 import com.trippia.travel.domain.post.diarytheme.DiaryThemeRepository;
 import com.trippia.travel.domain.theme.Theme;
 import com.trippia.travel.domain.theme.ThemeRepository;
-import com.trippia.travel.domain.user.User;
-import com.trippia.travel.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -21,14 +19,7 @@ public class DiaryClientImpl implements DiaryClient{
     private final DiaryRepository diaryRepository;
     private final DiaryThemeRepository diaryThemeRepository;
     private final ThemeRepository themeRepository;
-    private final UserRepository userRepository;
     private final CityRepository cityRepository;
-
-
-    @Override
-    public Optional<User> findUserByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
 
     @Override
     public Optional<City> findCityById(Long cityId) {
@@ -48,6 +39,16 @@ public class DiaryClientImpl implements DiaryClient{
     @Override
     public void saveDiaryThemes(List<DiaryTheme> diaryThemes) {
         diaryThemeRepository.saveAll(diaryThemes);
+    }
+
+    @Override
+    public void deleteDiaryById(Long id){
+        diaryRepository.deleteById(id);
+    }
+
+    @Override
+    public void deleteDiaryThemeByDiaryId(Long diaryId){
+        diaryThemeRepository.deleteByDiaryId(diaryId);
     }
 
     @Override

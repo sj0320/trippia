@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,7 +26,7 @@ public class DiaryDto {
         @NotNull(message = "다녀온 여행지를 입력해주세요")
         private Long cityId; // 여행 도시 ID
 
-        private String location;
+        private String cityName;
 
         @NotBlank(message = "제목을 입력해주세요")
         private String title; // 다이어리 제목
@@ -34,9 +35,11 @@ public class DiaryDto {
         private String content; // 다이어리 내용
 
         @NotNull(message = "언제 여행을 다녀오셨나요?")
+        @DateTimeFormat(pattern = "yyyy-MM-dd")
         private LocalDate startDate; // 여행 시작 날짜
 
         @NotNull(message = "언제 여행을 다녀오셨나요?")
+        @DateTimeFormat(pattern = "yyyy-MM-dd")
         private LocalDate endDate; // 여행 종료 날짜
 
         @NotBlank(message = "누구랑 다녀오셨나요?")
@@ -50,8 +53,10 @@ public class DiaryDto {
         @NotNull(message = "대략적인 경비만 입력해주세요.")
         private Integer totalBudget; // 총 여행 예산
 
-        @NotNull(message = "여행 유형을 선택해주세요")
+
         private List<Long> themeIds; // 선택된 Theme ID 리스트
+
+        private String themeNames;
 
     }
 
@@ -86,6 +91,7 @@ public class DiaryDto {
     @Setter
     @Builder
     public static class DiaryDetailResponse {
+        private Long id;
         private String title;
         private String content;
         private String authorNickname;
@@ -106,6 +112,7 @@ public class DiaryDto {
                     .toList();
 
             return DiaryDetailResponse.builder()
+                    .id(diary.getId())
                     .title(diary.getTitle())
                     .content(diary.getContent())
                     .authorNickname(diary.getUser().getNickname())
@@ -123,6 +130,89 @@ public class DiaryDto {
 
         }
 
+    }
+
+    @Getter @Setter
+    @Builder
+    public static class EditFormResponse {
+        private Long diaryId;
+
+        private Long cityId; // 여행 도시 ID
+
+        private String cityName;
+
+        private String title; // 다이어리 제목
+
+        private String content; // 다이어리 내용
+
+        private LocalDate startDate; // 여행 시작 날짜
+
+        private LocalDate endDate; // 여행 종료 날짜
+
+        private String companion; // 여행 동반자
+
+        private Integer rating; // 여행 만족도 (1~5)
+
+        private Integer totalBudget; // 총 여행 예산
+
+        private List<String> themeNames; // 선택된 Theme ID 리스트
+
+        private String thumbnailUrl;
+
+        public static EditFormResponse from(Diary diary, List<Theme> themes) {
+            List<String> themeNames = themes.stream()
+                    .map(Theme::getName)
+                    .toList();
+
+            return EditFormResponse.builder()
+                    .diaryId(diary.getId())
+                    .title(diary.getTitle())
+                    .content(diary.getContent())
+                    .cityName(diary.getCity().getName())
+                    .startDate(diary.getStartDate())
+                    .endDate(diary.getEndDate())
+                    .companion(String.valueOf(diary.getCompanion().getDescription()))
+                    .rating(diary.getRating())
+                    .totalBudget(diary.getTotalBudget())
+                    .themeNames(themeNames)
+                    .thumbnailUrl(diary.getThumbnail())
+                    .build();
+        }
+
+    }
+
+    @Getter @Setter
+    public static class UpdateRequest {
+        @NotNull(message = "다녀온 여행지를 입력해주세요")
+        private Long cityId; // 여행 도시 ID
+
+        private String location;
+
+        @NotBlank(message = "제목을 입력해주세요")
+        private String title; // 다이어리 제목
+
+        @NotBlank(message = "내용을 입력해주세요")
+        private String content; // 다이어리 내용
+
+        @NotNull(message = "언제 여행을 다녀오셨나요?")
+        private LocalDate startDate; // 여행 시작 날짜
+
+        @NotNull(message = "언제 여행을 다녀오셨나요?")
+        private LocalDate endDate; // 여행 종료 날짜
+
+        @NotBlank(message = "누구랑 다녀오셨나요?")
+        private String companion; // 여행 동반자
+
+        @NotNull(message = "여행은 얼마나 만족하셨나요?")
+        @Min(value = 1, message = "만족도는 최소 1점입니다.")
+        @Max(value = 5, message = "만족도는 최대 5점입니다.")
+        private Integer rating; // 여행 만족도 (1~5)
+
+        @NotNull(message = "대략적인 경비만 입력해주세요.")
+        private Integer totalBudget; // 총 여행 예산
+
+        @NotNull(message = "여행 유형을 선택해주세요")
+        private List<Long> themeIds; // 선택된 Theme ID 리스트
     }
 
 

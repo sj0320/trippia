@@ -5,7 +5,6 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="${diary.title}">여행일지</title>
-    <link rel="stylesheet" href="/css/diary.css">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css"
           rel="stylesheet"/>
     <style>
@@ -135,6 +134,22 @@
                 <img th:src="${diary.authorProfile}" alt="프로필 이미지">
                 <strong th:text="${diary.authorNickname}">작성자</strong>
             </div>
+        </div>
+
+        <div th:if="${#authentication.name == authorEmail}" style="text-align: right; margin-top: 1.5rem;">
+            <form th:action="@{'/diary/' + ${diary.id}}" method="post"
+                  onsubmit="return confirm('정말 삭제하시겠습니까?');" style="display: inline;">
+                <input type="hidden" name="_method" value="delete"/>
+                <button type="submit"
+                        style="background-color: #f03e3e; color: white; padding: 0.5rem 1rem; border: none; border-radius: 8px; cursor: pointer;">
+                    삭제하기
+                </button>
+            </form>
+
+            <a th:href="@{'/diary/' + ${diary.id} + '/edit'}"
+               style="background-color: #228be6; color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; margin-left: 0.5rem;">
+                수정하기
+            </a>
         </div>
 
         <div class="diary-meta">

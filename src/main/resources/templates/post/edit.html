@@ -16,7 +16,6 @@
     <style>
         .ck-editor__editable{
             min-height: 350px;
-
         }
 
         form {
@@ -64,8 +63,10 @@
 <div id='wrapper'>
     <div th:replace="~{fragments/header::header}"></div>
 
-    <form th:action="@{/diary/new}" method="post" th:object="${diary}" novalidate enctype="multipart/form-data">
-        <!-- 필수 입력 정보 -->
+    <form th:action="@{|/diary/${diary.diaryId}|}" method="post" th:object="${diary}" novalidate
+          enctype="multipart/form-data">
+        <input type="hidden" name="_method" value="put"/>
+
         <div class="input-section">
             <h3 class="section-title">필수 입력 정보</h3>
 
@@ -119,7 +120,7 @@
                     <input type="text" id="themeInput" th:field="*{themeNames}" readonly required/>
                     <button type="button" id="openThemeModal">여행 유형 선택</button>
                 </div>
-                <p class="error-message" th:if="${#fields.hasErrors('themeIds')}" th:errors="*{themeIds}"></p>
+                <p class="error-message" th:if="${#fields.hasErrors('themeNames')}" th:errors="*{themeNames}"></p>
             </div>
 
             <!-- 여행 유형 선택 모달 -->
@@ -224,12 +225,12 @@
                 <div class="thumbnail-wrapper">
                     <!-- 썸네일 미리보기 -->
                     <img id="thumbnail-preview"
-                         th:if="${thumbnailUrl != null}"
-                         th:src="@{${thumbnailUrl}}"
+                         th:if="${diary.thumbnailUrl != null}"
+                         th:src="@{${diary.thumbnailUrl}}"
                          alt="썸네일 미리보기"/>
 
                     <img id="thumbnail-preview-js"
-                         th:if="${thumbnailUrl == null}"
+                         th:if="${diary.thumbnailUrl == null}"
                          src=""
                          alt="썸네일 미리보기"
                          style="display: none;"/>
@@ -240,18 +241,19 @@
                            onchange="previewThumbnail(event)" style="display: none;"/>
                 </div>
 
-            <!-- CKEditor를 사용한 게시글 내용 -->
-            <div class="input-container">
-                <textarea id="editor" name="content" th:field="*{content}" required></textarea>
-                <p class="error-message" th:if="${#fields.hasErrors('content')}" th:errors="*{content}"></p>
+
+                <!-- CKEditor를 사용한 게시글 내용 -->
+                <div class="input-container">
+                    <textarea id="editor" name="content" th:field="*{content}" required></textarea>
+                    <p class="error-message" th:if="${#fields.hasErrors('content')}" th:errors="*{content}"></p>
+                </div>
+
             </div>
 
-        </div>
-
-        <!-- 제출 버튼 -->
-        <div class="button-container">
-            <button type="submit">여행 후기 작성</button>
-        </div>
+            <!-- 제출 버튼 -->
+            <div class="button-container">
+                <button type="submit">여행 후기 작성</button>
+            </div>
     </form>
 </div>
 <div th:replace="~{fragments/footer::footer}"></div>
@@ -259,31 +261,31 @@
     ClassicEditor
         .create(document.querySelector('#editor'), {
             ckfinder: {
-                uploadUrl: '/api/file/upload' // 이미지 업로드 API 엔드포인트
+                uploadUrl: '/api/file/upload'  // 이미지 업로드 API 엔드포인트
             }
         })
         .catch(error => {
             console.error(error);
         });
 
-    function previewThumbnail(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const preview = document.getElementById('thumbnail-preview');
-                const previewJs = document.getElementById('thumbnail-preview-js');
+  function previewThumbnail(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const preview = document.getElementById('thumbnail-preview');
+        const previewJs = document.getElementById('thumbnail-preview-js');
 
-                // 기존 이미지 태그에 미리보기 적용
-                if (preview) preview.src = e.target.result;
-                if (previewJs) {
-                    previewJs.src = e.target.result;
-                    previewJs.style.display = 'block';
-                }
-            };
-            reader.readAsDataURL(file);
+        // 기존 이미지 태그 제거
+        if (preview) preview.src = e.target.result;
+        if (previewJs) {
+          previewJs.src = e.target.result;
+          previewJs.style.display = 'block';
         }
+      };
+      reader.readAsDataURL(file);
     }
+  }
 </script>
 
 
