@@ -5,9 +5,9 @@
 
 <head>
     <title>회원가입</title>
-    <th:block layout:fragment="head">
-        <script th:src="@{/js/sign-up.js}" defer></script>
-    </th:block>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/sign-up.css">
+    <script th:src="@{/js/sign-up.js}" defer></script>
 </head>
 
 <body>
@@ -15,6 +15,7 @@
     <div class="container">
         <h2>회원가입</h2>
         <form th:action="@{/users/sign-up}" method="post" th:object="${user}" novalidate>
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <div id="form-container">
                 <div id="email-container">
                     <label for="email">이메일</label>

@@ -2,32 +2,54 @@ document.addEventListener("DOMContentLoaded", function () {
     const openCityModalButton = document.getElementById("openCityModal");
     const cityModal = document.getElementById("cityModal");
 
+    const cityIdInput = document.getElementById("cityId");
+    const cityNameInput = document.getElementById("cityName");
+
+    // ✅ 서버에서 cityId와 cityName이 이미 넘어온 경우, hidden input에 값 설정 + selected 클래스 부여
+    if (cityNameInput && cityIdInput && cityNameInput.value && !cityIdInput.value) {
+        const buttons = document.querySelectorAll('[data-id][data-city]');
+        buttons.forEach(button => {
+            if (button.getAttribute("data-city") === cityNameInput.value) {
+                cityIdInput.value = button.getAttribute("data-id");
+                button.classList.add("selected"); // 초기 선택된 도시 버튼에 selected 클래스 추가
+            }
+        });
+    }
+
     if (openCityModalButton && cityModal) {
-        // 모달 열기
         openCityModalButton.addEventListener("click", function () {
-            cityModal.style.display = "flex"; // display를 flex로 변경하여 중앙에 배치
+            cityModal.style.display = "flex";
+
+            // 🔁 모달이 열릴 때 현재 선택된 도시 반영
+            const selectedCityId = cityIdInput.value;
+            const buttons = document.querySelectorAll('[data-id][data-city]');
+            buttons.forEach(button => {
+                const buttonCityId = button.getAttribute("data-id");
+                button.classList.toggle("selected", buttonCityId === selectedCityId);
+            });
         });
 
-        // 모달 닫기
         function closeModal() {
             cityModal.style.display = "none";
         }
 
         // 도시 선택
-        window.selectCity = function(button) {
+        window.selectCity = function (button) {
             const cityName = button.getAttribute("data-city");
-            const cityId = button.getAttribute("data-id"); // data-id 속성에서 cityId 값을 가져옵니다.
+            const cityId = button.getAttribute("data-id");
 
-            // 선택한 도시 이름을 입력폼에 설정
             document.getElementById("cityName").value = cityName;
-
-            // 선택한 cityId를 hidden 필드에 설정
             document.getElementById("cityId").value = cityId;
 
-            closeModal(); // 모달 닫기
+            // ✅ 모든 버튼의 .selected 제거 후 선택한 버튼에만 추가
+            const allButtons = document.querySelectorAll('[data-id][data-city]');
+            allButtons.forEach(btn => btn.classList.remove("selected"));
+            button.classList.add("selected");
+
+            closeModal();
         }
 
-        // 모달 닫기 버튼 클릭 이벤트 추가
+        // 모달 닫기 버튼
         const closeButton = document.querySelector('.close');
         if (closeButton) {
             closeButton.addEventListener('click', closeModal);

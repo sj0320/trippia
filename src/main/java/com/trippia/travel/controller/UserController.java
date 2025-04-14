@@ -29,7 +29,9 @@ public class UserController {
     private final MailService mailService;
 
     @GetMapping("/login")
-    public String login() {
+    public String login(@RequestParam(value = "redirect", required = false) String redirect,
+                        Model model) {
+        model.addAttribute("redirect", redirect);
         return "auth/login";
     }
 

@@ -11,10 +11,6 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap');
 
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-        }
-
         .write-button {
             font-size: 13px;
             font-weight: 600;
@@ -36,7 +32,8 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="toolbar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+    <div class="toolbar"
+         style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
 
         <!-- 왼쪽: 카테고리 탭 -->
         <div class="category-tabs" style="display: flex; gap: 24px;">
@@ -65,30 +62,14 @@
 
         <!-- 오른쪽: 검색창, 정렬, 작성 버튼 -->
         <div style="display: flex; align-items: center; gap: 12px;">
-
             <!-- 검색창 -->
-            <form th:action="@{/diary/list}" method="get" style="position: relative;">
-                <input type="text" name="search" placeholder="검색어를 입력하세요">
-                <button type="submit"
-                        style="
-                            position: absolute;
-                            right: 8px;
-                            top: 10%;
-                            transform: translateY(-50%);
-                            background: none;
-                            border: none;
-                            cursor: pointer;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            height: 24px;
-                            width: 24px;
-                            padding: 0;
-                        ">
-                    <img src="/images/reading-glass.png" alt="검색" style="width: 18px; height: 18px;">
+            <form th:action="@{/diary/list}" method="get" class="search-form">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="text" name="search" placeholder="검색어를 입력하세요" class="search-input">
+                <button type="submit" class="search-button">
+                    <img src="/images/reading-glass.png" alt="검색" class="search-icon">
                 </button>
             </form>
-
             <!-- 정렬 드롭다운 -->
             <form th:action="@{/diary/list}" method="get">
                 <select name="sort" onchange="this.form.submit()"

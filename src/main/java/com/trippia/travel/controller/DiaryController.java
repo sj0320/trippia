@@ -4,10 +4,12 @@ import com.trippia.travel.annotation.CurrentUser;
 import com.trippia.travel.domain.location.city.CityService;
 import com.trippia.travel.domain.location.country.CountryRepository;
 import com.trippia.travel.domain.post.diary.DiaryService;
+import com.trippia.travel.domain.post.likes.LikeService;
 import com.trippia.travel.domain.theme.ThemeService;
 import com.trippia.travel.exception.diary.DiaryException;
 import com.trippia.travel.exception.file.FileException;
 import com.trippia.travel.file.FileService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -28,6 +30,7 @@ public class DiaryController {
     private final CityService cityService;
     private final ThemeService themeService;
     private final DiaryService diaryService;
+    private final LikeService likeService;
     private final CountryRepository countryRepository;
     private final FileService fileService;
 
@@ -49,7 +52,6 @@ public class DiaryController {
     public String createDiary(@Valid @ModelAttribute("diary") SaveRequest request,
                               BindingResult bindingResult, @RequestParam("thumbnail") MultipartFile thumbnail,
                               @CurrentUser String email, Model model) {
-
         String thumbnailUrl = null;
         if (!thumbnail.isEmpty()) {
             thumbnailUrl = fileService.uploadFile(thumbnail).getUrl();
@@ -76,10 +78,12 @@ public class DiaryController {
     }
 
     @GetMapping("/{id}")
-    public String getDiaryDetails(@CurrentUser String email, @PathVariable Long id, Model model) {
+    public String getDiaryDetails(@CurrentUser String email, @PathVariable Long id, Model model,
+                                  HttpServletRequest request) {
         DiaryDetailResponse diaryDetails = diaryService.getDiaryDetail(id);
+        diaryService.addViewCount(id, request.getRemoteAddr(), request.getHeader("User-Agent"));
         model.addAttribute("diary", diaryDetails);
-        model.addAttribute("authorEmail", email);
+        model.addAttribute("isLiked", likeService.isLikedByDiary(email, id));
         return "post/details";
     }
 

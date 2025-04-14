@@ -1,0 +1,116 @@
+/* 모달 배경 */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+}
+
+/* 모달 박스 */
+.modal-content {
+  position: relative;
+  background: #fff;
+  width: 90%;
+  max-width: 360px;
+  margin: 10% auto;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* 닫기 버튼 */
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #aaa;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.modal-close:hover {
+  color: #333;
+}
+
+/* 안내 문구 */
+.modal-message {
+  font-size: 1.1rem;
+  color: #333;
+  margin-bottom: 1.8rem;
+  line-height: 1.5;
+}
+
+/* 기본 로그인 버튼 - 검정색으로 변경 */
+.login-button {
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  transition: background 0.2s, transform 0.2s;
+}
+
+/* 기본 로그인 버튼 색상 수정 */
+.login-button.primary {
+  background-color: #000;
+  color: #fff;
+}
+
+.login-button.primary:hover {
+  background-color: #222;
+  transform: scale(1.02);
+}
+
+/* 소셜 로그인 영역 */
+.social-login-buttons {
+  margin-top: 1rem;
+}
+
+.social-text {
+  margin-bottom: 0.8rem;
+  font-size: 0.95rem;
+  color: #666;
+}
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.social-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.social-btn img {
+  width: 40px;
+  height: 40px;
+}
+
+.social-btn:hover {
+  transform: scale(1.1);
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
