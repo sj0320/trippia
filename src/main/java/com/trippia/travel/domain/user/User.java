@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
 
@@ -72,7 +73,7 @@ public class User {
 
     public void validateAuthorOf(Diary diary) {
         if(!this.equals(diary.getUser())){
-            throw new IllegalArgumentException("접근 권한이 없습니다.");
+            throw new AccessDeniedException("접근 권한이 없습니다.");
         }
     }
 }
