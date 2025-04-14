@@ -7,6 +7,7 @@ import com.trippia.travel.domain.theme.Theme;
 import com.trippia.travel.domain.user.User;
 import com.trippia.travel.domain.user.UserRepository;
 import com.trippia.travel.exception.diary.DiaryException;
+import com.trippia.travel.exception.user.UserException;
 import com.trippia.travel.file.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -115,12 +116,11 @@ public class DiaryService {
 
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
     }
 
 
     private void saveDiaryThemes(List<Long> themeIds, Diary diary) {
-        log.info("themeIds={}", themeIds);
         List<Theme> themes = diaryClient.findThemesByIds(themeIds);
         List<DiaryTheme> diaryThemes = themes.stream()
                 .map(theme -> DiaryTheme.createDiaryTheme(theme, diary))
@@ -145,12 +145,12 @@ public class DiaryService {
 
     private Diary getDiary(Long diaryId) {
         return diaryClient.findDiaryById(diaryId)
-                .orElseThrow(() -> new IllegalArgumentException("여행일지 데이터를 찾을 수 없습니다."));
+                .orElseThrow(() -> new DiaryException("여행일지 데이터를 찾을 수 없습니다."));
     }
 
     private City getCity(Long cityId) {
         return diaryClient.findCityById(cityId)
-                .orElseThrow(() -> new IllegalArgumentException("도시 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new DiaryException("도시 정보를 찾을 수 없습니다."));
     }
 
     private String getUpdatedThumbnailUrl(MultipartFile newThumbnail, String existingThumbnail){

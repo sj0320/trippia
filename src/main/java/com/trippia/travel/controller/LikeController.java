@@ -32,7 +32,6 @@ public class LikeController {
 
     @PostMapping("/diary/{id}/unlike")
     public ResponseEntity<Map<String, Object>> unlikeDairy(@CurrentUser String email, @PathVariable Long id){
-        System.out.println(email);
         if (email == null || email.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "로그인이 필요한 기능입니다."));
