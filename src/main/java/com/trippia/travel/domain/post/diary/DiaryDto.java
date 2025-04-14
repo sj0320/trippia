@@ -1,5 +1,7 @@
 package com.trippia.travel.domain.post.diary;
 
+import com.trippia.travel.domain.common.TravelCompanion;
+import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.theme.Theme;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -94,6 +96,7 @@ public class DiaryDto {
         private Long id;
         private String title;
         private String content;
+        private String authorEmail;
         private String authorNickname;
         private String authorProfile;
         private String cityName;
@@ -115,6 +118,7 @@ public class DiaryDto {
                     .id(diary.getId())
                     .title(diary.getTitle())
                     .content(diary.getContent())
+                    .authorEmail(diary.getUser().getEmail())
                     .authorNickname(diary.getUser().getNickname())
                     .authorProfile(diary.getUser().getProfileImageUrl())
                     .cityName(diary.getCity().getName())
@@ -139,14 +143,18 @@ public class DiaryDto {
 
         private Long cityId; // 여행 도시 ID
 
+        private List<Long> themeIds;
+
         private String cityName;
 
         private String title; // 다이어리 제목
 
         private String content; // 다이어리 내용
 
+        @DateTimeFormat(pattern = "yyyy-MM-dd")
         private LocalDate startDate; // 여행 시작 날짜
 
+        @DateTimeFormat(pattern = "yyyy-MM-dd")
         private LocalDate endDate; // 여행 종료 날짜
 
         private String companion; // 여행 동반자
@@ -164,6 +172,10 @@ public class DiaryDto {
                     .map(Theme::getName)
                     .toList();
 
+            List<Long> themeIds = themes.stream()
+                    .map(Theme::getId)
+                    .toList(); // <-- 이거 추가!
+
             return EditFormResponse.builder()
                     .diaryId(diary.getId())
                     .title(diary.getTitle())
@@ -175,6 +187,7 @@ public class DiaryDto {
                     .rating(diary.getRating())
                     .totalBudget(diary.getTotalBudget())
                     .themeNames(themeNames)
+                    .themeIds(themeIds) // <-- 이거 빠져 있었음!
                     .thumbnailUrl(diary.getThumbnail())
                     .build();
         }
@@ -195,9 +208,11 @@ public class DiaryDto {
         private String content; // 다이어리 내용
 
         @NotNull(message = "언제 여행을 다녀오셨나요?")
+        @DateTimeFormat(pattern = "yyyy-MM-dd")
         private LocalDate startDate; // 여행 시작 날짜
 
         @NotNull(message = "언제 여행을 다녀오셨나요?")
+        @DateTimeFormat(pattern = "yyyy-MM-dd")
         private LocalDate endDate; // 여행 종료 날짜
 
         @NotBlank(message = "누구랑 다녀오셨나요?")
@@ -213,6 +228,21 @@ public class DiaryDto {
 
         @NotNull(message = "여행 유형을 선택해주세요")
         private List<Long> themeIds; // 선택된 Theme ID 리스트
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class UpdateDiaryDto {
+        private String title;
+        private String content;
+        private String thumbnail;
+        private LocalDate startDate;
+        private LocalDate endDate;
+        private TravelCompanion companion;
+        private Integer rating;
+        private Integer totalBudget;
+        private City city;
     }
 
 

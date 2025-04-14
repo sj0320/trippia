@@ -79,8 +79,24 @@ public class Diary {
                 .build();
     }
 
-    public void update(UpdateRequest request, City city, String thumbnail){
+    public void update(UpdateDiaryDto dto) {
+        this.title = dto.getTitle();
+        this.content = dto.getContent();
+        this.thumbnail = dto.getThumbnail();
+        this.startDate = dto.getStartDate();
+        this.endDate = dto.getEndDate();
+        this.companion = dto.getCompanion();
+        this.rating = dto.getRating();
+        this.totalBudget = dto.getTotalBudget();
+        this.city = dto.getCity();
+    }
 
+    public int addLike(){
+        return ++likeCount;
+    }
+
+    public int cancelLike(){
+        return --likeCount;
     }
 
 

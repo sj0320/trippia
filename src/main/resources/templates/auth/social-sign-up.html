@@ -24,6 +24,7 @@
         <h2>회원가입</h2>
         <!-- SNS 회원가입 폼 -->
         <form th:action="@{/users/sns-sign-up}" method="post" th:object="${user}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <div id="form-container">
                 <!-- 이메일 입력란 (SNS로 제공된 이메일은 읽기 전용) -->
                 <div id="email-container">

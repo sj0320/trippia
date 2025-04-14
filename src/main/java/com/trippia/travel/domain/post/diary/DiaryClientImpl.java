@@ -66,5 +66,10 @@ public class DiaryClientImpl implements DiaryClient{
         return diaryThemeRepository.findByDiaryId(diaryId);
     }
 
+    @Override
+    public void addDiaryViewCount(Long diaryId){
+        diaryRepository.addViewCount(diaryId);
+    }
+
 
 }

@@ -2,14 +2,13 @@ function showAuthCodeInput(purpose) {
     let emailInput = document.getElementById("email");
     let emailValue = emailInput.value;  // 이메일 값을 여기서 얻어옴
 
-    let emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/; // 이메일 정규식
+    let emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
     if (!emailPattern.test(emailValue)) {
         alert("올바른 이메일 형식이 아닙니다. 다시 확인해주세요.");
         return;
     }
 
-    // 인증 코드 입력 필드 표시
     let authDiv = document.getElementById("auth-code-container");
 
     if (!authDiv) {
@@ -26,26 +25,28 @@ function showAuthCodeInput(purpose) {
 
     authDiv.style.display = "block";
 
-    // 서버로 이메일 인증 요청 전송
+    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
     fetch('/users/email/send-code', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
+            [csrfHeader]: csrfToken
         },
         body: new URLSearchParams({
             email: emailValue,
-            purpose: purpose // REGISTER 또는 RESET_PASSWORD
+            purpose: purpose
         })
     })
     .then(response => {
         if (!response.ok) {
             throw new Error(`HTTP 오류! 상태 코드: ${response.status}`);
         }
-        return response.json(); // JSON 형식으로 응답 받기
+        return response.json();
     })
     .then(data => {
         if (data.status === "success") {
-            // 성공적인 응답을 받으면 고정된 메시지 표시
             alert("인증 메일이 발송되었습니다. 이메일로 받은 인증 코드를 입력해주세요!");
         }
     })
@@ -54,7 +55,6 @@ function showAuthCodeInput(purpose) {
         alert("이메일 인증 코드 전송에 실패했습니다.");
     });
 
-    // 버튼 비활성화
     document.getElementById("authButton").disabled = true;
 }
 
@@ -67,27 +67,30 @@ function verifyAuthCode(email, purpose) {
         return;
     }
 
+    // CSRF 메타 태그에서 읽어오기
+    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
     fetch('/users/email/verify-code', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
+            [csrfHeader]: csrfToken // CSRF 토큰 추가
         },
         body: new URLSearchParams({
             email: email,
             code: authCode,
-            purpose: purpose // REGISTER 또는 RESET_PASSWORD
+            purpose: purpose
         })
     })
-    .then(response => response.json())  // JSON 형식으로 응답 받기
+    .then(response => response.json())
     .then(data => {
         if (data.status === "success") {
             alert("인증이 성공적으로 완료되었습니다.");
-            // 인증 성공 후 인증 코드 입력 필드를 읽기 전용으로 설정
             document.getElementById("email").setAttribute("readonly", "true");
-            document.getElementById("authCode").setAttribute("readonly", "true");  // 입력 필드를 읽기 전용으로 설정
+            document.getElementById("authCode").setAttribute("readonly", "true");
         } else {
-            // 서버에서 반환한 메시지 사용
-            alert(data.message);  // 예외 메시지를 클라이언트에 표시
+            alert(data.message);
         }
     })
     .catch(error => {
@@ -96,7 +99,6 @@ function verifyAuthCode(email, purpose) {
     });
 }
 
-// 페이지 로드 시 이벤트 추가
 document.addEventListener('DOMContentLoaded', function () {
     let registerButton = document.getElementById("registerAuthButton");
     let resetPasswordButton = document.getElementById("resetPasswordAuthButton");
