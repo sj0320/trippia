@@ -9,6 +9,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.Random;
 
 import static com.trippia.travel.domain.user.dto.UserDto.SaveRequest;
@@ -60,6 +61,14 @@ public class UserService {
     public void sendCodeToEmail(String email, EmailAuthPurpose authPurpose) {
         String authCode = generateRandomCode();
         mailService.sendEmail(email, authPurpose, authCode);
+    }
+
+    public String getProfileImageUrl(String email) {
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        if(optionalUser.isEmpty()){
+            return DEFAULT_PROFILE_IMAGE;
+        }
+        return optionalUser.get().getProfileImageUrl();
     }
 
     private String generateRandomCode() {

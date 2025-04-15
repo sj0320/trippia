@@ -8,7 +8,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
@@ -40,7 +39,6 @@ public class User {
 
     private String profileImageUrl;
 
-    @CreatedDate
     private LocalDateTime createdAt;
 
     @Builder
@@ -51,6 +49,7 @@ public class User {
         this.loginType = loginType;
         this.role = (role != null) ? role : Role.ROLE_USER;
         this.profileImageUrl = profileImageUrl;
+        this.createdAt = LocalDateTime.now();
     }
 
     public void updateEmail(String email) {

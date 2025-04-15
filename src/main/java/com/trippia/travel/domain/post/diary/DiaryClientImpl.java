@@ -58,7 +58,8 @@ public class DiaryClientImpl implements DiaryClient{
 
     @Override
     public Optional<Diary> findDiaryById(Long id){
-        return diaryRepository.findById(id);
+//        return diaryRepository.findById(id);
+        return diaryRepository.findWithCommentsById(id);
     }
 
     @Override
