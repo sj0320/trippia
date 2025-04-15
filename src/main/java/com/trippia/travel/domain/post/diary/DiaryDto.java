@@ -12,7 +12,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static com.trippia.travel.domain.post.comment.CommentDto.CommentResponse;
 
 
 public class DiaryDto {
@@ -85,7 +86,7 @@ public class DiaryDto {
                             .viewCount(diary.getViewCount())
                             .likeCount(diary.getLikeCount())
                             .build())
-                    .collect(Collectors.toList());
+                    .toList();
         }
     }
 
@@ -108,6 +109,7 @@ public class DiaryDto {
         private List<String> theme;
         private int viewCount;
         private int likeCount;
+        private List<CommentResponse> comments;
 
         public static DiaryDetailResponse from(Diary diary, List<Theme> themes) {
             List<String> themeNames = themes.stream()
@@ -130,8 +132,8 @@ public class DiaryDto {
                     .theme(themeNames)
                     .viewCount(diary.getViewCount())
                     .likeCount(diary.getLikeCount())
+                    .comments(CommentResponse.fromList(diary.getComments()))
                     .build();
-
         }
 
     }

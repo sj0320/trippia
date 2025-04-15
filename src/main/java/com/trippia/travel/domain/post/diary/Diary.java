@@ -2,6 +2,7 @@ package com.trippia.travel.domain.post.diary;
 
 import com.trippia.travel.domain.common.TravelCompanion;
 import com.trippia.travel.domain.location.city.City;
+import com.trippia.travel.domain.post.comment.Comment;
 import com.trippia.travel.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -13,9 +14,11 @@ import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-import static com.trippia.travel.domain.post.diary.DiaryDto.*;
 import static com.trippia.travel.domain.post.diary.DiaryDto.SaveRequest;
+import static com.trippia.travel.domain.post.diary.DiaryDto.UpdateDiaryDto;
 
 @Entity
 @Builder
@@ -58,12 +61,17 @@ public class Diary {
 
     private int likeCount;
 
+    @OneToMany(mappedBy = "diary", cascade = CascadeType.REMOVE)
+    @Builder.Default
+    private List<Comment> comments = new ArrayList<>();
+
     @CreatedDate
     private LocalDateTime createdAt;
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    @Builder
     public static Diary createDiary(SaveRequest request, User user, City city, String thumbnail) {
         return Diary.builder()
                 .user(user)
@@ -97,6 +105,11 @@ public class Diary {
 
     public int cancelLike(){
         return --likeCount;
+    }
+
+    public void addComment(Comment comment){
+        this.comments.add(comment);
+        comment.assignDiary(this);
     }
 
 

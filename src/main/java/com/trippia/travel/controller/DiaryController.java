@@ -6,6 +6,7 @@ import com.trippia.travel.domain.location.country.CountryRepository;
 import com.trippia.travel.domain.post.diary.DiaryService;
 import com.trippia.travel.domain.post.likes.LikeService;
 import com.trippia.travel.domain.theme.ThemeService;
+import com.trippia.travel.domain.user.UserService;
 import com.trippia.travel.exception.diary.DiaryException;
 import com.trippia.travel.exception.file.FileException;
 import com.trippia.travel.file.FileService;
@@ -33,6 +34,7 @@ public class DiaryController {
     private final LikeService likeService;
     private final CountryRepository countryRepository;
     private final FileService fileService;
+    private final UserService userService;
 
 
     @ModelAttribute
@@ -84,6 +86,8 @@ public class DiaryController {
         diaryService.addViewCount(id, request.getRemoteAddr(), request.getHeader("User-Agent"));
         model.addAttribute("diary", diaryDetails);
         model.addAttribute("isLiked", likeService.isLikedByDiary(email, id));
+        model.addAttribute("currentUserProfile", userService.getProfileImageUrl(email));
+
         return "post/details";
     }
 
