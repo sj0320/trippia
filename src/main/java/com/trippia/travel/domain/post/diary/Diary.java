@@ -9,8 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -65,10 +63,8 @@ public class Diary {
     @Builder.Default
     private List<Comment> comments = new ArrayList<>();
 
-    @CreatedDate
     private LocalDateTime createdAt;
 
-    @LastModifiedDate
     private LocalDateTime updatedAt;
 
     @Builder
@@ -84,6 +80,8 @@ public class Diary {
                 .companion(TravelCompanion.fromString(request.getCompanion()))
                 .rating(request.getRating())
                 .totalBudget(request.getTotalBudget())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
     }
 
@@ -97,6 +95,7 @@ public class Diary {
         this.rating = dto.getRating();
         this.totalBudget = dto.getTotalBudget();
         this.city = dto.getCity();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public int addLike(){

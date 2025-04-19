@@ -11,6 +11,8 @@ import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.trippia.travel.domain.post.comment.CommentDto.CommentResponse;
@@ -66,6 +68,26 @@ public class DiaryDto {
     @Getter
     @Setter
     @Builder
+    public static class DiaryListViewModel{
+        private List<DiaryListResponse> diaryList = new ArrayList<>();
+        private DiarySearchCondition searchCondition;
+        private boolean hasNext;
+        private String sort;
+
+        public static DiaryListViewModel createDiaryListViewModel(List<DiaryListResponse> diaryList,
+                                                                  DiarySearchCondition searchCondition,
+                                                                  boolean hasNext){
+            return DiaryListViewModel.builder()
+                    .diaryList(diaryList)
+                    .searchCondition(searchCondition)
+                    .hasNext(hasNext)
+                    .build();
+        }
+    }
+
+    @Getter
+    @Setter
+    @Builder
     public static class DiaryListResponse {
         private Long id;
         private String authorNickname;
@@ -74,6 +96,7 @@ public class DiaryDto {
         private String thumbnail;
         private int viewCount;
         private int likeCount;
+        private LocalDateTime createdAt;
 
         public static List<DiaryListResponse> from(List<Diary> diaries) {
             return diaries.stream()
@@ -85,6 +108,7 @@ public class DiaryDto {
                             .thumbnail(diary.getThumbnail())
                             .viewCount(diary.getViewCount())
                             .likeCount(diary.getLikeCount())
+                            .createdAt(diary.getCreatedAt())
                             .build())
                     .toList();
         }
@@ -245,6 +269,46 @@ public class DiaryDto {
         private Integer rating;
         private Integer totalBudget;
         private City city;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class DiarySearchCondition {
+        private String keyword;
+        private String themeName;
+        private String countryName;
+        private String sort;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class CursorData{
+        private Long lastId;
+        private LocalDateTime lastCreatedAt;
+        private Integer lastLikeCount;
+        private Integer lastViewCount;
+
+        public static CursorData init(){
+            return CursorData.builder()
+                    .lastId(Long.MAX_VALUE)
+                    .lastCreatedAt(LocalDateTime.now().plusYears(1))
+                    .lastLikeCount(Integer.MAX_VALUE)
+                    .lastViewCount(Integer.MAX_VALUE)
+                    .build();
+        }
+
+        public static CursorData of(Long lastId, LocalDateTime lastCreatedAt, Integer lastLikeCount, Integer lastViewCount){
+            return CursorData.builder()
+                    .lastId(lastId)
+                    .lastCreatedAt(lastCreatedAt)
+                    .lastLikeCount(lastLikeCount)
+                    .lastViewCount(lastViewCount)
+                    .build();
+        }
     }
 
 
