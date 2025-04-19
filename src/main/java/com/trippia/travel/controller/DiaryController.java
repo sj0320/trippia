@@ -1,6 +1,7 @@
 package com.trippia.travel.controller;
 
 import com.trippia.travel.annotation.CurrentUser;
+import com.trippia.travel.domain.common.SortOption;
 import com.trippia.travel.domain.location.city.CityService;
 import com.trippia.travel.domain.location.country.CountryRepository;
 import com.trippia.travel.domain.post.diary.DiaryService;
@@ -13,19 +14,24 @@ import com.trippia.travel.file.FileService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-
 import static com.trippia.travel.domain.post.diary.DiaryDto.*;
 
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/diary")
+@Slf4j
 public class DiaryController {
 
     private final CityService cityService;
@@ -72,11 +78,48 @@ public class DiaryController {
         }
     }
 
+    // 초기 페이지 렌더링
     @GetMapping("/list")
-    public String getDiaryList(Model model) {
-        List<DiaryListResponse> diaryList = diaryService.getDiaryList();
-        model.addAttribute("diaryList", diaryList);
+    public String getDiaryList(
+            @ModelAttribute DiarySearchCondition searchCondition,
+            @PageableDefault(size = 3) Pageable pageable,
+            Model model
+    ) {
+
+        log.info("category={}, {} ,{}", searchCondition.getKeyword(), searchCondition.getCountryName(), searchCondition.getThemeName());
+        Sort sortOption = SortOption.from(searchCondition.getSort()).getSort();
+        Pageable sortedpPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortOption);
+
+        Slice<DiaryListResponse> diaryList = diaryService.searchDiaryList(searchCondition, CursorData.init(), sortedpPageable);
+        DiaryListViewModel diaryListViewModel = DiaryListViewModel.createDiaryListViewModel(
+                diaryList.getContent(), searchCondition, diaryList.hasNext());
+
+        model.addAttribute("diaryListModel", diaryListViewModel);
+        model.addAttribute("searchCondition", searchCondition);
+
+        // 커서 정보 설정
+        if (!diaryList.isEmpty()) {
+            DiaryListResponse last = diaryList.getContent().get(diaryList.getContent().size() - 1);
+            CursorData cursorData = CursorData.of(last.getId(), last.getCreatedAt(), last.getLikeCount(), last.getViewCount());
+            model.addAttribute("cursorData", cursorData);
+        }
+
         return "post/list";
+    }
+
+    // API (무한스크롤용)
+    @GetMapping("/list/data")
+    @ResponseBody
+    public Slice<DiaryListResponse> getDiaryListData(
+            @ModelAttribute DiarySearchCondition searchCondition,
+            @ModelAttribute CursorData cursorData,
+            @PageableDefault(size = 3) Pageable pageable
+    ) {
+        Sort sortOption = SortOption.from(searchCondition.getSort()).getSort();
+        Pageable sortedpPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortOption);
+        Slice<DiaryListResponse> test = diaryService.searchDiaryList(searchCondition, cursorData, sortedpPageable);
+        log.info("hasNext={}", test.hasNext());
+        return diaryService.searchDiaryList(searchCondition, cursorData, sortedpPageable);
     }
 
     @GetMapping("/{id}")
@@ -114,6 +157,13 @@ public class DiaryController {
         diaryService.editDiary(email, id, request, thumbnail);
         return "redirect:/diary/" + id;
     }
+
+//    @GetMapping("/search")
+//    public String searchDiariesWithConditions(@RequestParam(required = false) String theme,
+//                                @RequestParam(required = false) String city,
+//                                @RequestParam(required = false) String keyword){
+//
+//    }
 
 
 }

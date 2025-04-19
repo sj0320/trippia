@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
-public interface DiaryRepository extends JpaRepository<Diary, Long> {
+public interface DiaryRepository extends JpaRepository<Diary, Long>, DiaryRepositoryCustom{
 
     @Modifying
     @Query("UPDATE Diary d SET d.viewCount = d.viewCount + 1 WHERE d.id = :diaryId")

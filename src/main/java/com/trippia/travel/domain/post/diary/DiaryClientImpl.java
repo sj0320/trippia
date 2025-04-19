@@ -7,14 +7,18 @@ import com.trippia.travel.domain.post.diarytheme.DiaryThemeRepository;
 import com.trippia.travel.domain.theme.Theme;
 import com.trippia.travel.domain.theme.ThemeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+import static com.trippia.travel.domain.post.diary.DiaryDto.*;
+
 @Repository
 @RequiredArgsConstructor
-public class DiaryClientImpl implements DiaryClient{
+public class DiaryClientImpl implements DiaryClient {
 
     private final DiaryRepository diaryRepository;
     private final DiaryThemeRepository diaryThemeRepository;
@@ -42,12 +46,12 @@ public class DiaryClientImpl implements DiaryClient{
     }
 
     @Override
-    public void deleteDiaryById(Long id){
+    public void deleteDiaryById(Long id) {
         diaryRepository.deleteById(id);
     }
 
     @Override
-    public void deleteDiaryThemeByDiaryId(Long diaryId){
+    public void deleteDiaryThemeByDiaryId(Long diaryId) {
         diaryThemeRepository.deleteByDiaryId(diaryId);
     }
 
@@ -57,18 +61,22 @@ public class DiaryClientImpl implements DiaryClient{
     }
 
     @Override
-    public Optional<Diary> findDiaryById(Long id){
-//        return diaryRepository.findById(id);
+    public Optional<Diary> findDiaryById(Long id) {
         return diaryRepository.findWithCommentsById(id);
     }
 
     @Override
-    public List<DiaryTheme> findDiaryThemesByDiaryId(Long diaryId){
+    public List<DiaryTheme> findDiaryThemesByDiaryId(Long diaryId) {
         return diaryThemeRepository.findByDiaryId(diaryId);
     }
 
     @Override
-    public void addDiaryViewCount(Long diaryId){
+    public Slice<Diary> searchDiariesWithConditions(DiarySearchCondition condition, CursorData cursorData, Pageable pageable) {
+        return diaryRepository.searchDiariesWithConditions(condition, cursorData, pageable);
+    }
+
+    @Override
+    public void addDiaryViewCount(Long diaryId) {
         diaryRepository.addViewCount(diaryId);
     }
 

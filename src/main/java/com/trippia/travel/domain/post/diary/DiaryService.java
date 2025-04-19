@@ -11,6 +11,9 @@ import com.trippia.travel.exception.user.UserException;
 import com.trippia.travel.file.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -73,6 +76,14 @@ public class DiaryService {
         List<Diary> diaries = diaryClient.findAllDiary();
         return DiaryListResponse.from(diaries);
     }
+
+
+    public Slice<DiaryListResponse> searchDiaryList(DiarySearchCondition condition, CursorData cursorData, Pageable pageable) {
+        Slice<Diary> diaries = diaryClient.searchDiariesWithConditions(condition, cursorData ,pageable);
+        List<DiaryListResponse> content = DiaryListResponse.from(diaries.getContent());
+        return new SliceImpl<>(content, pageable, diaries.hasNext());
+    }
+
 
     public DiaryDetailResponse getDiaryDetail(Long diaryId) {
         Diary diary = getDiary(diaryId);
@@ -153,8 +164,8 @@ public class DiaryService {
                 .orElseThrow(() -> new DiaryException("도시 정보를 찾을 수 없습니다."));
     }
 
-    private String getUpdatedThumbnailUrl(MultipartFile newThumbnail, String existingThumbnail){
-        if(newThumbnail !=null && !newThumbnail.isEmpty()){
+    private String getUpdatedThumbnailUrl(MultipartFile newThumbnail, String existingThumbnail) {
+        if (newThumbnail != null && !newThumbnail.isEmpty()) {
             return fileService.uploadFile(newThumbnail).getUrl();
         }
         return existingThumbnail;
