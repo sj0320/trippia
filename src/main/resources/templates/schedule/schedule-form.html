@@ -1,19 +1,138 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html xmlns:th="http://www.thymeleaf.org" th:inline="javascript"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/default}">
 <head>
     <meta charset="UTF-8">
     <title>여행 일정표</title>
-    <!-- 생략 -->
-</head>
+    <style>
+        .itinerary-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
 
-<!-- 🔥 여기서부터는 body 없이 바로 fragment만 -->
+        .day-card {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .day-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .btn {
+            margin-right: 10px;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-location {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-location:hover {
+            background-color: #45a049;
+        }
+
+        .btn-memo {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .btn-memo:hover {
+            background-color: #1976D2;
+        }
+
+        .entry-list {
+            margin-top: 15px;
+        }
+
+        .entry-item {
+            background-color: #f1f1f1;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        /* 모달 스타일 */
+        #placeModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 500px;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        #autocomplete {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        #recommendationList {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #fafafa;
+        }
+
+        .recommend-item {
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+
+        .recommend-item:hover {
+            background-color: #e0f7fa;
+        }
+
+        #placeModal button {
+            padding: 8px 14px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        #placeModal button:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
 <div layout:fragment="content">
 
     <!-- 장소 검색 모달 -->
-    <div id="placeModal" style="display:none; position:fixed; ...">
-        <label for="autocomplete"></label>
+    <div id="placeModal">
+        <label for="autocomplete" style="font-weight: bold;">장소 검색</label>
         <input id="autocomplete" type="text" placeholder="장소 검색..." oninput="handleInput()">
         <div id="recommendationList"></div>
         <button onclick="closeModal()">❌ 닫기</button>
@@ -34,46 +153,47 @@
 
     <script>
         let currentEntryList = null;
-let cityName = /*[[${cityName}]]*/ '서울'; // 서버에서 모델로 넘긴 도시 이름
+        let cityIds = /*[[${cityIds}]]*/ [1, 2, 3]; // 서버에서 모델로 넘긴 도시 ID 리스트
 
-function openPlaceModal(button) {
-    currentEntryList = button.closest('.day-card').querySelector('.entry-list');
-    document.getElementById('placeModal').style.display = 'block';
-    document.getElementById('autocomplete').value = '';
-    document.getElementById('recommendationList').style.display = 'block';
-    loadRecommendations(cityName);
-}
+        function openPlaceModal(button) {
+            currentEntryList = button.closest('.day-card').querySelector('.entry-list');
+            document.getElementById('placeModal').style.display = 'block';
+            document.getElementById('autocomplete').value = '';
+            document.getElementById('recommendationList').style.display = 'block';
+            loadRecommendations(cityIds);
+        }
 
-function closeModal() {
-    document.getElementById('placeModal').style.display = 'none';
-}
+        function closeModal() {
+            document.getElementById('placeModal').style.display = 'none';
+        }
 
-function handleInput() {
-    const input = document.getElementById('autocomplete').value;
-    document.getElementById('recommendationList').style.display = input.trim() === '' ? 'block' : 'none';
-}
+        function handleInput() {
+            const input = document.getElementById('autocomplete').value;
+            document.getElementById('recommendationList').style.display = input.trim() === '' ? 'block' : 'none';
+        }
 
-function loadRecommendations(city) {
-    fetch(`/schedule/places/recommend?city=${encodeURIComponent(city)}`)
-        .then(res => res.json())
-        .then(places => {
-            const list = document.getElementById('recommendationList');
-            list.innerHTML = '';
-            places.forEach(place => {
-                const div = document.createElement('div');
-                div.className = 'recommend-item';
-                div.innerText = `📍 ${place.name}`;
-                div.onclick = () => {
-                    const entry = document.createElement('div');
-                    entry.className = 'entry-item';
-                    entry.innerText = `📍 ${place.name} (${place.address})`;
-                    currentEntryList.appendChild(entry);
-                    closeModal();
-                };
-                list.appendChild(div);
-            });
-        });
-}
+        function loadRecommendations(cityIds) {
+            const queryParam = cityIds.map(id => `cityIds=${id}`).join('&');
+            fetch(`/travel/places/recommend?${queryParam}`)
+                .then(res => res.json())
+                .then(places => {
+                    const list = document.getElementById('recommendationList');
+                    list.innerHTML = '';
+                    places.forEach(place => {
+                        const div = document.createElement('div');
+                        div.className = 'recommend-item';
+                        div.innerText = `📍 ${place.name}`;
+                        div.onclick = () => {
+                            const entry = document.createElement('div');
+                            entry.className = 'entry-item';
+                            entry.innerText = `📍 ${place.name} (${place.address})`;
+                            currentEntryList.appendChild(entry);
+                            closeModal();
+                        };
+                        list.appendChild(div);
+                    });
+                });
+        }
 
         function addMemo(button) {
             const entryList = button.closest('.day-card').querySelector('.entry-list');
@@ -87,25 +207,26 @@ function loadRecommendations(city) {
         }
 
         function initAutocomplete() {
-    const input = document.getElementById('autocomplete');
-    const autocomplete = new google.maps.places.Autocomplete(input);
+            const input = document.getElementById('autocomplete');
+            const autocomplete = new google.maps.places.Autocomplete(input);
 
-    autocomplete.addListener('place_changed', function () {
-        const place = autocomplete.getPlace();
-        if (!place.name) return;
+            autocomplete.addListener('place_changed', function () {
+                const place = autocomplete.getPlace();
+                if (!place.name) return;
 
-        const div = document.createElement('div');
-        div.className = 'entry-item';
-        div.innerText = `📍 ${place.name} (${place.formatted_address || ''})`;
-        currentEntryList.appendChild(div);
-        closeModal();
-    });
-}
+                const div = document.createElement('div');
+                div.className = 'entry-item';
+                div.innerText = `📍 ${place.name} (${place.formatted_address || ''})`;
+                currentEntryList.appendChild(div);
+                closeModal();
+            });
+        }
 
-        // 구글 Maps API가 불러진 뒤 실행
         window.initAutocomplete = initAutocomplete;
     </script>
 
     <script th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${@environment.getProperty('google.maps.api-key')} + '&libraries=places&callback=initAutocomplete'"
             async defer></script>
 </div>
+</body>
+</html>

@@ -1,7 +1,8 @@
 package com.trippia.travel.domain.travel;
 
 import com.trippia.travel.domain.common.ScheduleItemType;
-import com.trippia.travel.domain.location.Place;
+import com.trippia.travel.domain.location.place.Place;
+import com.trippia.travel.domain.travel.schedule.Schedule;
 import jakarta.persistence.*;
 
 
@@ -9,6 +10,7 @@ import jakarta.persistence.*;
 public class ScheduleItem {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="schedule_item_id")
     private Long id;
 
     @ManyToOne

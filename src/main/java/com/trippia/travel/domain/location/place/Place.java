@@ -1,4 +1,4 @@
-package com.trippia.travel.domain.location;
+package com.trippia.travel.domain.location.place;
 
 import jakarta.persistence.*;
 
