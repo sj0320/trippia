@@ -36,10 +36,14 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <form th:action="@{/schedule/new}" method="post">
+    <form th:action="@{/travel/plan/new}" method="post">
         <div id="calendar"></div>
 
-        <input type="hidden" name="selectedCity" th:value="${selectedCity}"/>
+        <!-- cityIds를 여러 개 전송하는 방식 -->
+        <div th:each="cityId : ${cityIds}">
+            <input type="hidden" name="cityIds" th:value="${cityId}" />
+        </div>
+
         <input type="hidden" name="startDate" id="startDate">
         <input type="hidden" name="endDate" id="endDate">
 

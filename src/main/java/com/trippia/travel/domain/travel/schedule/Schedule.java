@@ -1,5 +1,6 @@
-package com.trippia.travel.domain.travel;
+package com.trippia.travel.domain.travel.schedule;
 
+import com.trippia.travel.domain.travel.plan.Plan;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -18,7 +19,5 @@ public class Schedule {
     private int dayNumber;      // 여행 몇 일차인지
 
     private LocalDate date;
-
-
 
 }
