@@ -48,6 +48,8 @@ INSERT INTO country (country_id, name) VALUES (28, '포르투갈');
 INSERT INTO country (country_id, name) VALUES (29, '체코');
 INSERT INTO country (country_id, name) VALUES (30, '독일');
 INSERT INTO country (country_id, name) VALUES (31, '멕시코');
+INSERT INTO country (country_id, name) VALUES (32, '뉴질랜드');
+INSERT INTO country (country_id, name) VALUES (33, '칠레');
 
 
 -- JAPAN (country_id = 1)
@@ -117,10 +119,16 @@ INSERT INTO city (city_id, name, country_id, city_type) VALUES (53, '칸쿤', 31
 INSERT INTO city (city_id, name, country_id, city_type) VALUES (54, '상파울루', 7, 'SOUTH_AMERICA');
 INSERT INTO city (city_id, name, country_id, city_type) VALUES (55, '리우데자네이루', 7, 'SOUTH_AMERICA');
 INSERT INTO city (city_id, name, country_id, city_type) VALUES (56, '부에노스아이레스', 15, 'SOUTH_AMERICA');
+INSERT INTO city (city_id, name, country_id, city_type) VALUES (66, '산티아고', 33, 'SOUTH_AMERICA');
+-- last
 
 -- OCEANIA (country_id = 8)
 INSERT INTO city (city_id, name, country_id, city_type) VALUES (57, '시드니', 8, 'OCEANIA');
 INSERT INTO city (city_id, name, country_id, city_type) VALUES (58, '멜버른', 8, 'OCEANIA');
+INSERT INTO city (city_id, name, country_id, city_type) VALUES (64, '오클랜드', 32, 'OCEANIA');
+INSERT INTO city (city_id, name, country_id, city_type) VALUES (65, '퀸스타운', 32, 'OCEANIA');
+
+
 
 -- SOUTHEAST ASIA (country_id = 9, 22, 24, 25)
 INSERT INTO city (city_id, name, country_id, city_type) VALUES (59, '보라카이', 22, 'SOUTHEAST_ASIA');

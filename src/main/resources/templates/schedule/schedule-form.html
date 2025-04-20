@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <meta charset="UTF-8">
+    <title>여행 일정표</title>
+    <!-- 생략 -->
+</head>
+
+<!-- 🔥 여기서부터는 body 없이 바로 fragment만 -->
+<div layout:fragment="content">
+
+    <!-- 장소 검색 모달 -->
+    <div id="placeModal" style="display:none; position:fixed; ...">
+        <label for="autocomplete"></label>
+        <input id="autocomplete" type="text" placeholder="장소 검색..." oninput="handleInput()">
+        <div id="recommendationList"></div>
+        <button onclick="closeModal()">❌ 닫기</button>
+    </div>
+
+    <div class="itinerary-container">
+        <div th:each="day, iterStat : ${dateList}" class="day-card">
+            <div class="day-title">
+                Day [[${iterStat.index + 1}]] ([[${day}]])
+            </div>
+
+            <button class="btn btn-location" onclick="openPlaceModal(this)">➕ 장소 추가</button>
+            <button class="btn btn-memo" onclick="addMemo(this)">📝 메모 추가</button>
+
+            <div class="entry-list"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentEntryList = null;
+let cityName = /*[[${cityName}]]*/ '서울'; // 서버에서 모델로 넘긴 도시 이름
+
+function openPlaceModal(button) {
+    currentEntryList = button.closest('.day-card').querySelector('.entry-list');
+    document.getElementById('placeModal').style.display = 'block';
+    document.getElementById('autocomplete').value = '';
+    document.getElementById('recommendationList').style.display = 'block';
+    loadRecommendations(cityName);
+}
+
+function closeModal() {
+    document.getElementById('placeModal').style.display = 'none';
+}
+
+function handleInput() {
+    const input = document.getElementById('autocomplete').value;
+    document.getElementById('recommendationList').style.display = input.trim() === '' ? 'block' : 'none';
+}
+
+function loadRecommendations(city) {
+    fetch(`/schedule/places/recommend?city=${encodeURIComponent(city)}`)
+        .then(res => res.json())
+        .then(places => {
+            const list = document.getElementById('recommendationList');
+            list.innerHTML = '';
+            places.forEach(place => {
+                const div = document.createElement('div');
+                div.className = 'recommend-item';
+                div.innerText = `📍 ${place.name}`;
+                div.onclick = () => {
+                    const entry = document.createElement('div');
+                    entry.className = 'entry-item';
+                    entry.innerText = `📍 ${place.name} (${place.address})`;
+                    currentEntryList.appendChild(entry);
+                    closeModal();
+                };
+                list.appendChild(div);
+            });
+        });
+}
+
+        function addMemo(button) {
+            const entryList = button.closest('.day-card').querySelector('.entry-list');
+            const memo = prompt("메모를 입력하세요:");
+            if (memo) {
+                const div = document.createElement('div');
+                div.className = 'entry-item';
+                div.innerText = `📝 ${memo}`;
+                entryList.appendChild(div);
+            }
+        }
+
+        function initAutocomplete() {
+    const input = document.getElementById('autocomplete');
+    const autocomplete = new google.maps.places.Autocomplete(input);
+
+    autocomplete.addListener('place_changed', function () {
+        const place = autocomplete.getPlace();
+        if (!place.name) return;
+
+        const div = document.createElement('div');
+        div.className = 'entry-item';
+        div.innerText = `📍 ${place.name} (${place.formatted_address || ''})`;
+        currentEntryList.appendChild(div);
+        closeModal();
+    });
+}
+
+        // 구글 Maps API가 불러진 뒤 실행
+        window.initAutocomplete = initAutocomplete;
+    </script>
+
+    <script th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${@environment.getProperty('google.maps.api-key')} + '&libraries=places&callback=initAutocomplete'"
+            async defer></script>
+</div>
