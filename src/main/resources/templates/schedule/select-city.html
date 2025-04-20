@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+  <link rel="stylesheet" href="/css/select-city.css">
+  <title>여행지 선택</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <div class="container">
+    <h1>떠나고 싶은 도시를 선택해주세요</h1>
+
+    <form id="destinationForm" th:action="@{/schedule/question/date}" method="get">
+      <input type="hidden" name="selectedCity" id="selectedCity"/>
+
+      <div th:each="entry : ${cities.groupedCities}" class="country-group">
+        <div class="country-name" th:text="${entry.key}">국가명</div>
+        <div class="city-list">
+          <div th:each="city : ${entry.value}"
+               class="city-item"
+               th:text="${city.name}"
+               th:data-city="${city.name}"
+               onclick="selectCity(this)">
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="next-button">다음</button>
+    </form>
+  </div>
+
+  <script>
+    function selectCity(el) {
+      document.querySelectorAll('.city-item').forEach(e => e.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('selectedCity').value = el.dataset.city;
+    }
+  </script>
+</div>
+</body>
+</html>
