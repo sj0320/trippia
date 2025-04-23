@@ -133,8 +133,17 @@
     <!-- 장소 검색 모달 -->
     <div id="placeModal">
         <label for="autocomplete" style="font-weight: bold;">장소 검색</label>
-        <input id="autocomplete" type="text" placeholder="장소 검색..." oninput="handleInput()">
-        <div id="recommendationList"></div>
+        <!-- 일반 input 필드로 변경 -->
+        <input
+                id="autocomplete"
+                type="text"
+                style="width: 100%; max-width: 500px;"
+                placeholder="장소 검색..."
+                oninput="handleInput()"
+                autocomplete="off"
+        />
+        <!-- 추천 장소 목록 -->
+        <div id="recommendationList" style="margin-top: 1rem;"></div>
         <button onclick="closeModal()">❌ 닫기</button>
     </div>
 
@@ -155,11 +164,30 @@
         let currentEntryList = null;
         let cityIds = /*[[${cityIds}]]*/ [1, 2, 3]; // 서버에서 모델로 넘긴 도시 ID 리스트
 
+        let debounceTimer;
+        const DEBOUNCE_DELAY = 400;
+
+        document.getElementById('autocomplete').addEventListener('input', function () {
+            const query = this.value.trim();
+
+            // 추천 리스트 표시 여부
+            const list = document.getElementById('recommendationList');
+            list.style.display = 'block';
+
+            // 디바운스 적용
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                loadRecommendations(cityIds, query);
+            }, DEBOUNCE_DELAY);
+        });
+
         function openPlaceModal(button) {
             currentEntryList = button.closest('.day-card').querySelector('.entry-list');
             document.getElementById('placeModal').style.display = 'block';
-            document.getElementById('autocomplete').value = '';
-            document.getElementById('recommendationList').style.display = 'block';
+            const input = document.getElementById('autocomplete');
+            const list = document.getElementById('recommendationList');
+            input.value = '';
+            list.style.display = 'block';
             loadRecommendations(cityIds);
         }
 
@@ -167,29 +195,84 @@
             document.getElementById('placeModal').style.display = 'none';
         }
 
-        function handleInput() {
-            const input = document.getElementById('autocomplete').value;
-            document.getElementById('recommendationList').style.display = input.trim() === '' ? 'block' : 'none';
-        }
-
-        function loadRecommendations(cityIds) {
-            const queryParam = cityIds.map(id => `cityIds=${id}`).join('&');
+        function loadRecommendations(cityIds, query = '') {
+            const queryParam = cityIds.map(id => `cityIds=${id}`).join('&') + (query ? `&query=${encodeURIComponent(query)}` : '');
             fetch(`/travel/places/recommend?${queryParam}`)
                 .then(res => res.json())
                 .then(places => {
                     const list = document.getElementById('recommendationList');
                     list.innerHTML = '';
+
+                    if (places.length === 0) {
+                        list.innerHTML = '<p>추천 장소가 없습니다.</p>';
+                        return;
+                    }
+
                     places.forEach(place => {
                         const div = document.createElement('div');
                         div.className = 'recommend-item';
-                        div.innerText = `📍 ${place.name}`;
+                        div.style.border = '1px solid #ccc';
+                        div.style.padding = '10px';
+                        div.style.marginBottom = '10px';
+                        div.style.borderRadius = '8px';
+                        div.style.cursor = 'pointer';
+                        div.style.display = 'flex';
+                        div.style.alignItems = 'center';
+                        div.style.gap = '10px';
+
+                        // 썸네일 이미지
+                        if (place.thumbnailUrl) {
+                            const img = document.createElement('img');
+                            img.src = place.thumbnailUrl;
+                            img.alt = place.placeName;
+                            img.style.width = '60px';
+                            img.style.height = '60px';
+                            img.style.borderRadius = '6px';
+                            img.style.objectFit = 'cover';
+                            div.appendChild(img);
+                        }
+
+                        // 텍스트 정보
+                        const infoDiv = document.createElement('div');
+                        infoDiv.style.flex = '1';
+
+                        const nameEl = document.createElement('div');
+                        nameEl.style.fontWeight = 'bold';
+                        nameEl.innerText = `📍 ${place.placeName}`;
+                        infoDiv.appendChild(nameEl);
+
+                        const addressEl = document.createElement('div');
+                        addressEl.style.fontSize = '0.9rem';
+                        addressEl.style.color = '#555';
+                        addressEl.innerText = place.address;
+                        infoDiv.appendChild(addressEl);
+
+                        if (place.themes && place.themes.length > 0) {
+                            const themeContainer = document.createElement('div');
+                            place.themes.forEach(theme => {
+                                const tag = document.createElement('span');
+                                tag.innerText = theme;
+                                tag.style.fontSize = '0.75rem';
+                                tag.style.background = '#f0f0f0';
+                                tag.style.color = '#333';
+                                tag.style.padding = '2px 6px';
+                                tag.style.marginRight = '5px';
+                                tag.style.borderRadius = '4px';
+                                themeContainer.appendChild(tag);
+                            });
+                            infoDiv.appendChild(themeContainer);
+                        }
+
+                        div.appendChild(infoDiv);
+
                         div.onclick = () => {
                             const entry = document.createElement('div');
                             entry.className = 'entry-item';
-                            entry.innerText = `📍 ${place.name} (${place.address})`;
+                            entry.innerText = `📍 ${place.placeName} (${place.address})`;
                             currentEntryList.appendChild(entry);
                             closeModal();
                         };
+
                         list.appendChild(div);
                     });
                 });
@@ -205,28 +288,8 @@
                 entryList.appendChild(div);
             }
         }
-
-        function initAutocomplete() {
-            const input = document.getElementById('autocomplete');
-            const autocomplete = new google.maps.places.Autocomplete(input);
-
-            autocomplete.addListener('place_changed', function () {
-                const place = autocomplete.getPlace();
-                if (!place.name) return;
-
-                const div = document.createElement('div');
-                div.className = 'entry-item';
-                div.innerText = `📍 ${place.name} (${place.formatted_address || ''})`;
-                currentEntryList.appendChild(div);
-                closeModal();
-            });
-        }
-
-        window.initAutocomplete = initAutocomplete;
     </script>
 
-    <script th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${@environment.getProperty('google.maps.api-key')} + '&libraries=places&callback=initAutocomplete'"
-            async defer></script>
 </div>
 </body>
 </html>
