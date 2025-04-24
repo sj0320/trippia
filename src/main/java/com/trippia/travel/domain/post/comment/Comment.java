@@ -17,8 +17,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Comment {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="comment_id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "comment_id")
     private Long id;
 
     @ManyToOne
@@ -33,7 +34,7 @@ public class Comment {
 
     private LocalDateTime createdAt;
 
-    public static Comment createComment(User user,Diary diary, String content){
+    public static Comment createComment(User user, Diary diary, String content) {
         return Comment.builder()
                 .user(user)
                 .diary(diary)
@@ -42,8 +43,8 @@ public class Comment {
                 .build();
     }
 
-    public void assignDiary(Diary diary){
-        if(!diary.getComments().contains(this)){
+    public void assignDiary(Diary diary) {
+        if (this.diary == null || !this.diary.equals(diary)) {
             this.diary = diary;
         }
     }

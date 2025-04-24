@@ -72,12 +72,6 @@ public class DiaryService {
         updateDiaryThemes(diary, request.getThemeIds());
     }
 
-    public List<DiaryListResponse> getDiaryList() {
-        List<Diary> diaries = diaryClient.findAllDiary();
-        return DiaryListResponse.from(diaries);
-    }
-
-
     public Slice<DiaryListResponse> searchDiaryList(DiarySearchCondition condition, CursorData cursorData, Pageable pageable) {
         Slice<Diary> diaries = diaryClient.searchDiariesWithConditions(condition, cursorData ,pageable);
         List<DiaryListResponse> content = DiaryListResponse.from(diaries.getContent());

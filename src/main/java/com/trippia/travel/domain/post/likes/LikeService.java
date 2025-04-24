@@ -18,7 +18,7 @@ public class LikeService {
     private final DiaryRepository diaryRepository;
 
     @Transactional
-    public int likeDiary(String email, Long diaryId) throws Exception {
+    public int likeDiary(String email, Long diaryId) {
         User user = getUserByEmail(email);
         Diary diary = getDiary(diaryId);
         if (!likeRepository.existsByUserAndDiary(user, diary)) {
