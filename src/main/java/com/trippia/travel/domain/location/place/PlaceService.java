@@ -6,13 +6,11 @@ import com.trippia.travel.domain.location.LatLng;
 import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.location.city.CityRepository;
 import com.trippia.travel.exception.city.CityException;
+import com.trippia.travel.util.HttpClient;
 import com.trippia.travel.util.PlaceTypeMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -46,8 +44,8 @@ public class PlaceService {
     }
 
     private final CityRepository cityRepository;
-    private final OkHttpClient httpClient = new OkHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final HttpClient httpClient;
 
     public Set<RecommendPlaceResponse> getRecommendPlacesByType(List<Long> cityIds, String placeType) {
         log.info("result={}", getPlacesByCityAndType(cityIds, placeType).toString());
@@ -75,7 +73,13 @@ public class PlaceService {
         String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8);
         String autoCompletedUrl = autoCompletedFormat.formatted(encodedQuery, latLng.lat(), latLng.lng());
 
-        JsonNode results = getJsonResponseByUrl(autoCompletedUrl).get("results");
+
+        log.info("자동검색 query={}", query);
+        log.info("autoCompletedUrl={}", autoCompletedUrl);
+
+        JsonNode results = getJsonResponseByUrl(autoCompletedUrl).get("predictions");
+
+        log.info("auto results={}", results);
 
         Set<RecommendPlaceResponse> places = new HashSet<>();
         if (results != null && results.isArray()) {
@@ -117,19 +121,24 @@ public class PlaceService {
         return recommendedPlaces;
     }
 
-    private RecommendPlaceResponse toRecommendPlaceResponse(JsonNode nearByLocation) {
-        String placeId = nearByLocation.path("place_id").asText();
-        String name = nearByLocation.path("name").asText();
+    private RecommendPlaceResponse toRecommendPlaceResponse(JsonNode location) {
+        String placeId = location.path("place_id").asText();
+        String name = location.path("name").asText();
+        if (name.isEmpty()) {
+            // 'name' 값이 없을 경우 'main_text'로 대체
+            JsonNode structuredFormatting = location.path("structured_formatting");
+            name = structuredFormatting.path("main_text").asText();
+        }
 
-        // 'vicinity' 값이 없을 경우 'secondary_text'로 대체
-        String address = nearByLocation.path("vicinity").asText();
+        String address = location.path("vicinity").asText();
         if (address.isEmpty()) {
+            // 'vicinity' 값이 없을 경우 'secondary_text'로 대체
             log.info("!!!!!!!!");
-            JsonNode structuredFormatting = nearByLocation.path("structured_formatting");
+            JsonNode structuredFormatting = location.path("structured_formatting");
             address = structuredFormatting.path("secondary_text").asText();
         }
 
-        Set<String> themes = getPlaceThemes(nearByLocation);
+        Set<String> themes = getPlaceThemes(location);
         return new RecommendPlaceResponse(placeId, name, address, themes);
     }
 
@@ -146,7 +155,8 @@ public class PlaceService {
     }
 
     private JsonNode getJsonResponseByUrl(String url) throws IOException {
-        String response = sendGetRequest(url);
+        String response = httpClient.get(url);
+        log.info("url response={}",response);
         return objectMapper.readTree(response);
     }
 
@@ -158,17 +168,6 @@ public class PlaceService {
             throw new CityException("해당 도시를 찾을 수 없습니다.");
         }
         return new LatLng(location.get("lat").asDouble(), location.get("lng").asDouble());
-    }
-
-    private String sendGetRequest(String url) throws IOException {
-        Request request = new Request.Builder().url(url).get().build();
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-            if (response.body() != null) {
-                return response.body().string();
-            }
-            return "";
-        }
     }
 
     private List<String> getCityNames(List<Long> cityIds) {

@@ -17,7 +17,6 @@ public class PlaceDto {
         private String placeName;
         private String address;
         private Set<String> themes = new HashSet<>();
-//        private String thumbnailUrl;
     }
 
 
