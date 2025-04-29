@@ -3,10 +3,14 @@ package com.trippia.travel.domain.location.city;
 import com.trippia.travel.domain.common.CityType;
 import com.trippia.travel.domain.location.country.Country;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class City {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,4 +26,10 @@ public class City {
     @Enumerated(EnumType.STRING)
     private CityType cityType;
 
+    @Builder
+    private City(String name, Country country, CityType cityType) {
+        this.name = name;
+        this.country = country;
+        this.cityType = cityType;
+    }
 }

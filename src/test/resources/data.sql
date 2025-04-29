@@ -1,3 +1,3 @@
-INSERT INTO theme (theme_id, name) VALUES (1, '힐링');
-INSERT INTO country (country_id, name) VALUES (1, '한국');
-INSERT INTO city (city_id, name, country_id, city_type) VALUES (1, '서울', 1, 'KOREA');
+--INSERT INTO theme (theme_id, name) VALUES (1, '힐링');
+--INSERT INTO country (country_id, name) VALUES (1, '한국');
+--INSERT INTO city (city_id, name, country_id, city_type) VALUES (1, '서울', 1, 'KOREA');
