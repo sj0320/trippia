@@ -6,7 +6,6 @@ import com.trippia.travel.domain.common.TravelCompanion;
 import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.post.comment.Comment;
 import com.trippia.travel.domain.user.User;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -20,14 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class DiaryTest {
 
     private static City stubCity;
-
-    @BeforeAll
-    static void setUp() {
-        stubCity = new City() {
-            @Override public Long getId() { return 1L; }
-            @Override public String getName() { return "서울"; }
-        };
-    }
 
     @DisplayName("여행일지를 생성한다.")
     @Test
