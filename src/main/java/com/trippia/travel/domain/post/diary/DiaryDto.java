@@ -3,6 +3,7 @@ package com.trippia.travel.domain.post.diary;
 import com.trippia.travel.domain.common.TravelCompanion;
 import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.theme.Theme;
+import com.trippia.travel.domain.user.User;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -62,6 +63,23 @@ public class DiaryDto {
         private List<Long> themeIds; // 선택된 Theme ID 리스트
 
         private String themeNames;
+
+        public Diary toEntity(User user, City city, String thumbnailUrl) {
+            return Diary.builder()
+                    .user(user)
+                    .city(city)
+                    .title(this.title)
+                    .content(this.content)
+                    .thumbnail(thumbnailUrl)
+                    .startDate(this.startDate)
+                    .endDate(this.endDate)
+                    .companion(TravelCompanion.fromString(this.companion))
+                    .rating(this.rating)
+                    .totalBudget(this.totalBudget)
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .build();
+        }
 
     }
 

@@ -3,6 +3,7 @@ package com.trippia.travel.domain.post.likes;
 import com.trippia.travel.domain.post.diary.Diary;
 import com.trippia.travel.domain.user.User;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -10,8 +11,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Builder
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Likes {
 
@@ -29,4 +29,10 @@ public class Likes {
 
     private LocalDateTime createdAt;
 
+    @Builder
+    private Likes(Diary diary, User user) {
+        this.diary = diary;
+        this.user = user;
+        this.createdAt = LocalDateTime.now();
+    }
 }

@@ -133,7 +133,6 @@ public class PlaceService {
         String address = location.path("vicinity").asText();
         if (address.isEmpty()) {
             // 'vicinity' 값이 없을 경우 'secondary_text'로 대체
-            log.info("!!!!!!!!");
             JsonNode structuredFormatting = location.path("structured_formatting");
             address = structuredFormatting.path("secondary_text").asText();
         }

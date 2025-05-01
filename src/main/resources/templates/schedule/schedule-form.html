@@ -18,57 +18,108 @@
             background-color: #ffffff;
             padding: 20px;
             border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .day-title {
-            font-size: 1.3rem;
-            font-weight: bold;
+            font-size: 1.2rem;
             margin-bottom: 15px;
             color: #333;
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
         }
+
+        .day-title strong {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .day-date {
+            font-size: 0.95rem;
+            color: #777;
+        }
+
 
         .btn {
             margin-right: 10px;
-            padding: 8px 14px;
+            padding: 10px 16px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 0.95rem;
-            transition: background-color 0.2s ease;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
         }
 
         .btn-location {
-            background-color: #4CAF50;
+            background-color: #6c757d; /* 회색 */
             color: white;
         }
 
         .btn-location:hover {
-            background-color: #45a049;
+            background-color: #5a6268; /* 어두운 회색 */
         }
 
         .btn-memo {
-            background-color: #2196F3;
+            background-color: #f0ad4e; /* 금색 */
             color: white;
         }
 
         .btn-memo:hover {
-            background-color: #1976D2;
+            background-color: #ec971f; /* 더 어두운 금색 */
         }
 
         .entry-list {
             margin-top: 15px;
         }
 
-        .entry-item {
-            background-color: #f1f1f1;
-            padding: 10px 14px;
-            margin-bottom: 8px;
-            border-radius: 6px;
-            font-size: 0.95rem;
+        .entry-row {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 6px;
         }
 
-        /* 모달 스타일 */
+        .circle-number {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            border-radius: 50%;
+            background-color: #495057; /* 미드나잇 블루 */
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+
+        .circle-blank {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            border-radius: 50%;
+            background-color: #ced4da; /* 연한 회색 */
+            margin-right: 10px;
+        }
+
+        .entry-item {
+            background-color: #f8f9fa; /* 연한 회색 배경 */
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            flex: 1;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .distance-item {
+            margin-left: 36px;
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
         #placeModal {
             display: none;
             position: fixed;
@@ -85,9 +136,9 @@
 
         #autocomplete {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             font-size: 1rem;
-            border: 1px solid #ccc;
+            border: 1px solid #ddd;
             border-radius: 8px;
             margin-bottom: 10px;
         }
@@ -103,14 +154,14 @@
         }
 
         .recommend-item {
-            padding: 8px;
+            padding: 10px;
             cursor: pointer;
-            border-radius: 6px;
-            transition: background-color 0.2s ease;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
         }
 
         .recommend-item:hover {
-            background-color: #e0f7fa;
+            background-color: #e9ecef; /* 회색 강조 */
         }
 
         #placeModal button {
@@ -130,19 +181,9 @@
 <body>
 <div layout:fragment="content">
 
-    <!-- 장소 검색 모달 -->
     <div id="placeModal">
         <label for="autocomplete" style="font-weight: bold;">장소 검색</label>
-        <!-- 일반 input 필드로 변경 -->
-        <input
-                id="autocomplete"
-                type="text"
-                style="width: 100%; max-width: 500px;"
-                placeholder="장소 검색..."
-                oninput="handleInput()"
-                autocomplete="off"
-        />
-        <!-- 추천 장소 목록 -->
+        <input id="autocomplete" type="text" placeholder="장소 검색..." autocomplete="off"/>
         <div id="recommendationList" style="margin-top: 1rem;"></div>
         <button onclick="closeModal()">❌ 닫기</button>
     </div>
@@ -150,31 +191,25 @@
     <div class="itinerary-container">
         <div th:each="day, iterStat : ${dateList}" class="day-card">
             <div class="day-title">
-                Day [[${iterStat.index + 1}]] ([[${day}]])
+                <strong th:text="${iterStat.index + 1} + '일차'"></strong>
+                <span class="day-date" th:text="${day}"></span>
             </div>
-
             <button class="btn btn-location" onclick="openPlaceModal(this)">➕ 장소 추가</button>
             <button class="btn btn-memo" onclick="addMemo(this)">📝 메모 추가</button>
-
             <div class="entry-list"></div>
         </div>
     </div>
 
     <script>
         let currentEntryList = null;
-        let cityIds = /*[[${cityIds}]]*/ [1, 2, 3]; // 서버에서 모델로 넘긴 도시 ID 리스트
-
+        let cityIds = /*[[${cityIds}]]*/ [1, 2, 3];
         let debounceTimer;
         const DEBOUNCE_DELAY = 400;
 
         document.getElementById('autocomplete').addEventListener('input', function () {
             const query = this.value.trim();
-
-            // 추천 리스트 표시 여부
             const list = document.getElementById('recommendationList');
             list.style.display = 'block';
-
-            // 디바운스 적용
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
                 loadRecommendations(cityIds, query);
@@ -182,12 +217,18 @@
         });
 
         function openPlaceModal(button) {
-            currentEntryList = button.closest('.day-card').querySelector('.entry-list');
+            const dayCard = button.closest('.day-card');
+            currentEntryList = dayCard.querySelector('.entry-list');
+
             document.getElementById('placeModal').style.display = 'block';
+
             const input = document.getElementById('autocomplete');
             const list = document.getElementById('recommendationList');
+
             input.value = '';
+            list.innerHTML = '<p>🔄 장소 추천을 불러오는 중...</p>';
             list.style.display = 'block';
+
             loadRecommendations(cityIds);
         }
 
@@ -202,94 +243,170 @@
                 .then(places => {
                     const list = document.getElementById('recommendationList');
                     list.innerHTML = '';
-
                     if (places.length === 0) {
                         list.innerHTML = '<p>추천 장소가 없습니다.</p>';
                         return;
                     }
-
                     places.forEach(place => {
                         const div = document.createElement('div');
                         div.className = 'recommend-item';
-                        div.style.border = '1px solid #ccc';
-                        div.style.padding = '10px';
+                        div.style.padding = '15px';
                         div.style.marginBottom = '10px';
+                        div.style.backgroundColor = '#fff';
                         div.style.borderRadius = '8px';
+                        div.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
                         div.style.cursor = 'pointer';
+                        div.style.transition = 'transform 0.3s ease';
                         div.style.display = 'flex';
-                        div.style.alignItems = 'center';
-                        div.style.gap = '10px';
+                        div.style.flexDirection = 'column';
 
-                        // 썸네일 이미지
-                        if (place.thumbnailUrl) {
-                            const img = document.createElement('img');
-                            img.src = place.thumbnailUrl;
-                            img.alt = place.placeName;
-                            img.style.width = '60px';
-                            img.style.height = '60px';
-                            img.style.borderRadius = '6px';
-                            img.style.objectFit = 'cover';
-                            div.appendChild(img);
-                        }
+                        // 장소 이름과 주소
+                        const titleDiv = document.createElement('div');
+                        titleDiv.style.fontWeight = 'bold';
+                        titleDiv.style.fontSize = '1.1rem';
+                        titleDiv.style.color = '#333';
+                        titleDiv.innerText = `${place.placeName}`;
+                        div.appendChild(titleDiv);
 
-                        // 텍스트 정보
-                        const infoDiv = document.createElement('div');
-                        infoDiv.style.flex = '1';
+                        const addressDiv = document.createElement('div');
+                        addressDiv.style.fontSize = '0.9rem';
+                        addressDiv.style.color = '#666';
+                        addressDiv.style.marginBottom = '10px';
+                        addressDiv.innerText = `${place.address}`;
+                        div.appendChild(addressDiv);
 
-                        const nameEl = document.createElement('div');
-                        nameEl.style.fontWeight = 'bold';
-                        nameEl.innerText = `📍 ${place.placeName}`;
-                        infoDiv.appendChild(nameEl);
-
-                        const addressEl = document.createElement('div');
-                        addressEl.style.fontSize = '0.9rem';
-                        addressEl.style.color = '#555';
-                        addressEl.innerText = place.address;
-                        infoDiv.appendChild(addressEl);
-
+                        // 테마 태그
                         if (place.themes && place.themes.length > 0) {
-                            const themeContainer = document.createElement('div');
+                            const tagContainer = document.createElement('div');
+                            tagContainer.style.marginBottom = '8px';
+                            tagContainer.style.display = 'flex';
+                            tagContainer.style.flexWrap = 'wrap';
+
                             place.themes.forEach(theme => {
                                 const tag = document.createElement('span');
                                 tag.innerText = theme;
-                                tag.style.fontSize = '0.75rem';
-                                tag.style.background = '#f0f0f0';
-                                tag.style.color = '#333';
-                                tag.style.padding = '2px 6px';
-                                tag.style.marginRight = '5px';
-                                tag.style.borderRadius = '4px';
-                                themeContainer.appendChild(tag);
+                                tag.style.backgroundColor = '#e0f7fa';
+                                tag.style.color = '#00796b';
+                                tag.style.fontSize = '0.85rem';
+                                tag.style.padding = '5px 10px';
+                                tag.style.marginRight = '8px';
+                                tag.style.marginBottom = '5px';
+                                tag.style.borderRadius = '16px';
+                                tag.style.border = '1px solid #00796b';
+                                tag.style.transition = 'background-color 0.2s ease';
+                                tag.style.cursor = 'pointer';
+
+                                // 태그 hover 효과
+                                tag.onmouseenter = () => tag.style.backgroundColor = '#00796b';
+                                tag.onmouseleave = () => tag.style.backgroundColor = '#e0f7fa';
+                                tagContainer.appendChild(tag);
                             });
-                            infoDiv.appendChild(themeContainer);
+                            div.appendChild(tagContainer);
                         }
 
-                        div.appendChild(infoDiv);
-
-                        div.onclick = () => {
-                            const entry = document.createElement('div');
-                            entry.className = 'entry-item';
-                            entry.innerText = `📍 ${place.placeName} (${place.address})`;
-                            currentEntryList.appendChild(entry);
-                            closeModal();
-                        };
-
+                        div.onclick = () => handlePlaceClick(place.placeId);
                         list.appendChild(div);
                     });
                 });
+        }
+
+        function handlePlaceClick(placeId) {
+            const service = new google.maps.places.PlacesService(document.createElement('div'));
+            service.getDetails({ placeId: placeId }, (result, status) => {
+                if (status !== google.maps.places.PlacesServiceStatus.OK) {
+                    alert("장소 정보를 가져올 수 없습니다.");
+                    return;
+                }
+
+                const placeEntry = {
+                    name: result.name,
+                    address: result.formatted_address || result.vicinity,
+                    latitude: result.geometry.location.lat(),
+                    longitude: result.geometry.location.lng(),
+                };
+
+                const entries = currentEntryList.querySelectorAll('.entry-item[data-latitude]');
+                let lastPlace = null;
+                if (entries.length > 0) {
+                    const last = entries[entries.length - 1];
+                    lastPlace = {
+                        latitude: parseFloat(last.dataset.latitude),
+                        longitude: parseFloat(last.dataset.longitude),
+                    };
+                }
+
+                const placeCount = currentEntryList.querySelectorAll('.circle-number').length + 1;
+
+                const addNumber = () => {
+                    const row = document.createElement('div');
+                    row.className = 'entry-row';
+
+                    const circle = document.createElement('div');
+                    circle.className = 'circle-number';
+                    circle.innerText = placeCount;
+
+                    const placeDiv = document.createElement('div');
+                    placeDiv.className = 'entry-item';
+                    placeDiv.innerText = `📍 ${placeEntry.name} (${placeEntry.address})`;
+                    placeDiv.dataset.latitude = placeEntry.latitude;
+                    placeDiv.dataset.longitude = placeEntry.longitude;
+
+                    row.appendChild(circle);
+                    row.appendChild(placeDiv);
+                    currentEntryList.appendChild(row);
+                };
+
+                if (lastPlace) {
+                    calculateDistanceAndDisplay(lastPlace, placeEntry, (distanceText) => {
+                        const distanceDiv = document.createElement('div');
+                        distanceDiv.className = 'distance-item';
+                        distanceDiv.innerText = `거리: ${distanceText}`;
+                        currentEntryList.appendChild(distanceDiv);
+                        addNumber();
+                        closeModal();
+                    });
+                } else {
+                    addNumber();
+                    closeModal();
+                }
+            });
+        }
+
+        function calculateDistanceAndDisplay(prevPlace, newPlace, callback) {
+            const R = 6371;
+            const toRad = deg => deg * Math.PI / 180;
+            const dLat = toRad(newPlace.latitude - prevPlace.latitude);
+            const dLon = toRad(newPlace.longitude - prevPlace.longitude);
+            const lat1 = toRad(prevPlace.latitude);
+            const lat2 = toRad(newPlace.latitude);
+            const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const distance = R * c;
+            callback(`${distance.toFixed(2)} km`);
         }
 
         function addMemo(button) {
             const entryList = button.closest('.day-card').querySelector('.entry-list');
             const memo = prompt("메모를 입력하세요:");
             if (memo) {
+                const row = document.createElement('div');
+                row.className = 'entry-row';
+
+                const circle = document.createElement('div');
+                circle.className = 'circle-blank';
+
                 const div = document.createElement('div');
                 div.className = 'entry-item';
                 div.innerText = `📝 ${memo}`;
-                entryList.appendChild(div);
+
+                row.appendChild(circle);
+                row.appendChild(div);
+                entryList.appendChild(row);
             }
         }
     </script>
 
+    <script th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${@environment.getProperty('google.maps.api-key')} + '&libraries=places,geometry&loading=async'" async></script>
 </div>
 </body>
 </html>

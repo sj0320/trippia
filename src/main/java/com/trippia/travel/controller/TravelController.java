@@ -41,8 +41,8 @@ public class TravelController {
     }
 
     @PostMapping("/plan/new")
-    public String createSchedule(@CurrentUser String email,
-                                 @ModelAttribute PlanCreateRequest request, Model model) {
+    public String createSchedule(@CurrentUser String email, @ModelAttribute PlanCreateRequest request,
+                                 Model model) {
 
         LocalDate startDate = LocalDate.parse(request.getStartDate());
         LocalDate endDate = LocalDate.parse(request.getEndDate());

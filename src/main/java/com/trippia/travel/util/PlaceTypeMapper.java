@@ -40,6 +40,8 @@ public class PlaceTypeMapper {
 
             // 쇼핑/휴식
             Map.entry("shopping_mall", "쇼핑몰"),
+            Map.entry("store", "쇼핑몰"),
+            Map.entry("clothing_store", "쇼핑몰"),
             Map.entry("park", "공원"),
 
             // 기타

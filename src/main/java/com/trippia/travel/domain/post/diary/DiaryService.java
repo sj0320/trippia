@@ -48,7 +48,7 @@ public class DiaryService {
         City city = getCity(request.getCityId());
         String thumbnailUrl = fileService.uploadFile(thumbnail).getUrl();
 
-        Diary diary = Diary.createDiary(request, user, city, thumbnailUrl);
+        Diary diary = request.toEntity(user, city, thumbnailUrl);
 
         diaryClient.saveDiary(diary);
         saveDiaryThemes(request.getThemeIds(), diary);
@@ -89,11 +89,13 @@ public class DiaryService {
         return DiaryDetailResponse.from(diary, themes);
     }
 
+    @Transactional
     public void addViewCount(Long diaryId, String ip, String userAgent) {
         String hash = DigestUtils.md5DigestAsHex((ip + userAgent).getBytes());
         String redisKey = String.format(VIEW_DIARY_REDIS_KEY, diaryId, hash);
         if (Boolean.FALSE.equals(redisTemplate.hasKey(redisKey))) {
-            diaryClient.addDiaryViewCount(diaryId);
+            Diary diary = getDiary(diaryId);
+            diary.addViewCount();
             redisTemplate.opsForValue().set(redisKey, "viewed", Duration.ofHours(24));
         }
     }

@@ -75,10 +75,4 @@ public class DiaryClientImpl implements DiaryClient {
         return diaryRepository.searchDiariesWithConditions(condition, cursorData, pageable);
     }
 
-    @Override
-    public void addDiaryViewCount(Long diaryId) {
-        diaryRepository.addViewCount(diaryId);
-    }
-
-
 }
