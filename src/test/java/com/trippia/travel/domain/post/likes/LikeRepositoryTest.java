@@ -1,20 +1,21 @@
-package com.trippia.travel.domain.post.diary;
+package com.trippia.travel.domain.post.likes;
 
+import com.trippia.travel.TestConfig;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
-import com.trippia.travel.domain.common.TravelCompanion;
 import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.location.city.CityRepository;
 import com.trippia.travel.domain.location.country.Country;
 import com.trippia.travel.domain.location.country.CountryRepository;
-import com.trippia.travel.domain.post.comment.Comment;
+import com.trippia.travel.domain.post.diary.Diary;
+import com.trippia.travel.domain.post.diary.DiaryRepository;
 import com.trippia.travel.domain.user.User;
 import com.trippia.travel.domain.user.UserRepository;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
@@ -22,88 +23,86 @@ import java.util.List;
 
 import static com.trippia.travel.domain.common.CityType.*;
 import static com.trippia.travel.domain.post.diary.DiaryDto.SaveRequest;
-import static com.trippia.travel.domain.post.diary.DiaryDto.UpdateDiaryDto;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ActiveProfiles("test")
-@SpringBootTest
-class DiaryTest {
+@Import(TestConfig.class)
+@DataJpaTest
+class LikeRepositoryTest {
+
+    @Autowired
+    private LikeRepository likeRepository;
 
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
+    private CityRepository cityRepository;
+
+    @Autowired
     private CountryRepository countryRepository;
 
     @Autowired
-    private CityRepository cityRepository;
+    private DiaryRepository diaryRepository;
 
-    @AfterEach
-    void tearDown() {
-        userRepository.deleteAllInBatch();
-    }
 
-    @DisplayName("여행일지를 생성한다.")
+    @DisplayName("사용자가 해당 여행일지에 좋아요를 남기지 않았다면 false를 반환한다.")
     @Test
-    void createDiary() {
+    void existsByUserAndDiary_false() {
         // given
         City seoul = setupCountriesAndCities();
         User user = createUser();
-        SaveRequest request= createDiarySaveRequest(seoul.getId());
+        SaveRequest request = createDiarySaveRequest(seoul.getId());
+        Diary diary = request.toEntity(user, seoul, "thumbnail");
+        diaryRepository.save(diary);
+
         // when
-        Diary diary = request.toEntity(user, seoul, "thumbnail");
-
+        boolean result = likeRepository.existsByUserAndDiary(user, diary);
         // then
-        assertThat(diary.getUser()).isEqualTo(user);
-        assertThat(diary.getCity().getName()).isEqualTo(seoul.getName());
-        assertThat(diary.getCompanion().name()).isEqualTo("FRIEND");
+        assertThat(result).isFalse();
     }
 
-    @DisplayName("여행일지를 수정한다.")
+    @DisplayName("사용자가 여행일지에 좋아요를 남겼다면 true를 반환한다.")
     @Test
-    void updateDiary() {
+    void existsByUserAndDiary_true() {
         // given
         City seoul = setupCountriesAndCities();
         User user = createUser();
-        SaveRequest request= createDiarySaveRequest(seoul.getId());
+        SaveRequest request = createDiarySaveRequest(seoul.getId());
         Diary diary = request.toEntity(user, seoul, "thumbnail");
-        UpdateDiaryDto updateDiaryDto = UpdateDiaryDto.builder()
-                .title("부산 여행")
-                .companion(TravelCompanion.FRIEND)
+        diaryRepository.save(diary);
+        Likes like = Likes.builder()
+                .diary(diary)
+                .user(user)
                 .build();
+        likeRepository.save(like);
         // when
-        diary.update(updateDiaryDto);
+        boolean result = likeRepository.existsByUserAndDiary(user, diary);
         // then
-        assertThat(diary.getTitle()).isEqualTo("부산 여행");
-        assertThat(diary.getCompanion()).isEqualTo(TravelCompanion.FRIEND);
+        assertThat(result).isTrue();
     }
 
+    @DisplayName("사용자가 여행일지에 누른 좋아요를 취소한다.")
     @Test
-    @DisplayName("좋아요 추가/취소 테스트")
-    void addAndCancelLike() {
-        Diary diary = Diary.builder().likeCount(0).build();
-
-        diary.addLike();
-        diary.addLike();
-
-        assertThat(diary.getLikeCount()).isEqualTo(2);
-
-        diary.cancelLike();
-        assertThat(diary.getLikeCount()).isEqualTo(1);
-    }
-
-    @DisplayName("댓글 작성을 작성한다.")
-    @Test
-    void addComment() {
+    void deleteByUserAndDiary() {
         // given
-        Diary diary = Diary.builder().build();
-        Comment comment = Comment.builder().content("test").build();
+        City seoul = setupCountriesAndCities();
+        User user = createUser();
+        SaveRequest request = createDiarySaveRequest(seoul.getId());
+        Diary diary = request.toEntity(user, seoul, "thumbnail");
+        diaryRepository.save(diary);
+        Likes like = Likes.builder()
+                .diary(diary)
+                .user(user)
+                .build();
+        likeRepository.save(like);
         // when
-        diary.addComment(comment);
+        likeRepository.deleteByUserAndDiary(user,diary);
         // then
-        assertThat(diary.getComments()).hasSize(1);
-        assertThat(comment.getDiary()).isEqualTo(diary); // 양방향 매핑 확인
+        boolean result = likeRepository.existsByUserAndDiary(user, diary);
+        assertThat(result).isFalse();
     }
+
 
     private User createUser() {
         User user = User.builder()
@@ -175,5 +174,4 @@ class DiaryTest {
         cityRepository.saveAll(List.of(city1, city2, city3, city4, city5, city6));
         return city1;
     }
-
 }

@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.trippia.travel.domain.post.diary.DiaryDto.SaveRequest;
 import static com.trippia.travel.domain.post.diary.DiaryDto.UpdateDiaryDto;
 
 @Entity
@@ -67,24 +66,6 @@ public class Diary {
 
     private LocalDateTime updatedAt;
 
-    @Builder
-    public static Diary createDiary(SaveRequest request, User user, City city, String thumbnail) {
-        return Diary.builder()
-                .user(user)
-                .city(city)
-                .title(request.getTitle())
-                .content(request.getContent())
-                .thumbnail(thumbnail)
-                .startDate(request.getStartDate())
-                .endDate(request.getEndDate())
-                .companion(TravelCompanion.fromString(request.getCompanion()))
-                .rating(request.getRating())
-                .totalBudget(request.getTotalBudget())
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
-    }
-
     public void update(UpdateDiaryDto dto) {
         this.title = dto.getTitle();
         this.content = dto.getContent();
@@ -98,18 +79,21 @@ public class Diary {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public int addLike(){
+    public int addLike() {
         return ++likeCount;
     }
 
-    public int cancelLike(){
+    public int cancelLike() {
         return --likeCount;
     }
 
-    public void addComment(Comment comment){
+    public void addComment(Comment comment) {
         this.comments.add(comment);
         comment.assignDiary(this);
     }
 
 
+    public void addViewCount() {
+        this.viewCount += 1;
+    }
 }

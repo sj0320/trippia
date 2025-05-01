@@ -25,8 +25,6 @@ public interface DiaryClient {
     List<Diary> findAllDiary();
     Optional<Diary> findDiaryById(Long id);
 
-    void addDiaryViewCount(Long id);
-
     List<DiaryTheme> findDiaryThemesByDiaryId(Long diaryId);
 
     Slice<Diary> searchDiariesWithConditions(DiarySearchCondition condition, CursorData cursorData , Pageable pageable);

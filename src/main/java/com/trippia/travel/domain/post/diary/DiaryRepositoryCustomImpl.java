@@ -28,7 +28,6 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
-
     @Override
     public Slice<Diary> searchDiariesWithConditions(DiarySearchCondition condition, CursorData cursorData, Pageable pageable) {
         QDiary diary = QDiary.diary;

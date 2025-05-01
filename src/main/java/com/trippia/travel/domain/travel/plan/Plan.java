@@ -4,6 +4,7 @@ import com.trippia.travel.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
 public class Plan {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

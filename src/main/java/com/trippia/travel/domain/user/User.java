@@ -42,7 +42,7 @@ public class User {
     private LocalDateTime createdAt;
 
     @Builder
-    public User(String email, String password, String nickname, LoginType loginType, Role role, String profileImageUrl) {
+    private User(String email, String password, String nickname, LoginType loginType, Role role, String profileImageUrl) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
