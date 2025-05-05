@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.trippia.travel.domain.post.diary.DiaryDto.UpdateDiaryDto;
+import static com.trippia.travel.controller.dto.DiaryDto.UpdateDiaryDto;
 
 @Entity
 @Builder

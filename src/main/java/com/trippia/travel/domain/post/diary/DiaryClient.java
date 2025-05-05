@@ -10,7 +10,7 @@ import org.springframework.data.domain.Slice;
 import java.util.List;
 import java.util.Optional;
 
-import static com.trippia.travel.domain.post.diary.DiaryDto.*;
+import static com.trippia.travel.controller.dto.DiaryDto.*;
 
 public interface DiaryClient {
 

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static com.trippia.travel.domain.theme.ThemeDto.ThemeResponse;
+import static com.trippia.travel.controller.dto.ThemeDto.ThemeResponse;
 
 @Service
 @RequiredArgsConstructor

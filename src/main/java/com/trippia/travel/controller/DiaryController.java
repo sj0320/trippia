@@ -26,7 +26,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import static com.trippia.travel.domain.post.diary.DiaryDto.*;
+import static com.trippia.travel.controller.dto.DiaryDto.*;
 
 @Controller
 @RequiredArgsConstructor

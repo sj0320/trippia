@@ -1,7 +1,8 @@
-package com.trippia.travel.domain.post.diary;
+package com.trippia.travel.controller.dto;
 
 import com.trippia.travel.domain.common.TravelCompanion;
 import com.trippia.travel.domain.location.city.City;
+import com.trippia.travel.domain.post.diary.Diary;
 import com.trippia.travel.domain.theme.Theme;
 import com.trippia.travel.domain.user.User;
 import jakarta.validation.constraints.Max;
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.trippia.travel.domain.post.comment.CommentDto.CommentResponse;
+import static com.trippia.travel.controller.dto.CommentDto.CommentResponse;
 
 
 public class DiaryDto {

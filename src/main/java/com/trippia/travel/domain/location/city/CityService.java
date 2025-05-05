@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.trippia.travel.domain.location.city.CityDto.*;
+import static com.trippia.travel.controller.dto.CityDto.*;
 
 @Service
 @RequiredArgsConstructor

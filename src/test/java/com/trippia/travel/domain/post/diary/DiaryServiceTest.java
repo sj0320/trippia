@@ -30,18 +30,13 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static com.trippia.travel.domain.common.CityType.JAPAN;
-import static com.trippia.travel.domain.post.diary.DiaryDto.SaveRequest;
+import static com.trippia.travel.controller.dto.DiaryDto.SaveRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @ActiveProfiles("test")
-//@Testcontainers
-//@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class DiaryServiceTest {
-
-//    @Container
-//    static MariaDBContainer MARIADB_CONTAINER = new MariaDBContainer("mariadb:10.11");
 
     @Autowired
     private DiaryService diaryService;

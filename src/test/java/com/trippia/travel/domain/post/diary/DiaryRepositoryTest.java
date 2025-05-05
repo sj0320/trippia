@@ -34,8 +34,8 @@ import java.util.List;
 
 import static com.trippia.travel.domain.common.CityType.JAPAN;
 import static com.trippia.travel.domain.common.CityType.KOREA;
-import static com.trippia.travel.domain.post.diary.DiaryDto.CursorData;
-import static com.trippia.travel.domain.post.diary.DiaryDto.DiarySearchCondition;
+import static com.trippia.travel.controller.dto.DiaryDto.CursorData;
+import static com.trippia.travel.controller.dto.DiaryDto.DiarySearchCondition;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ActiveProfiles("test")

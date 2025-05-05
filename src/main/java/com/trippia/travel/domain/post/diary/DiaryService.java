@@ -24,7 +24,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.trippia.travel.domain.post.diary.DiaryDto.*;
+import static com.trippia.travel.controller.dto.DiaryDto.*;
 import static com.trippia.travel.exception.ErrorMessageSource.START_DATE_AFTER_END_DATE;
 import static com.trippia.travel.exception.ErrorMessageSource.START_DATE_BEFORE_TODAY;
 

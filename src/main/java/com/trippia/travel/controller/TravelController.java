@@ -11,12 +11,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
-import static com.trippia.travel.domain.location.place.PlaceDto.RecommendPlaceResponse;
-import static com.trippia.travel.domain.travel.plan.PlanDto.PlanCreateRequest;
+import static com.trippia.travel.controller.dto.PlaceDto.RecommendPlaceResponse;
+import static com.trippia.travel.controller.dto.PlanDto.PlanCreateRequest;
+import static com.trippia.travel.controller.dto.ScheduleDto.ScheduleFormResponse;
 
 @Controller
 @RequiredArgsConstructor
@@ -44,18 +44,13 @@ public class TravelController {
     public String createSchedule(@CurrentUser String email, @ModelAttribute PlanCreateRequest request,
                                  Model model) {
 
-        LocalDate startDate = LocalDate.parse(request.getStartDate());
-        LocalDate endDate = LocalDate.parse(request.getEndDate());
-
         log.info("request.startDate{}", request.getStartDate());
         log.info("request.cityId={}", request.getCityIds());
 
-        List<LocalDate> dateList = startDate.datesUntil(endDate.plusDays(1))
-                .toList();
-        model.addAttribute("dateList", dateList);
 
-        planService.createPlan(email, request);
+        List<ScheduleFormResponse> schedules = planService.createPlan(email, request);
 
+        model.addAttribute("schedules", schedules);
         model.addAttribute("cityIds", request.getCityIds());
 
         return "schedule/schedule-form";
@@ -80,4 +75,6 @@ public class TravelController {
         log.info("국가에 속한 지역 자동 검색");
         return placeService.getAutocompletePlaces(cityIds, query);
     }
+
+
 }

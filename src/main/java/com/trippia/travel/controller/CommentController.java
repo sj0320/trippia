@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-import static com.trippia.travel.domain.post.comment.CommentDto.CommentSaveRequest;
+import static com.trippia.travel.controller.dto.CommentDto.CommentSaveRequest;
 
 @RestController
 @RequestMapping("/api")

@@ -180,7 +180,6 @@
 </head>
 <body>
 <div layout:fragment="content">
-
     <div id="placeModal">
         <label for="autocomplete" style="font-weight: bold;">장소 검색</label>
         <input id="autocomplete" type="text" placeholder="장소 검색..." autocomplete="off"/>
@@ -189,13 +188,17 @@
     </div>
 
     <div class="itinerary-container">
-        <div th:each="day, iterStat : ${dateList}" class="day-card">
+        <div th:each="schedule, iterStat : ${schedules}" class="day-card"
+             th:attr="data-schedule-id=${schedule.id}">
+
             <div class="day-title">
                 <strong th:text="${iterStat.index + 1} + '일차'"></strong>
-                <span class="day-date" th:text="${day}"></span>
+                <span class="day-date" th:text="${schedule.date}"></span>
             </div>
+
             <button class="btn btn-location" onclick="openPlaceModal(this)">➕ 장소 추가</button>
             <button class="btn btn-memo" onclick="addMemo(this)">📝 메모 추가</button>
+
             <div class="entry-list"></div>
         </div>
     </div>
@@ -318,57 +321,88 @@
                     return;
                 }
 
+                const scheduleId = currentEntryList.closest('.day-card')?.dataset?.scheduleId;
+                if (!scheduleId) {
+                    alert("일정 ID를 찾을 수 없습니다.");
+                    return;
+                }
+
                 const placeEntry = {
+                    placeId: placeId,
+                    scheduleId: scheduleId,
                     name: result.name,
                     address: result.formatted_address || result.vicinity,
                     latitude: result.geometry.location.lat(),
                     longitude: result.geometry.location.lng(),
                 };
 
-                const entries = currentEntryList.querySelectorAll('.entry-item[data-latitude]');
-                let lastPlace = null;
-                if (entries.length > 0) {
-                    const last = entries[entries.length - 1];
-                    lastPlace = {
-                        latitude: parseFloat(last.dataset.latitude),
-                        longitude: parseFloat(last.dataset.longitude),
+                const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+                fetch('/api/travel/place', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [csrfHeader]: csrfToken
+                    },
+                    body: JSON.stringify(placeEntry)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("서버에 장소를 저장하지 못했습니다.");
+                    }
+
+                    // 응답이 없으므로 .json() 하지 않음
+
+                    const entries = currentEntryList.querySelectorAll('.entry-item[data-latitude]');
+                    let lastPlace = null;
+                    if (entries.length > 0) {
+                        const last = entries[entries.length - 1];
+                        lastPlace = {
+                            latitude: parseFloat(last.dataset.latitude),
+                            longitude: parseFloat(last.dataset.longitude),
+                        };
+                    }
+
+                    const placeCount = currentEntryList.querySelectorAll('.circle-number').length + 1;
+
+                    const addNumber = () => {
+                        const row = document.createElement('div');
+                        row.className = 'entry-row';
+
+                        const circle = document.createElement('div');
+                        circle.className = 'circle-number';
+                        circle.innerText = placeCount;
+
+                        const placeDiv = document.createElement('div');
+                        placeDiv.className = 'entry-item';
+                        placeDiv.innerText = `📍 ${placeEntry.name} (${placeEntry.address})`;
+                        placeDiv.dataset.latitude = placeEntry.latitude;
+                        placeDiv.dataset.longitude = placeEntry.longitude;
+
+                        row.appendChild(circle);
+                        row.appendChild(placeDiv);
+                        currentEntryList.appendChild(row);
                     };
-                }
 
-                const placeCount = currentEntryList.querySelectorAll('.circle-number').length + 1;
-
-                const addNumber = () => {
-                    const row = document.createElement('div');
-                    row.className = 'entry-row';
-
-                    const circle = document.createElement('div');
-                    circle.className = 'circle-number';
-                    circle.innerText = placeCount;
-
-                    const placeDiv = document.createElement('div');
-                    placeDiv.className = 'entry-item';
-                    placeDiv.innerText = `📍 ${placeEntry.name} (${placeEntry.address})`;
-                    placeDiv.dataset.latitude = placeEntry.latitude;
-                    placeDiv.dataset.longitude = placeEntry.longitude;
-
-                    row.appendChild(circle);
-                    row.appendChild(placeDiv);
-                    currentEntryList.appendChild(row);
-                };
-
-                if (lastPlace) {
-                    calculateDistanceAndDisplay(lastPlace, placeEntry, (distanceText) => {
-                        const distanceDiv = document.createElement('div');
-                        distanceDiv.className = 'distance-item';
-                        distanceDiv.innerText = `거리: ${distanceText}`;
-                        currentEntryList.appendChild(distanceDiv);
+                    if (lastPlace) {
+                        calculateDistanceAndDisplay(lastPlace, placeEntry, (distanceText) => {
+                            const distanceDiv = document.createElement('div');
+                            distanceDiv.className = 'distance-item';
+                            distanceDiv.innerText = `거리: ${distanceText}`;
+                            currentEntryList.appendChild(distanceDiv);
+                            addNumber();
+                            closeModal();
+                        });
+                    } else {
                         addNumber();
                         closeModal();
-                    });
-                } else {
-                    addNumber();
-                    closeModal();
-                }
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert("장소 저장 중 문제가 발생했습니다.");
+                });
             });
         }
 
@@ -386,24 +420,51 @@
         }
 
         function addMemo(button) {
-            const entryList = button.closest('.day-card').querySelector('.entry-list');
+            const dayCard = button.closest('.day-card');
+            const entryList = dayCard.querySelector('.entry-list');
             const memo = prompt("메모를 입력하세요:");
+
             if (memo) {
-                const row = document.createElement('div');
-                row.className = 'entry-row';
+                const scheduleId = dayCard.dataset.scheduleId;
 
-                const circle = document.createElement('div');
-                circle.className = 'circle-blank';
+                // CSRF 토큰 정보 가져오기
+                const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-                const div = document.createElement('div');
-                div.className = 'entry-item';
-                div.innerText = `📝 ${memo}`;
+                fetch('/api/travel/memo', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [csrfHeader]: csrfToken  // 동적으로 헤더 이름 설정
+                    },
+                    body: JSON.stringify({
+                        scheduleId: scheduleId,
+                        content: memo
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('메모 저장 실패');
 
-                row.appendChild(circle);
-                row.appendChild(div);
-                entryList.appendChild(row);
+                    // JSON 응답이 없으므로 바로 처리
+                    const row = document.createElement('div');
+                    row.className = 'entry-row';
+
+                    const circle = document.createElement('div');
+                    circle.className = 'circle-blank';
+
+                    const div = document.createElement('div');
+                    div.className = 'entry-item';
+                    div.innerText = `📝 ${memo}`;
+
+                    row.appendChild(circle);
+                    row.appendChild(div);
+                    entryList.appendChild(row);
+                })
+                .catch(error => {
+                    alert(error.message);
+                });
             }
-        }
+}
     </script>
 
     <script th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${@environment.getProperty('google.maps.api-key')} + '&libraries=places,geometry&loading=async'" async></script>

@@ -1,5 +1,6 @@
-package com.trippia.travel.domain.theme;
+package com.trippia.travel.controller.dto;
 
+import com.trippia.travel.domain.theme.Theme;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
