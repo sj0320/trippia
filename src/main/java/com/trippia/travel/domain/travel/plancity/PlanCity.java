@@ -1,10 +1,16 @@
-package com.trippia.travel.domain.travel;
+package com.trippia.travel.domain.travel.plancity;
 
 import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.travel.plan.Plan;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PlanCity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,5 +23,11 @@ public class PlanCity {
     @ManyToOne
     @JoinColumn(name = "city_id")
     private City city;
+
+    @Builder
+    private PlanCity(Plan plan, City city) {
+        this.plan = plan;
+        this.city = city;
+    }
 
 }

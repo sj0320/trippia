@@ -7,6 +7,9 @@ import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.location.city.CityRepository;
 import com.trippia.travel.domain.location.country.Country;
 import com.trippia.travel.domain.location.country.CountryRepository;
+import com.trippia.travel.domain.travel.plancity.PlanCity;
+import com.trippia.travel.domain.travel.plancity.PlanCityRepository;
+import com.trippia.travel.domain.travel.schedule.ScheduleRepository;
 import com.trippia.travel.domain.user.User;
 import com.trippia.travel.domain.user.UserRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -18,9 +21,9 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
+import static com.trippia.travel.controller.dto.PlanDto.PlanCreateRequest;
 import static com.trippia.travel.domain.common.CityType.JAPAN;
 import static com.trippia.travel.domain.common.CityType.KOREA;
-import static com.trippia.travel.domain.travel.plan.PlanDto.PlanCreateRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -42,9 +45,17 @@ class PlanServiceTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PlanCityRepository planCityRepository;
+
+    @Autowired
+    private ScheduleRepository scheduleRepository;
+
 
     @AfterEach
     void tearDown() {
+        planCityRepository.deleteAllInBatch();
+        scheduleRepository.deleteAllInBatch();
         planRepository.deleteAllInBatch();
         cityRepository.deleteAllInBatch();
         countryRepository.deleteAllInBatch();
@@ -75,6 +86,9 @@ class PlanServiceTest {
         assertThat(plans).hasSize(1);
         assertThat(plans.get(0).getTitle()).isEqualTo("도쿄, 서울 여행");
         assertThat(plans.get(0).getUser().getEmail()).isEqualTo(email);
+
+        List<PlanCity> planCities = planCityRepository.findAll();
+        assertThat(planCities).hasSize(2);
     }
 
     private User createUser(String email) {

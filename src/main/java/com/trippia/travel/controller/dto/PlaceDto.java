@@ -1,4 +1,4 @@
-package com.trippia.travel.domain.location.place;
+package com.trippia.travel.controller.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

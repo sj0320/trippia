@@ -10,8 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import static com.trippia.travel.domain.post.comment.CommentDto.*;
-import static com.trippia.travel.domain.post.comment.CommentDto.CommentSaveRequest;
+import static com.trippia.travel.controller.dto.CommentDto.*;
+import static com.trippia.travel.controller.dto.CommentDto.CommentSaveRequest;
 
 @Service
 @RequiredArgsConstructor

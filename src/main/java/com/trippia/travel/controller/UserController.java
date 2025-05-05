@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.trippia.travel.domain.user.dto.UserDto.SaveRequest;
-import static com.trippia.travel.domain.user.dto.UserDto.SocialSaveRequest;
+import static com.trippia.travel.controller.dto.UserDto.SaveRequest;
+import static com.trippia.travel.controller.dto.UserDto.SocialSaveRequest;
 import static com.trippia.travel.mail.MailDto.MailRequest;
 import static com.trippia.travel.mail.MailDto.MailVerificationRequest;
 

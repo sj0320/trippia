@@ -1,4 +1,4 @@
-package com.trippia.travel.domain.travel.plan;
+package com.trippia.travel.controller.dto;
 
 import lombok.Getter;
 import lombok.Setter;

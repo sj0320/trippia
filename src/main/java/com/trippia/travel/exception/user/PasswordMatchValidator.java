@@ -1,6 +1,6 @@
 package com.trippia.travel.exception.user;
 
-import com.trippia.travel.domain.user.dto.UserDto;
+import com.trippia.travel.controller.dto.UserDto;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 

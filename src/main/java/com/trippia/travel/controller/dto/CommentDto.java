@@ -1,5 +1,6 @@
-package com.trippia.travel.domain.post.comment;
+package com.trippia.travel.controller.dto;
 
+import com.trippia.travel.domain.post.comment.Comment;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

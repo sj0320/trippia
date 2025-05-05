@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 import static com.trippia.travel.domain.common.CityType.*;
-import static com.trippia.travel.domain.location.city.CityDto.CityGroupedByTypeResponse;
-import static com.trippia.travel.domain.location.city.CityDto.CitySummary;
+import static com.trippia.travel.controller.dto.CityDto.CityGroupedByTypeResponse;
+import static com.trippia.travel.controller.dto.CityDto.CitySummary;
 
 @ActiveProfiles("test")
 @SpringBootTest

@@ -9,8 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
-import static com.trippia.travel.domain.theme.ThemeDto.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static com.trippia.travel.controller.dto.ThemeDto.*;
 
 @ActiveProfiles("test")
 @SpringBootTest

@@ -2,46 +2,70 @@ package com.trippia.travel.domain.travel.plan;
 
 import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.location.city.CityRepository;
+import com.trippia.travel.domain.travel.plancity.PlanCity;
+import com.trippia.travel.domain.travel.plancity.PlanCityRepository;
+import com.trippia.travel.domain.travel.schedule.Schedule;
+import com.trippia.travel.domain.travel.schedule.ScheduleRepository;
 import com.trippia.travel.domain.user.User;
 import com.trippia.travel.domain.user.UserRepository;
 import com.trippia.travel.exception.user.UserException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.trippia.travel.domain.travel.plan.PlanDto.PlanCreateRequest;
+import static com.trippia.travel.controller.dto.PlanDto.PlanCreateRequest;
+import static com.trippia.travel.controller.dto.ScheduleDto.ScheduleFormResponse;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Slf4j
 public class PlanService {
 
     private final PlanRepository planRepository;
     private final CityRepository cityRepository;
     private final UserRepository userRepository;
+    private final ScheduleRepository scheduleRepository;
+    private final PlanCityRepository planCityRepository;
 
-    public void createPlan(String email, PlanCreateRequest request) {
+    @Transactional
+    public List<ScheduleFormResponse> createPlan(String email, PlanCreateRequest request) {
         User user = getUserByEmail(email);
 
         LocalDate startDate = LocalDate.parse(request.getStartDate());
         LocalDate endDate = LocalDate.parse(request.getEndDate());
         List<Long> requestCityIds = request.getCityIds();
 
-        List<City> cityIds = cityRepository.findAllById(requestCityIds);
+        List<City> cities = cityRepository.findAllById(requestCityIds);
 
-        String title = getDefaultTitleByCities(cityIds);
+        String title = getDefaultTitleByCities(cities);
         log.info("일정 제목={}", title);
 
         Plan plan = Plan.createPlan(user, title, startDate, endDate);
         planRepository.save(plan);
+
+        for(City city : cities){
+            PlanCity planCity = PlanCity.builder().city(city).plan(plan).build();
+            planCityRepository.save(planCity);
+        }
+
+        List<ScheduleFormResponse> response = new ArrayList<>();
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            Schedule schedule = new Schedule(plan, date);
+            Schedule savedSchedule = scheduleRepository.save(schedule);
+            response.add(new ScheduleFormResponse(savedSchedule.getId(), date));
+        }
+        return response;
     }
 
-    private String getDefaultTitleByCities(List<City> cityIds) {
-        return cityIds.stream()
+    private String getDefaultTitleByCities(List<City> cities) {
+        return cities.stream()
                 .map(City::getName)
                 .collect(Collectors.joining(", ")) + " 여행";
     }

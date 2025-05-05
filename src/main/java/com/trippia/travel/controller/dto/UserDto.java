@@ -1,4 +1,4 @@
-package com.trippia.travel.domain.user.dto;
+package com.trippia.travel.controller.dto;
 
 import com.trippia.travel.exception.user.PasswordMatch;
 import jakarta.validation.constraints.Email;

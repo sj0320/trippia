@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.trippia.travel.domain.location.place.PlaceDto.RecommendPlaceResponse;
+import static com.trippia.travel.controller.dto.PlaceDto.RecommendPlaceResponse;
 
 @Service
 @RequiredArgsConstructor

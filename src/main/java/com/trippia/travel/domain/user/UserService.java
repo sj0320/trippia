@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 import java.util.Random;
 
-import static com.trippia.travel.domain.user.dto.UserDto.SaveRequest;
+import static com.trippia.travel.controller.dto.UserDto.SaveRequest;
 import static com.trippia.travel.exception.ErrorMessageSource.*;
 
 @Service
