@@ -1,183 +1,3 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:inline="javascript"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/default}">
-<head>
-    <meta charset="UTF-8">
-    <title>여행 일정표</title>
-    <style>
-        .itinerary-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .day-card {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .day-title {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: #333;
-            display: flex;
-            align-items: baseline;
-            gap: 10px;
-        }
-
-        .day-title strong {
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        .day-date {
-            font-size: 0.95rem;
-            color: #777;
-        }
-
-
-        .btn {
-            margin-right: 10px;
-            padding: 10px 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s ease;
-        }
-
-        .btn-location {
-            background-color: #6c757d; /* 회색 */
-            color: white;
-        }
-
-        .btn-location:hover {
-            background-color: #5a6268; /* 어두운 회색 */
-        }
-
-        .btn-memo {
-            background-color: #f0ad4e; /* 금색 */
-            color: white;
-        }
-
-        .btn-memo:hover {
-            background-color: #ec971f; /* 더 어두운 금색 */
-        }
-
-        .entry-list {
-            margin-top: 15px;
-        }
-
-        .entry-row {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 6px;
-        }
-
-        .circle-number {
-            width: 32px;
-            height: 32px;
-            min-width: 32px;
-            border-radius: 50%;
-            background-color: #495057; /* 미드나잇 블루 */
-            color: white;
-            font-weight: bold;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 10px;
-        }
-
-        .circle-blank {
-            width: 32px;
-            height: 32px;
-            min-width: 32px;
-            border-radius: 50%;
-            background-color: #ced4da; /* 연한 회색 */
-            margin-right: 10px;
-        }
-
-        .entry-item {
-            background-color: #f8f9fa; /* 연한 회색 배경 */
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 1rem;
-            flex: 1;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .distance-item {
-            margin-left: 36px;
-            color: #888;
-            font-size: 0.9rem;
-            margin-bottom: 8px;
-        }
-
-        #placeModal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            width: 500px;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            z-index: 1000;
-        }
-
-        #autocomplete {
-            width: 100%;
-            padding: 12px;
-            font-size: 1rem;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        #recommendationList {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 10px;
-            background-color: #fafafa;
-        }
-
-        .recommend-item {
-            padding: 10px;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: background-color 0.3s ease;
-        }
-
-        .recommend-item:hover {
-            background-color: #e9ecef; /* 회색 강조 */
-        }
-
-        #placeModal button {
-            padding: 8px 14px;
-            background-color: #f44336;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        #placeModal button:hover {
-            background-color: #d32f2f;
-        }
-    </style>
-</head>
 <body>
 <div layout:fragment="content">
     <div id="placeModal">
@@ -188,7 +8,7 @@
     </div>
 
     <div class="itinerary-container">
-        <div th:each="schedule, iterStat : ${schedules}" class="day-card"
+        <div th:each="schedule, iterStat : ${plan.schedules}" class="day-card"
              th:attr="data-schedule-id=${schedule.id}">
 
             <div class="day-title">
@@ -199,13 +19,40 @@
             <button class="btn btn-location" onclick="openPlaceModal(this)">➕ 장소 추가</button>
             <button class="btn btn-memo" onclick="addMemo(this)">📝 메모 추가</button>
 
-            <div class="entry-list"></div>
+            <div class="entry-list">
+                <div th:each="item : ${schedule.scheduleItems}">
+                    <div th:switch="${item.type.name()}">
+                        <!-- 장소일 경우 -->
+                        <div th:case="'PLACE'" class="place-entry">
+                            <p><strong th:text="${item.name}">장소 이름</strong></p>
+                            <p th:text="'주소: ' + ${item.address}"></p>
+                            <p th:text="'예상 비용: ' + ${item.expectedCost} + '원'"></p>
+                        </div>
+
+                        <!-- 메모일 경우 -->
+                        <div th:case="'MEMO'" class="memo-entry">
+                            <p><strong>메모</strong></p>
+                            <p th:text="${item.content}"></p>
+                            <p th:text="'예상 비용: ' + ${item.expectedCost} + '원'"></p>
+                        </div>
+
+                        <!-- 예외 처리 -->
+                        <div th:case="*">
+                            <p>알 수 없는 일정 항목입니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
+
+    <div class="total-cost">
+        총 예상 지출: <span id="totalCost">₩0</span>
     </div>
 
     <script>
         let currentEntryList = null;
-        let cityIds = /*[[${cityIds}]]*/ [1, 2, 3];
+        let cityIds = /*[[${plan.cityIds}]]*/ [1, 2, 3];
         let debounceTimer;
         const DEBOUNCE_DELAY = 400;
 
@@ -240,8 +87,8 @@
         }
 
         function loadRecommendations(cityIds, query = '') {
-            const queryParam = cityIds.map(id => `cityIds=${id}`).join('&') + (query ? `&query=${encodeURIComponent(query)}` : '');
-            fetch(`/travel/places/recommend?${queryParam}`)
+            const queryParam = cityIds.map(id => cityIds=${id}).join('&') + (query ? &query=${encodeURIComponent(query)} : '');
+            fetch(/travel/places/recommend?${queryParam})
                 .then(res => res.json())
                 .then(places => {
                     const list = document.getElementById('recommendationList');
@@ -268,14 +115,14 @@
                         titleDiv.style.fontWeight = 'bold';
                         titleDiv.style.fontSize = '1.1rem';
                         titleDiv.style.color = '#333';
-                        titleDiv.innerText = `${place.placeName}`;
+                        titleDiv.innerText = ${place.placeName};
                         div.appendChild(titleDiv);
 
                         const addressDiv = document.createElement('div');
                         addressDiv.style.fontSize = '0.9rem';
                         addressDiv.style.color = '#666';
                         addressDiv.style.marginBottom = '10px';
-                        addressDiv.innerText = `${place.address}`;
+                        addressDiv.innerText = ${place.address};
                         div.appendChild(addressDiv);
 
                         // 테마 태그
@@ -311,7 +158,7 @@
                         list.appendChild(div);
                     });
                 });
-        }
+            }
 
         function handlePlaceClick(placeId) {
             const service = new google.maps.places.PlacesService(document.createElement('div'));
@@ -351,8 +198,10 @@
                     if (!response.ok) {
                         throw new Error("서버에 장소를 저장하지 못했습니다.");
                     }
-
-                    // 응답이 없으므로 .json() 하지 않음
+                    return response.json(); // scheduleItemId 포함된 응답 받기
+                })
+                .then(data => {
+                    const scheduleItemId = data.scheduleItemId;
 
                     const entries = currentEntryList.querySelectorAll('.entry-item[data-latitude]');
                     let lastPlace = null;
@@ -376,12 +225,41 @@
 
                         const placeDiv = document.createElement('div');
                         placeDiv.className = 'entry-item';
-                        placeDiv.innerText = `📍 ${placeEntry.name} (${placeEntry.address})`;
+                        placeDiv.innerText = 📍 ${placeEntry.name} (${placeEntry.address});
                         placeDiv.dataset.latitude = placeEntry.latitude;
                         placeDiv.dataset.longitude = placeEntry.longitude;
 
+                        // 💰 지출 금액 버튼 생성
+                        const costButton = document.createElement('button');
+                        costButton.innerText = '💰 지출 입력';
+                        costButton.style.marginLeft = '10px';
+                        costButton.className = 'cost-button';
+
+                        costButton.onclick = () => {
+                            const cost = prompt("예상 지출 금액을 입력하세요:");
+                            if (cost && !isNaN(cost)) {
+                                fetch(/api/travel/${scheduleItemId}/expected-cost, {
+                                    method: 'PATCH',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        [csrfHeader]: csrfToken
+                                    },
+                                    body: JSON.stringify({
+                                        expectedCost: Number(cost)
+                                    })
+                                })
+                                .then(res => {
+                                    if (!res.ok) throw new Error('예상 지출 저장 실패');
+                                    costButton.innerText = 예상 지출: ${Number(cost).toLocaleString()}원;
+                                    updateTotalCost();
+                                })
+                                .catch(err => alert(err.message));
+                            }
+                        };
+
                         row.appendChild(circle);
                         row.appendChild(placeDiv);
+                        row.appendChild(costButton);
                         currentEntryList.appendChild(row);
                     };
 
@@ -389,7 +267,7 @@
                         calculateDistanceAndDisplay(lastPlace, placeEntry, (distanceText) => {
                             const distanceDiv = document.createElement('div');
                             distanceDiv.className = 'distance-item';
-                            distanceDiv.innerText = `거리: ${distanceText}`;
+                            distanceDiv.innerText = 거리: ${distanceText};
                             currentEntryList.appendChild(distanceDiv);
                             addNumber();
                             closeModal();
@@ -416,7 +294,7 @@
             const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             const distance = R * c;
-            callback(`${distance.toFixed(2)} km`);
+            callback(${distance.toFixed(2)} km);
         }
 
         function addMemo(button) {
@@ -435,7 +313,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        [csrfHeader]: csrfToken  // 동적으로 헤더 이름 설정
+                        [csrfHeader]: csrfToken
                     },
                     body: JSON.stringify({
                         scheduleId: scheduleId,
@@ -444,8 +322,11 @@
                 })
                 .then(response => {
                     if (!response.ok) throw new Error('메모 저장 실패');
+                    return response.json(); // scheduleItemId 포함된 응답 받기
+                })
+                .then(data => {
+                    const scheduleItemId = data.scheduleItemId;
 
-                    // JSON 응답이 없으므로 바로 처리
                     const row = document.createElement('div');
                     row.className = 'entry-row';
 
@@ -454,8 +335,37 @@
 
                     const div = document.createElement('div');
                     div.className = 'entry-item';
-                    div.innerText = `📝 ${memo}`;
+                    div.innerText = 📝 ${memo};
 
+                    // 💰 지출 금액 버튼 생성
+                    const costButton = document.createElement('button');
+                    costButton.innerText = '💰 지출 입력';
+                    costButton.style.marginLeft = '10px';
+                    costButton.className = 'cost-button';
+
+                    costButton.onclick = () => {
+                        const cost = prompt("예상 지출 금액을 입력하세요:");
+                        if (cost && !isNaN(cost)) {
+                            fetch(/api/travel/${scheduleItemId}/expected-cost, {
+                                method: 'PATCH',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    [csrfHeader]: csrfToken
+                                },
+                                body: JSON.stringify({
+                                    expectedCost: Number(cost)
+                                })
+                            })
+                            .then(res => {
+                                if (!res.ok) throw new Error('예상 지출 저장 실패');
+                                costButton.innerText = 예상 지출: ${Number(cost).toLocaleString()}원;
+                                updateTotalCost();
+                            })
+                            .catch(err => alert(err.message));
+                        }
+                    };
+
+                    div.appendChild(costButton);
                     row.appendChild(circle);
                     row.appendChild(div);
                     entryList.appendChild(row);
@@ -464,10 +374,23 @@
                     alert(error.message);
                 });
             }
-}
+        }
+        function updateTotalCost() {
+            const costButtons = document.querySelectorAll('.cost-button');
+            let total = 0;
+
+            costButtons.forEach(btn => {
+                const match = btn.innerText.match(/예상 지출: ([\d,]+)원/);
+                if (match) {
+                    const amount = parseInt(match[1].replace(/,/g, ''), 10);
+                    total += amount;
+                }
+            });
+
+            document.getElementById('totalCost').innerText = ₩${total.toLocaleString()};
+        }
     </script>
 
     <script th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${@environment.getProperty('google.maps.api-key')} + '&libraries=places,geometry&loading=async'" async></script>
 </div>
 </body>
-</html>

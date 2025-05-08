@@ -18,7 +18,7 @@ public class Schedule {
     @Column(name="schedule_id")
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id")
     private Plan plan;
 
@@ -36,5 +36,7 @@ public class Schedule {
         }
     }
 
-
+    public void setPlan(Plan plan) {
+        this.plan = plan;
+    }
 }

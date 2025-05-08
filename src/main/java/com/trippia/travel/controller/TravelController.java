@@ -10,13 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Set;
 
 import static com.trippia.travel.controller.dto.PlaceDto.RecommendPlaceResponse;
 import static com.trippia.travel.controller.dto.PlanDto.PlanCreateRequest;
-import static com.trippia.travel.controller.dto.ScheduleDto.ScheduleFormResponse;
+import static com.trippia.travel.controller.dto.PlanDto.PlanDetailsResponse;
 
 @Controller
 @RequiredArgsConstructor
@@ -31,29 +32,31 @@ public class TravelController {
     @GetMapping("/question/city")
     public String selectCityForm(Model model) {
         model.addAttribute("cities", cityService.getCitiesGroupedByType());
-        return "schedule/select-city";
+        return "plan/select-city";
     }
 
     @GetMapping("/question/date")
     public String selectDateForm(@RequestParam("cityId") List<Long> cityIds, Model model) {
         model.addAttribute("cityIds", cityIds);
-        return "schedule/calendar";
+        return "plan/calendar";
     }
 
     @PostMapping("/plan/new")
-    public String createSchedule(@CurrentUser String email, @ModelAttribute PlanCreateRequest request,
-                                 Model model) {
+    public String createPlan(@CurrentUser String email, @ModelAttribute PlanCreateRequest request,
+                             RedirectAttributes redirectAttributes) {
 
-        log.info("request.startDate{}", request.getStartDate());
-        log.info("request.cityId={}", request.getCityIds());
+        Long planId = planService.createPlan(email, request);
+        redirectAttributes.addAttribute("planId", planId);
 
+        return "redirect:/travel/plan/{planId}";
+    }
 
-        List<ScheduleFormResponse> schedules = planService.createPlan(email, request);
+    @GetMapping("/plan/{planId}")
+    public String planForm(@CurrentUser String email, @PathVariable Long planId, Model model){
+        PlanDetailsResponse plan = planService.findPlan(email, planId);
+        model.addAttribute("plan", plan);
 
-        model.addAttribute("schedules", schedules);
-        model.addAttribute("cityIds", request.getCityIds());
-
-        return "schedule/schedule-form";
+        return "plan/plan-form";
     }
 
     @GetMapping("/places/recommend")

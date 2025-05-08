@@ -1,29 +1,38 @@
 package com.trippia.travel.domain.travel.scheduleitem.scheduleplace;
 
-import com.trippia.travel.domain.location.place.Place;
+import com.trippia.travel.domain.travel.schedule.Schedule;
 import com.trippia.travel.domain.travel.scheduleitem.ScheduleItem;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-public class SchedulePlace {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class SchedulePlace extends ScheduleItem {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String googleMapId;
 
-    @ManyToOne
-    @JoinColumn(name="schedule_item_id")
-    private ScheduleItem scheduleItem;
+    private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "place_id")
-    private Place place;
+    private String address;
+
+    private double latitude;
+
+    private double longitude;
+
+    private String category;
 
     @Builder
-    private SchedulePlace(ScheduleItem scheduleItem, Place place) {
-        this.scheduleItem = scheduleItem;
-        this.place = place;
+    private SchedulePlace(Schedule schedule, String googleMapId, String name, String address, double latitude, double longitude, String category) {
+        super(schedule, 0);
+        this.googleMapId = googleMapId;
+        this.name = name;
+        this.address = address;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.category = category;
     }
 }

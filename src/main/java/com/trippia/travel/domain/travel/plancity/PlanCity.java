@@ -16,11 +16,11 @@ public class PlanCity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id")
     private Plan plan;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "city_id")
     private City city;
 
@@ -28,6 +28,10 @@ public class PlanCity {
     private PlanCity(Plan plan, City city) {
         this.plan = plan;
         this.city = city;
+    }
+
+    public void setPlan(Plan plan){
+        this.plan = plan;
     }
 
 }
