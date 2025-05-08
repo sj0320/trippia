@@ -72,6 +72,7 @@ class DiaryServiceTest {
         userRepository.deleteAllInBatch();
         cityRepository.deleteAllInBatch();
         countryRepository.deleteAllInBatch();
+        themeRepository.deleteAllInBatch();
     }
 
     @DisplayName("여행일지를 생성하고 저장한다.")

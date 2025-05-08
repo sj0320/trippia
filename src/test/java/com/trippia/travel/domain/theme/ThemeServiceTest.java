@@ -1,6 +1,7 @@
 package com.trippia.travel.domain.theme;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,11 @@ import static com.trippia.travel.controller.dto.ThemeDto.*;
 @ActiveProfiles("test")
 @SpringBootTest
 class ThemeServiceTest {
+
+    @AfterEach
+    void tearDown() {
+        themeRepository.deleteAllInBatch();
+    }
 
     @Autowired
     private ThemeService themeService;

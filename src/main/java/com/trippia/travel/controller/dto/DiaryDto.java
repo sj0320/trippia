@@ -86,12 +86,19 @@ public class DiaryDto {
 
     @Getter
     @Setter
-    @Builder
     public static class DiaryListViewModel{
         private List<DiaryListResponse> diaryList = new ArrayList<>();
         private DiarySearchCondition searchCondition;
         private boolean hasNext;
         private String sort;
+
+        @Builder
+        private DiaryListViewModel(List<DiaryListResponse> diaryList, DiarySearchCondition searchCondition, boolean hasNext, String sort) {
+            this.diaryList = diaryList;
+            this.searchCondition = searchCondition;
+            this.hasNext = hasNext;
+            this.sort = sort;
+        }
 
         public static DiaryListViewModel createDiaryListViewModel(List<DiaryListResponse> diaryList,
                                                                   DiarySearchCondition searchCondition,

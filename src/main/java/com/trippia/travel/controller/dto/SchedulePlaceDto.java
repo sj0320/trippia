@@ -1,6 +1,7 @@
 package com.trippia.travel.controller.dto;
 
-import com.trippia.travel.domain.location.place.Place;
+import com.trippia.travel.domain.travel.schedule.Schedule;
+import com.trippia.travel.domain.travel.scheduleitem.scheduleplace.SchedulePlace;
 import lombok.Builder;
 import lombok.Data;
 
@@ -8,7 +9,7 @@ public class SchedulePlaceDto {
 
     @Data
     @Builder
-    public static class PlaceSaveRequest{
+    public static class SchedulePlaceSaveRequest {
         private Long scheduleId;
 
         private String placeId;
@@ -23,8 +24,9 @@ public class SchedulePlaceDto {
 
         private String category;
 
-        public Place toEntity(){
-            return Place.builder()
+        public SchedulePlace toEntity(Schedule schedule){
+            return SchedulePlace.builder()
+                    .schedule(schedule)
                     .googleMapId(placeId)
                     .name(name)
                     .address(address)

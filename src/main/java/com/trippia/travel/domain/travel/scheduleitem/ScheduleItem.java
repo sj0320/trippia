@@ -1,17 +1,17 @@
 package com.trippia.travel.domain.travel.scheduleitem;
 
-import com.trippia.travel.domain.common.ScheduleItemType;
-import com.trippia.travel.domain.location.place.Place;
-import com.trippia.travel.domain.travel.scheduleitem.memo.Memo;
 import com.trippia.travel.domain.travel.schedule.Schedule;
 import jakarta.persistence.*;
-import lombok.Builder;
+import lombok.AccessLevel;
 import lombok.Getter;
-
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-public class ScheduleItem {
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "item_type")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public abstract class ScheduleItem {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="schedule_item_id")
@@ -21,38 +21,15 @@ public class ScheduleItem {
     @JoinColumn(name = "schedule_id")
     private Schedule schedule;
 
-    @Enumerated(EnumType.STRING)
-    private ScheduleItemType itemType;
+    @Column(columnDefinition = "int default 0", nullable = false)
+    private Integer expectedCost;
 
-    @ManyToOne
-    @JoinColumn(name = "memo_id")
-    private Memo memo;
-
-    @ManyToOne
-    @JoinColumn(name = "place_id")
-    private Place place;
-
-    @Builder
-    private ScheduleItem(Schedule schedule, ScheduleItemType itemType, Memo memo, Place place) {
+    public ScheduleItem(Schedule schedule, Integer expectedCost) {
         this.schedule = schedule;
-        this.itemType = itemType;
-        this.memo = memo;
-        this.place = place;
+        this.expectedCost = expectedCost;
     }
 
-    public static ScheduleItem ofMemo(Schedule schedule, Memo memo){
-        return ScheduleItem.builder()
-                .schedule(schedule)
-                .itemType(ScheduleItemType.MEMO)
-                .memo(memo)
-                .build();
-    }
-
-    public static ScheduleItem ofPlace(Schedule schedule, Place place){
-        return ScheduleItem.builder()
-                .schedule(schedule)
-                .itemType(ScheduleItemType.PLACE)
-                .place(place)
-                .build();
+    public void updateExpectedCost(Integer expectedCost) {
+        this.expectedCost = expectedCost;
     }
 }
