@@ -6,6 +6,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalTime;
+
 @Entity
 @Getter
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -13,8 +15,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class ScheduleItem {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="schedule_item_id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "schedule_item_id")
     private Long id;
 
     @ManyToOne
@@ -22,14 +25,20 @@ public abstract class ScheduleItem {
     private Schedule schedule;
 
     @Column(columnDefinition = "int default 0", nullable = false)
-    private Integer expectedCost;
+    private Integer expectedCost = 0;
 
-    public ScheduleItem(Schedule schedule, Integer expectedCost) {
+    private LocalTime executionTime;
+
+    public ScheduleItem(Schedule schedule) {
         this.schedule = schedule;
-        this.expectedCost = expectedCost;
     }
 
-    public void updateExpectedCost(Integer expectedCost) {
+    public void updateMeta(Integer expectedCost, LocalTime executionTime){
         this.expectedCost = expectedCost;
+        this.executionTime = executionTime;
     }
+
+//    public void updateExpectedCost(Integer expectedCost) {
+//        this.expectedCost = expectedCost;
+//    }
 }
