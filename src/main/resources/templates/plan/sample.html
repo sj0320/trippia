@@ -1,396 +1,292 @@
-<body>
-<div layout:fragment="content">
-    <div id="placeModal">
-        <label for="autocomplete" style="font-weight: bold;">장소 검색</label>
-        <input id="autocomplete" type="text" placeholder="장소 검색..." autocomplete="off"/>
-        <div id="recommendationList" style="margin-top: 1rem;"></div>
-        <button onclick="closeModal()">❌ 닫기</button>
-    </div>
+1. 폼 로딩시, 날짜별로 스케줄아이디로 api 호출, 날짜별 스케줄들을 refreshDayCards(data, dayCard) 함수로 넘김
 
-    <div class="itinerary-container">
-        <div th:each="schedule, iterStat : ${plan.schedules}" class="day-card"
-             th:attr="data-schedule-id=${schedule.id}">
+2. refreshDayCards : (날짜, 스케줄들)을 받고 업데이트
 
-            <div class="day-title">
-                <strong th:text="${iterStat.index + 1} + '일차'"></strong>
-                <span class="day-date" th:text="${schedule.date}"></span>
-            </div>
 
-            <button class="btn btn-location" onclick="openPlaceModal(this)">➕ 장소 추가</button>
-            <button class="btn btn-memo" onclick="addMemo(this)">📝 메모 추가</button>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const dayCards = document.querySelectorAll('.day-card');
 
-            <div class="entry-list">
-                <div th:each="item : ${schedule.scheduleItems}">
-                    <div th:switch="${item.type.name()}">
-                        <!-- 장소일 경우 -->
-                        <div th:case="'PLACE'" class="place-entry">
-                            <p><strong th:text="${item.name}">장소 이름</strong></p>
-                            <p th:text="'주소: ' + ${item.address}"></p>
-                            <p th:text="'예상 비용: ' + ${item.expectedCost} + '원'"></p>
-                        </div>
+        dayCards.forEach(dayCard => {
+            const scheduleId = dayCard.dataset.scheduleId;
+            fetch(`/api/travel/schedule-items?scheduleId=${scheduleId}`)
+                .then(res => res.json())
+                .then(data => {
+                    refreshDayCards(data, dayCard); // 받아온 데이터와 해당 dayCard 전달
+                    calculateTotalCost(); // 비용도 업데이트
+                });
+        });
+    });
 
-                        <!-- 메모일 경우 -->
-                        <div th:case="'MEMO'" class="memo-entry">
-                            <p><strong>메모</strong></p>
-                            <p th:text="${item.content}"></p>
-                            <p th:text="'예상 비용: ' + ${item.expectedCost} + '원'"></p>
-                        </div>
+    function calculateTotalCost() {
+        let total = 0;
+        const costElements = document.querySelectorAll(".item-cost");
 
-                        <!-- 예외 처리 -->
-                        <div th:case="*">
-                            <p>알 수 없는 일정 항목입니다.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+        costElements.forEach((costEl, idx) => {
+            const costText = costEl.textContent.trim();
+            const numericCost = parseInt(costText.replace(/[^\d]/g, ""), 10);
+            if (!isNaN(numericCost)) {
+                total += numericCost;
+            }
+        });
+        document.getElementById("totalCost").textContent = `₩${total.toLocaleString()}`;
+    }
 
-    <div class="total-cost">
-        총 예상 지출: <span id="totalCost">₩0</span>
-    </div>
+    document.getElementById('autocomplete').addEventListener('input', function () {
+        const query = this.value.trim();
+        const list = document.getElementById('recommendationList');
+        list.style.display = 'block';
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            loadRecommendations(cityIds, query);
+        }, DEBOUNCE_DELAY);
+    });
 
-    <script>
-        let currentEntryList = null;
-        let cityIds = /*[[${plan.cityIds}]]*/ [1, 2, 3];
-        let debounceTimer;
-        const DEBOUNCE_DELAY = 400;
+    function addMemo(button) {
+        const scheduleId = button.closest('.day-card')?.dataset?.scheduleId;
+        const memo = prompt("메모를 입력하세요:");
 
-        document.getElementById('autocomplete').addEventListener('input', function () {
-            const query = this.value.trim();
-            const list = document.getElementById('recommendationList');
-            list.style.display = 'block';
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                loadRecommendations(cityIds, query);
-            }, DEBOUNCE_DELAY);
+        if (memo === null || memo.trim() === "") return;
+
+        const scheduleItem = {
+            scheduleId,
+            content: memo,
+        };
+
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        fetch('/api/travel/memo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                [csrfHeader]: csrfToken,
+            },
+            body: JSON.stringify(scheduleItem),
+        }).then(res => {
+            if (res.ok) {
+                location.reload();
+            } else {
+                alert("메모 추가에 실패했습니다.");
+            }
+        });
+    }
+
+    function calculateDistance(prevPlace, newPlace, callback) {
+        const R = 6371;
+        const toRad = deg => deg * Math.PI / 180;
+        const dLat = toRad(newPlace.latitude - prevPlace.latitude);
+        const dLon = toRad(newPlace.longitude - prevPlace.longitude);
+        const lat1 = toRad(prevPlace.latitude);
+        const lat2 = toRad(newPlace.latitude);
+        const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distance = R * c;
+        callback(`${distance.toFixed(2)} km`);
+    }
+
+
+    function refreshDayCards(data, dayCard) {
+    const entryList = dayCard.querySelector('.entry-list');
+    const originalItems = [];
+
+    // 데이터 기반으로 아이템 처리
+    data.forEach((item, idx) => {
+        const expectedCost = item.expectedCost || '';
+        if (item.type === 'place') {
+            originalItems.push({
+                id: item.id,
+                type: 'place',
+                expectedCost,
+                latitude: item.latitude,
+                longitude: item.longitude,
+                name: item.name || '이름 없음',
+                address: item.address || ''
+            });
+        } else {
+            originalItems.push({
+                id: item.id,
+                type: 'memo',
+                expectedCost,
+                content: item.content || '내용 없음'
+            });
+        }
+    });
+
+    entryList.innerHTML = '';
+
+    let prevPlace = null;
+    let placeCount = 0;
+
+    originalItems.forEach(item => {
+        const cost = parseInt(item.expectedCost?.replace(/[^\d]/g, '') || '0', 10);
+        const row = document.createElement('div');
+        row.className = item.type === 'place' ? 'entry-row place-row' : 'entry-row memo-row';
+        if (item.id) row.dataset.id = item.id;
+
+        const circle = document.createElement('div');
+        circle.className = item.type === 'place' ? 'circle-number' : 'circle-memo';
+        circle.innerText = item.type === 'place' ? ++placeCount : '🟡';
+
+        const contentItem = document.createElement('div');
+        contentItem.className = item.type === 'place' ? 'entry-item place-entry' : 'entry-item';
+        if (item.type === 'place') {
+            contentItem.innerText = `📍 ${item.name} (${item.address})`;
+            contentItem.dataset.latitude = item.latitude;
+            contentItem.dataset.longitude = item.longitude;
+            contentItem.dataset.id = item.id;
+        } else {
+            contentItem.innerHTML = `
+                ✏️ <span class="memo-text">${item.content}</span><br>`;
+        }
+
+        // 편집 버튼 영역
+        const editArea = document.createElement('div');
+        editArea.className = 'edit-area';
+
+        const editToggle = document.createElement('span');
+        editToggle.className = 'edit-toggle';
+        editToggle.innerText = '편집';
+
+        const buttonWrapper = document.createElement('div');
+        buttonWrapper.className = 'edit-buttons hidden';
+        buttonWrapper.innerHTML = `
+            <button class="btn-delete">삭제</button>
+            <button class="btn-edit">수정</button>
+            <button class="btn-cost">비용추가</button>
+        `;
+
+        editToggle.addEventListener('click', () => {
+            buttonWrapper.classList.toggle('hidden');
         });
 
-        function openPlaceModal(button) {
-            const dayCard = button.closest('.day-card');
-            currentEntryList = dayCard.querySelector('.entry-list');
-
-            document.getElementById('placeModal').style.display = 'block';
-
-            const input = document.getElementById('autocomplete');
-            const list = document.getElementById('recommendationList');
-
-            input.value = '';
-            list.innerHTML = '<p>🔄 장소 추천을 불러오는 중...</p>';
-            list.style.display = 'block';
-
-            loadRecommendations(cityIds);
-        }
-
-        function closeModal() {
-            document.getElementById('placeModal').style.display = 'none';
-        }
-
-        function loadRecommendations(cityIds, query = '') {
-            const queryParam = cityIds.map(id => cityIds=${id}).join('&') + (query ? &query=${encodeURIComponent(query)} : '');
-            fetch(/travel/places/recommend?${queryParam})
-                .then(res => res.json())
-                .then(places => {
-                    const list = document.getElementById('recommendationList');
-                    list.innerHTML = '';
-                    if (places.length === 0) {
-                        list.innerHTML = '<p>추천 장소가 없습니다.</p>';
-                        return;
-                    }
-                    places.forEach(place => {
-                        const div = document.createElement('div');
-                        div.className = 'recommend-item';
-                        div.style.padding = '15px';
-                        div.style.marginBottom = '10px';
-                        div.style.backgroundColor = '#fff';
-                        div.style.borderRadius = '8px';
-                        div.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
-                        div.style.cursor = 'pointer';
-                        div.style.transition = 'transform 0.3s ease';
-                        div.style.display = 'flex';
-                        div.style.flexDirection = 'column';
-
-                        // 장소 이름과 주소
-                        const titleDiv = document.createElement('div');
-                        titleDiv.style.fontWeight = 'bold';
-                        titleDiv.style.fontSize = '1.1rem';
-                        titleDiv.style.color = '#333';
-                        titleDiv.innerText = ${place.placeName};
-                        div.appendChild(titleDiv);
-
-                        const addressDiv = document.createElement('div');
-                        addressDiv.style.fontSize = '0.9rem';
-                        addressDiv.style.color = '#666';
-                        addressDiv.style.marginBottom = '10px';
-                        addressDiv.innerText = ${place.address};
-                        div.appendChild(addressDiv);
-
-                        // 테마 태그
-                        if (place.themes && place.themes.length > 0) {
-                            const tagContainer = document.createElement('div');
-                            tagContainer.style.marginBottom = '8px';
-                            tagContainer.style.display = 'flex';
-                            tagContainer.style.flexWrap = 'wrap';
-
-                            place.themes.forEach(theme => {
-                                const tag = document.createElement('span');
-                                tag.innerText = theme;
-                                tag.style.backgroundColor = '#e0f7fa';
-                                tag.style.color = '#00796b';
-                                tag.style.fontSize = '0.85rem';
-                                tag.style.padding = '5px 10px';
-                                tag.style.marginRight = '8px';
-                                tag.style.marginBottom = '5px';
-                                tag.style.borderRadius = '16px';
-                                tag.style.border = '1px solid #00796b';
-                                tag.style.transition = 'background-color 0.2s ease';
-                                tag.style.cursor = 'pointer';
-
-                                // 태그 hover 효과
-                                tag.onmouseenter = () => tag.style.backgroundColor = '#00796b';
-                                tag.onmouseleave = () => tag.style.backgroundColor = '#e0f7fa';
-                                tagContainer.appendChild(tag);
-                            });
-                            div.appendChild(tagContainer);
-                        }
-
-                        div.onclick = () => handlePlaceClick(place.placeId);
-                        list.appendChild(div);
-                    });
-                });
-            }
-
-        function handlePlaceClick(placeId) {
-            const service = new google.maps.places.PlacesService(document.createElement('div'));
-            service.getDetails({ placeId: placeId }, (result, status) => {
-                if (status !== google.maps.places.PlacesServiceStatus.OK) {
-                    alert("장소 정보를 가져올 수 없습니다.");
-                    return;
-                }
-
-                const scheduleId = currentEntryList.closest('.day-card')?.dataset?.scheduleId;
-                if (!scheduleId) {
-                    alert("일정 ID를 찾을 수 없습니다.");
-                    return;
-                }
-
-                const placeEntry = {
-                    placeId: placeId,
-                    scheduleId: scheduleId,
-                    name: result.name,
-                    address: result.formatted_address || result.vicinity,
-                    latitude: result.geometry.location.lat(),
-                    longitude: result.geometry.location.lng(),
-                };
-
+        // ✅ 삭제
+        buttonWrapper.querySelector('.btn-delete').addEventListener('click', () => {
+            if (confirm('정말 삭제하시겠습니까?')) {
                 const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
                 const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-                fetch('/api/travel/place', {
-                    method: 'POST',
+                fetch(`/api/travel/${item.id}`, {
+                    method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
                         [csrfHeader]: csrfToken
-                    },
-                    body: JSON.stringify(placeEntry)
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("서버에 장소를 저장하지 못했습니다.");
                     }
-                    return response.json(); // scheduleItemId 포함된 응답 받기
-                })
-                .then(data => {
-                    const scheduleItemId = data.scheduleItemId;
-
-                    const entries = currentEntryList.querySelectorAll('.entry-item[data-latitude]');
-                    let lastPlace = null;
-                    if (entries.length > 0) {
-                        const last = entries[entries.length - 1];
-                        lastPlace = {
-                            latitude: parseFloat(last.dataset.latitude),
-                            longitude: parseFloat(last.dataset.longitude),
-                        };
-                    }
-
-                    const placeCount = currentEntryList.querySelectorAll('.circle-number').length + 1;
-
-                    const addNumber = () => {
-                        const row = document.createElement('div');
-                        row.className = 'entry-row';
-
-                        const circle = document.createElement('div');
-                        circle.className = 'circle-number';
-                        circle.innerText = placeCount;
-
-                        const placeDiv = document.createElement('div');
-                        placeDiv.className = 'entry-item';
-                        placeDiv.innerText = 📍 ${placeEntry.name} (${placeEntry.address});
-                        placeDiv.dataset.latitude = placeEntry.latitude;
-                        placeDiv.dataset.longitude = placeEntry.longitude;
-
-                        // 💰 지출 금액 버튼 생성
-                        const costButton = document.createElement('button');
-                        costButton.innerText = '💰 지출 입력';
-                        costButton.style.marginLeft = '10px';
-                        costButton.className = 'cost-button';
-
-                        costButton.onclick = () => {
-                            const cost = prompt("예상 지출 금액을 입력하세요:");
-                            if (cost && !isNaN(cost)) {
-                                fetch(/api/travel/${scheduleItemId}/expected-cost, {
-                                    method: 'PATCH',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        [csrfHeader]: csrfToken
-                                    },
-                                    body: JSON.stringify({
-                                        expectedCost: Number(cost)
-                                    })
-                                })
-                                .then(res => {
-                                    if (!res.ok) throw new Error('예상 지출 저장 실패');
-                                    costButton.innerText = 예상 지출: ${Number(cost).toLocaleString()}원;
-                                    updateTotalCost();
-                                })
-                                .catch(err => alert(err.message));
-                            }
-                        };
-
-                        row.appendChild(circle);
-                        row.appendChild(placeDiv);
-                        row.appendChild(costButton);
-                        currentEntryList.appendChild(row);
-                    };
-
-                    if (lastPlace) {
-                        calculateDistanceAndDisplay(lastPlace, placeEntry, (distanceText) => {
-                            const distanceDiv = document.createElement('div');
-                            distanceDiv.className = 'distance-item';
-                            distanceDiv.innerText = 거리: ${distanceText};
-                            currentEntryList.appendChild(distanceDiv);
-                            addNumber();
-                            closeModal();
-                        });
+                }).then(res => {
+                    if (res.ok) {
+                        row.remove();
                     } else {
-                        addNumber();
-                        closeModal();
+                        alert('삭제에 실패했습니다.');
                     }
-                })
-                .catch(error => {
-                    console.error(error);
-                    alert("장소 저장 중 문제가 발생했습니다.");
                 });
-            });
-        }
+            }
+        });
 
-        function calculateDistanceAndDisplay(prevPlace, newPlace, callback) {
-            const R = 6371;
-            const toRad = deg => deg * Math.PI / 180;
-            const dLat = toRad(newPlace.latitude - prevPlace.latitude);
-            const dLon = toRad(newPlace.longitude - prevPlace.longitude);
-            const lat1 = toRad(prevPlace.latitude);
-            const lat2 = toRad(newPlace.latitude);
-            const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            const distance = R * c;
-            callback(${distance.toFixed(2)} km);
-        }
+        // ✅ 수정
+        buttonWrapper.querySelector('.btn-edit').addEventListener('click', () => {
+            if (item.type === 'place') {
+                const newText = prompt('장소 이름과 주소를 수정하세요', contentItem.innerText);
+                if (newText !== null) {
+                    const [name, addressPart] = newText.split(' (');
+                    const address = addressPart?.replace(')', '');
+                    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-        function addMemo(button) {
-            const dayCard = button.closest('.day-card');
-            const entryList = dayCard.querySelector('.entry-list');
-            const memo = prompt("메모를 입력하세요:");
+                    fetch(`/api/places/${item.id}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            [csrfHeader]: csrfToken
+                        },
+                        body: JSON.stringify({ name: name.trim(), address: address.trim() })
+                    }).then(res => {
+                        if (res.ok) {
+                            contentItem.innerText = newText;
+                        } else {
+                            alert('수정 실패');
+                        }
+                    });
+                }
+            } else {
+                const memoText = contentItem.querySelector('.memo-text');
+                const newText = prompt('메모 내용을 수정하세요', memoText.innerText);
+                if (newText !== null) {
+                    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-            if (memo) {
-                const scheduleId = dayCard.dataset.scheduleId;
+                    fetch(`/api/memos/${item.id}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            [csrfHeader]: csrfToken
+                        },
+                        body: JSON.stringify({ content: newText })
+                    }).then(res => {
+                        if (res.ok) {
+                            memoText.innerText = newText;
+                        } else {
+                            alert('수정 실패');
+                        }
+                    });
+                }
+            }
+        });
 
-                // CSRF 토큰 정보 가져오기
+        // ✅ 비용 추가
+        buttonWrapper.querySelector('.btn-cost').addEventListener('click', () => {
+            const costText = contentItem.querySelector('.item-cost');
+            const newCost = prompt('비용을 입력하세요 (예: 5,000원)', costText.innerText);
+            if (newCost !== null) {
                 const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
                 const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-                fetch('/api/travel/memo', {
-                    method: 'POST',
+                // 비용 추가는 메모와 장소 모두에 해당하는 API 호출로 수정
+                const url = item.type === 'place' ? `/api/places/${item.id}/cost` : `/api/memos/${item.id}/cost`;
+
+                fetch(url, {
+                    method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
                         [csrfHeader]: csrfToken
                     },
-                    body: JSON.stringify({
-                        scheduleId: scheduleId,
-                        content: memo
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error('메모 저장 실패');
-                    return response.json(); // scheduleItemId 포함된 응답 받기
-                })
-                .then(data => {
-                    const scheduleItemId = data.scheduleItemId;
-
-                    const row = document.createElement('div');
-                    row.className = 'entry-row';
-
-                    const circle = document.createElement('div');
-                    circle.className = 'circle-blank';
-
-                    const div = document.createElement('div');
-                    div.className = 'entry-item';
-                    div.innerText = 📝 ${memo};
-
-                    // 💰 지출 금액 버튼 생성
-                    const costButton = document.createElement('button');
-                    costButton.innerText = '💰 지출 입력';
-                    costButton.style.marginLeft = '10px';
-                    costButton.className = 'cost-button';
-
-                    costButton.onclick = () => {
-                        const cost = prompt("예상 지출 금액을 입력하세요:");
-                        if (cost && !isNaN(cost)) {
-                            fetch(/api/travel/${scheduleItemId}/expected-cost, {
-                                method: 'PATCH',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    [csrfHeader]: csrfToken
-                                },
-                                body: JSON.stringify({
-                                    expectedCost: Number(cost)
-                                })
-                            })
-                            .then(res => {
-                                if (!res.ok) throw new Error('예상 지출 저장 실패');
-                                costButton.innerText = 예상 지출: ${Number(cost).toLocaleString()}원;
-                                updateTotalCost();
-                            })
-                            .catch(err => alert(err.message));
-                        }
-                    };
-
-                    div.appendChild(costButton);
-                    row.appendChild(circle);
-                    row.appendChild(div);
-                    entryList.appendChild(row);
-                })
-                .catch(error => {
-                    alert(error.message);
+                    body: JSON.stringify({ costText: newCost })
+                }).then(res => {
+                    if (res.ok) {
+                        costText.innerText = newCost;
+                    } else {
+                        alert('비용 추가 실패');
+                    }
                 });
             }
-        }
-        function updateTotalCost() {
-            const costButtons = document.querySelectorAll('.cost-button');
-            let total = 0;
+        });
 
-            costButtons.forEach(btn => {
-                const match = btn.innerText.match(/예상 지출: ([\d,]+)원/);
-                if (match) {
-                    const amount = parseInt(match[1].replace(/,/g, ''), 10);
-                    total += amount;
-                }
+        editArea.appendChild(editToggle);
+        editArea.appendChild(buttonWrapper);
+
+        row.appendChild(circle);
+        row.appendChild(contentItem);
+        row.appendChild(editArea);
+        entryList.appendChild(row);
+
+        if (item.type === 'place' && prevPlace) {
+            const distanceDiv = document.createElement('div');
+            distanceDiv.className = 'distance-item';
+            calculateDistance(prevPlace, {
+                latitude: item.latitude,
+                longitude: item.longitude
+            }, (distanceText) => {
+                distanceDiv.innerText = `거리: ${distanceText}`;
             });
-
-            document.getElementById('totalCost').innerText = ₩${total.toLocaleString()};
+            entryList.insertBefore(distanceDiv, row);
         }
-    </script>
 
-    <script th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${@environment.getProperty('google.maps.api-key')} + '&libraries=places,geometry&loading=async'" async></script>
-</div>
-</body>
+        if (item.type === 'place') {
+            prevPlace = {
+                latitude: item.latitude,
+                longitude: item.longitude
+            };
+        }
+    });
+    calculateTotalCost();
+}
+</script>

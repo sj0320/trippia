@@ -21,8 +21,12 @@ public class Memo extends ScheduleItem {
 
     @Builder
     private Memo(Schedule schedule, String content) {
-        super(schedule,0);
+        super(schedule);
         this.createdAt = LocalDateTime.now();
+        this.content = content;
+    }
+
+    public void updateContent(String content){
         this.content = content;
     }
 }

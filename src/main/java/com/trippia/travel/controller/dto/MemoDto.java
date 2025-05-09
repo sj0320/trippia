@@ -27,4 +27,9 @@ public class MemoDto {
         }
     }
 
+    @Getter
+    public static class MemoUpdateRequest{
+        private String content;
+    }
+
 }

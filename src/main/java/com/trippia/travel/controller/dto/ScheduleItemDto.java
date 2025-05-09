@@ -1,11 +1,16 @@
 package com.trippia.travel.controller.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.trippia.travel.domain.common.ScheduleItemType;
 import com.trippia.travel.domain.travel.scheduleitem.memo.Memo;
 import com.trippia.travel.domain.travel.scheduleitem.scheduleplace.SchedulePlace;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalTime;
 
 public class ScheduleItemDto {
 
@@ -26,9 +31,12 @@ public class ScheduleItemDto {
         private double longitude;   // place
         private Integer expectedCost;
 
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime executionTime;
+
         @Builder
         private ScheduleItemResponse(Long id, ScheduleItemType type, String content, String name,
-                                     String address, double latitude, double longitude, Integer expectedCost) {
+                                     String address, double latitude, double longitude, Integer expectedCost, LocalTime executionTime) {
             this.id = id;
             this.type = type;
             this.content = content;
@@ -37,6 +45,7 @@ public class ScheduleItemDto {
             this.latitude = latitude;
             this.longitude = longitude;
             this.expectedCost = expectedCost;
+            this.executionTime = executionTime;
         }
 
         public static ScheduleItemResponse ofMemo(Memo memo) {
@@ -45,6 +54,7 @@ public class ScheduleItemDto {
                     .type(ScheduleItemType.MEMO)
                     .content(memo.getContent())
                     .expectedCost(memo.getExpectedCost())
+                    .executionTime(memo.getExecutionTime())
                     .build();
         }
 
@@ -57,12 +67,22 @@ public class ScheduleItemDto {
                     .latitude(schedulePlace.getLatitude())
                     .longitude(schedulePlace.getLongitude())
                     .expectedCost(schedulePlace.getExpectedCost())
+                    .executionTime(schedulePlace.getExecutionTime())
                     .build();
         }
     }
 
     @Getter
-    public static class ExpectedCostRequest {
+    @Setter
+    public static class ScheduleItemMetaRequest{
+        @Min(value = 0, message = "예상 지출은 0원 이상이어야 합니다.")
         private Integer expectedCost;
+        private LocalTime executionTime;
     }
+
+//    @Getter
+//    public static class ExpectedCostRequest {
+//        @Min(value = 0, message = "예상 지출은 0원 이상이어야 합니다.")
+//        private Integer expectedCost;
+//    }
 }

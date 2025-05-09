@@ -7,7 +7,13 @@
     <title>여행 일정표</title>
     <script defer src="/js/place-recommend.js"></script>
     <script defer src="/js/place-handler.js"></script>
+    <script defer src="/js/refresh-daycards.js"></script>
+    <script defer src="/js/cost-time-edit-modal.js"></script>
+    <script defer src="/js/memo-edit-modal.js"></script>
     <style>
+        .item-cost {
+  display: none;
+}
         .itinerary-container {
             display: flex;
             flex-direction: column;
@@ -260,42 +266,216 @@
 }
 
 
-        .edit-area {
-    position: absolute;
-    top: 4px;
-    right: 8px;
-    font-size: 0.8rem;
-    color: #555;
+/* 편집 전체 영역 */
+.edit-area {
+    margin-left: auto;
+    text-align: right;
+    position: relative;
+    font-family: 'Segoe UI', sans-serif;
 }
 
+/* 편집 토글 버튼 */
 .edit-toggle {
     cursor: pointer;
-    text-decoration: underline;
+    background-color: #000;
+    color: #fff;
+    padding: 6px 12px;
+    font-size: 14px;
+    border-radius: 4px;
+    display: inline-block;
+    transition: background-color 0.3s;
+}
+.edit-toggle:hover {
+    background-color: #333;
 }
 
+/* ===== 편집 버튼 그룹 ===== */
 .edit-buttons {
-    margin-top: 4px;
-    display: flex;
-    gap: 4px;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  right: 0;
+  top: 110%;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 6px;
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+}
+.edit-buttons.hidden {
+  display: none;
 }
 
-.edit-buttons.hidden {
-    display: none;
+.edit-buttons button {
+  background-color: #f8f8f8;
+  border: 1px solid #ccc;
+  color: #000;
+  padding: 6px 10px;
+  margin: 4px 0;
+  font-size: 13px;
+  border-radius: 4px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  white-space: nowrap;
+  min-width: max-content;
+}
+.edit-buttons button:hover {
+  background-color: #e0e0e0;
+}
+
+.btn-delete {
+  color: #fff;
+  background-color: #d32f2f;
+  border-color: #d32f2f;
+}
+.btn-delete:hover {
+  background-color: #b71c1c;
 }
 
 .entry-row {
-    position: relative;
+  position: relative;
+}
+
+/* ===== 공통 모달 ===== */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  align-items: center;
+  justify-content: center;
+}
+.modal.active {
+  display: flex;
+}
+
+/* 모달 컨텐츠 */
+.modal-content {
+  background-color: #ffffff;
+  color: #000000;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 320px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* 입력 필드 */
+.modal-content input,
+.modal-content textarea {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #f9f9f9;
+  color: #000;
+  font-size: 0.9rem;
+  resize: vertical;
+}
+
+/* 라벨 */
+.modal-content label {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #333;
+}
+
+/* 모달 하단 버튼 */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.modal-actions button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* 재사용 가능한 버튼 스타일 */
+.modal-actions .btn-save {
+  background-color: #000;
+  color: #fff;
+}
+.modal-actions .btn-save:hover {
+  background-color: #333;
+}
+
+.modal-actions .btn-cancel {
+  background-color: #e0e0e0;
+  color: #000;
+}
+.modal-actions .btn-cancel:hover {
+  background-color: #cfcfcf;
+}
+
+/* ===== 숨김 클래스 ===== */
+.hidden {
+  display: none;
+}
+        .plan-title {
+    margin: 2rem 0 1rem;
+    text-align: center;
+}
+
+.plan-title h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2c3e50;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 0.5rem;
+    display: inline-block;
 }
     </style>
 </head>
 <body>
 <div layout:fragment="content">
+    <div class="plan-title">
+        <h2 th:text="${plan.title}">여행 제목</h2>
+    </div>
     <div id="placeModal">
         <label for="autocomplete" style="font-weight: bold;">장소 검색</label>
         <input id="autocomplete" type="text" placeholder="장소 검색..." autocomplete="off"/>
         <div id="recommendationList" style="margin-top: 1rem;"></div>
         <button onclick="closeModal()">❌ 닫기</button>
+    </div>
+
+    <div id="memoEditModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>메모 수정</h3>
+            <textarea id="memoEditTextarea" rows="5" placeholder="수정할 메모를 입력하세요."></textarea>
+            <div class="modal-actions">
+                <button id="memoEditSaveBtn">저장</button>
+                <button id="memoEditCancelBtn">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="costTimeEditModal" class="modal hidden">
+        <div class="modal-content">
+            <label>지출 (원)</label>
+            <input type="text" id="costInput" placeholder="예: 5000" />
+
+            <label>시간 (HH:mm)</label>
+            <input type="time" id="timeInput" />
+
+            <div class="modal-actions">
+                <button id="costTimeSaveBtn">저장</button>
+                <button id="costTimeCancelBtn">취소</button>
+            </div>
+        </div>
     </div>
 
     <div class="itinerary-container">
@@ -314,9 +494,10 @@
                 <div th:each="item : ${schedule.scheduleItems}">
                     <div th:switch="${item.type.name()}">
                         <!-- 장소일 경우 -->
-                        <div th:case="'PLACE'" class="entry-row">
+                        <div th:case="'PLACE'" class="entry-row"
+                             th:attr="data-id=${item.id}, data-execution-time=${item.executionTime}">
                             <div class="entry-item place-entry"
-                                 th:attr="data-latitude=${item.latitude}, data-longitude=${item.longitude}">
+                                 th:attr="data-id=${item.id}, data-latitude=${item.latitude}, data-longitude=${item.longitude}">
                                 <p><strong th:text="${item.name}">장소 이름</strong></p>
                                 <p th:text="'주소: ' + ${item.address}"></p>
                                 <p class="item-cost" th:text="${item.expectedCost}">0</p>
@@ -324,7 +505,8 @@
                         </div>
 
                         <!-- 메모일 경우 -->
-                        <div th:case="'MEMO'" class="entry-row">
+                        <div th:case="'MEMO'" class="entry-row"
+                             th:attr="data-id=${item.id}, data-execution-time=${item.executionTime}">
                             <div class="entry-item memo-entry">
                                 <span class="memo-text" th:text="${item.content}">기본 메모</span><br>
                                 <p class="item-cost" th:text="${item.expectedCost}">0</p>
@@ -340,285 +522,156 @@
         </div>
     </div>
 
+
     <div class="total-cost">
         총 예상 지출: <span id="totalCost">₩0</span>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-        calculateTotalCost();
-    });
+        let currentEntryList = null;
+        let cityIds = /*[[${plan.cityIds}]]*/ [1, 2, 3];
+        let debounceTimer;
+        const DEBOUNCE_DELAY = 400;
+
+        // 이벤트 리스너 등록
+        document.addEventListener('DOMContentLoaded', () => {
+
+          // 장소 추천 리스너 등록
+          const autocomplete = document.getElementById('autocomplete');
+          if (autocomplete) {
+            autocomplete.addEventListener('input', function () {
+              const query = this.value.trim();
+              const list = document.getElementById('recommendationList');
+              list.style.display = 'block';
+              clearTimeout(debounceTimer);
+              debounceTimer = setTimeout(() => {
+                loadRecommendations(cityIds, query);
+              }, DEBOUNCE_DELAY);
+            });
+          }
+
+          let currentMemoItemId = null;
+          let currentMemoDayCard = null;
+
+
+          // item 삭제 리스너
+          document.addEventListener('click', (event) => {
+              if (event.target.matches('.btn-delete')) {
+                if (confirm('정말 삭제하시겠습니까?')) {
+                  const itemId = event.target.closest('.entry-row')?.dataset?.id;
+                  const dayCard = event.target.closest('.day-card');
+                  const scheduleId = dayCard?.dataset?.scheduleId;
+
+                  const csrfToken  = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+                  const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+                  fetch(`/api/travel/${itemId}`, {
+                    method: 'DELETE',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      [csrfHeader]: csrfToken
+                    }
+                  }).then(res => {
+                    if (res.ok) {
+                      fetch(`/api/travel/schedule-items?scheduleId=${scheduleId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                          refreshDayCards(data, dayCard);
+                          calculateTotalCost();
+                        });
+                    } else {
+                      alert('삭제에 실패했습니다.');
+                    }
+                  });
+                }
+              }
+            });
+
+          // 데이터 초기화 작업
+          const dayCards = document.querySelectorAll('.day-card');
+          dayCards.forEach(dayCard => {
+            const scheduleId = dayCard.dataset.scheduleId;
+            fetch(`/api/travel/schedule-items?scheduleId=${scheduleId}`)
+              .then(res => res.json())
+              .then(data => {
+                refreshDayCards(data, dayCard);
+              });
+          });
+          calculateTotalCost();
+        });
+
+        // 다른 영역 클릭 시 숨김 처리 리스너
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('.edit-area')) {
+            document.querySelectorAll('.edit-buttons').forEach(btn => btn.classList.add('hidden'));
+          }
+        });
 
         function calculateTotalCost() {
-                let total = 0;
-                const costElements = document.querySelectorAll(".item-cost");
+          let total = 0;
+          const costElements = document.querySelectorAll(".item-cost");
+          console.log(`🔍 .item-cost 요소 개수: ${costElements.length}`);
 
-                console.log(`찾은 .item-cost 요소 개수: ${costElements.length}`);
+          costElements.forEach((costEl, idx) => {
+            const costText = costEl.textContent.trim();
+            const numericCost = parseInt(costText.replace(/[^\d]/g, ""), 10);
 
-                costElements.forEach((costEl, idx) => {
-                    const costText = costEl.textContent.trim();
-                    console.log(`[${idx}] 원본 텍스트: "${costText}"`);
+            console.log(`[${idx}] 원본 텍스트: "${costText}"`);
+            console.log(`[${idx}] 숫자 변환 값: ${numericCost}`);
 
-                    const numericCost = parseInt(costText.replace(/[^\d]/g, ""), 10);
-                    console.log(`[${idx}] 숫자로 변환된 비용: ${numericCost}`);
-
-                    if (!isNaN(numericCost)) {
-                        total += numericCost;
-                    }
-                });
-                document.getElementById("totalCost").textContent = `₩${total.toLocaleString()}`;
+            if (!isNaN(numericCost)) {
+              total += numericCost;
             }
+          });
 
-                let currentEntryList = null;
-                let cityIds = /*[[${plan.cityIds}]]*/ [1, 2, 3];
-                let debounceTimer;
-                const DEBOUNCE_DELAY = 400;
+          console.log(`💰 총 계산된 비용: ₩${total.toLocaleString()}`);
+          document.getElementById("totalCost").textContent = `₩${total.toLocaleString()}`;
+        }
 
-                document.getElementById('autocomplete').addEventListener('input', function () {
-                    const query = this.value.trim();
-                    const list = document.getElementById('recommendationList');
-                    list.style.display = 'block';
-                    clearTimeout(debounceTimer);
-                    debounceTimer = setTimeout(() => {
-                        loadRecommendations(cityIds, query);
-                    }, DEBOUNCE_DELAY);
-                });
+        function addMemo(button) {
+          const scheduleId = button.closest('.day-card')?.dataset?.scheduleId;
+          const memo = prompt("메모를 입력하세요:");
+          if (memo === null || memo.trim() === "") return;
 
-                document.addEventListener('DOMContentLoaded', () => {
-                    refreshDayCards();
-                });
+          const scheduleItem = { scheduleId, content: memo };
 
-                function addMemo(button) {
-                    const scheduleId = button.closest('.day-card')?.dataset?.scheduleId;
-                    const memo = prompt("메모를 입력하세요:");
+          const csrfToken  = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+          const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-                    if (memo === null || memo.trim() === "") return;
+          fetch('/api/travel/memo', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              [csrfHeader]: csrfToken,
+            },
+            body: JSON.stringify(scheduleItem),
+          }).then(res => {
+            if (res.ok) {
+              location.reload();
+            } else {
+              alert("메모 추가에 실패했습니다.");
+            }
+          });
+        }
 
-                    const scheduleItem = {
-                        scheduleId,
-                        content: memo,
-                    };
+        function calculateDistance(prevPlace, newPlace, callback) {
+          const R     = 6371;
+          const toRad = deg => deg * Math.PI / 180;
 
-                    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-                    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+          const dLat = toRad(newPlace.latitude - prevPlace.latitude);
+          const dLon = toRad(newPlace.longitude - prevPlace.longitude);
+          const lat1 = toRad(prevPlace.latitude);
+          const lat2 = toRad(newPlace.latitude);
 
-                    fetch('/api/travel/memo', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            [csrfHeader]: csrfToken,
-                        },
-                        body: JSON.stringify(scheduleItem),
-                    }).then(res => {
-                        if (res.ok) {
-                            location.reload();
-                        } else {
-                            alert("메모 추가에 실패했습니다.");
-                        }
-                    });
-                }
+          const a = Math.sin(dLat / 2) ** 2 +
+                    Math.cos(lat1) * Math.cos(lat2) *
+                    Math.sin(dLon / 2) ** 2;
 
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          const distance = R * c;
 
-                function calculateDistance(prevPlace, newPlace, callback) {
-                    const R = 6371;
-                    const toRad = deg => deg * Math.PI / 180;
-                    const dLat = toRad(newPlace.latitude - prevPlace.latitude);
-                    const dLon = toRad(newPlace.longitude - prevPlace.longitude);
-                    const lat1 = toRad(prevPlace.latitude);
-                    const lat2 = toRad(newPlace.latitude);
-                    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                    const distance = R * c;
-                    callback(`${distance.toFixed(2)} km`);
-                }
-
-                function refreshDayCards() {
-                    const dayCards = document.querySelectorAll('.day-card');
-
-                    dayCards.forEach(dayCard => {
-                        const entryList = dayCard.querySelector('.entry-list');
-                        const originalItems = [];
-
-                        const rows = Array.from(entryList.querySelectorAll('.entry-row'));
-                        rows.forEach(row => {
-                            const place = row.querySelector('.place-entry');
-                            const expectedCost = row.querySelector('.item-cost')?.innerText || '';
-                            if (place) {
-                                originalItems.push({
-                                    id: place.dataset.id, // id 포함
-                                    type: 'place',
-                                    expectedCost,
-                                    latitude: parseFloat(place.dataset.latitude),
-                                    longitude: parseFloat(place.dataset.longitude),
-                                    name: place.querySelector('strong')?.innerText || '이름 없음',
-                                    address: place.querySelector('p:nth-child(2)')?.innerText.replace('주소: ', '') || ''
-                                });
-                            } else {
-                                const content = row.querySelector('.memo-text')?.innerText || '내용 없음';
-                                const costText = row.querySelector('.memo-cost')?.innerText || '';
-                                originalItems.push({
-                                    id: row.dataset.id, // 메모 항목도 ID 필요
-                                    type: 'memo',
-                                    expectedCost,
-                                    content
-                                });
-                            }
-                        });
-
-                        entryList.innerHTML = '';
-
-                        let prevPlace = null;
-                        let placeCount = 0;
-
-                        originalItems.forEach(item => {
-                            const cost = parseInt(item.expectedCost?.replace(/[^\d]/g, '') || '0', 10);
-                            const row = document.createElement('div');
-                            row.className = item.type === 'place' ? 'entry-row place-row' : 'entry-row memo-row';
-                            if (item.id) row.dataset.id = item.id;
-
-                            const circle = document.createElement('div');
-                            circle.className = item.type === 'place' ? 'circle-number' : 'circle-memo';
-                            circle.innerText = item.type === 'place' ? ++placeCount : '🟡';
-
-                            const contentItem = document.createElement('div');
-                            contentItem.className = item.type === 'place' ? 'entry-item place-entry' : 'entry-item';
-                            if (item.type === 'place') {
-                                contentItem.innerText = `📍 ${item.name} (${item.address})`;
-                                contentItem.dataset.latitude = item.latitude;
-                                contentItem.dataset.longitude = item.longitude;
-                                contentItem.dataset.id = item.id;
-                            } else {
-                                contentItem.innerHTML = `
-                                    ✏️ <span class="memo-text">${item.content}</span><br>`;
-                            }
-
-                            // 편집 버튼 영역
-                            const editArea = document.createElement('div');
-                            editArea.className = 'edit-area';
-
-                            const editToggle = document.createElement('span');
-                            editToggle.className = 'edit-toggle';
-                            editToggle.innerText = '편집';
-
-                            const buttonWrapper = document.createElement('div');
-                            buttonWrapper.className = 'edit-buttons hidden';
-                            buttonWrapper.innerHTML = `
-                                <button class="btn-delete">삭제</button>
-                                <button class="btn-edit">수정</button>
-                                <button class="btn-cost">비용추가</button>
-                            `;
-
-                            editToggle.addEventListener('click', () => {
-                                buttonWrapper.classList.toggle('hidden');
-                            });
-
-                            // ✅ 삭제
-                            buttonWrapper.querySelector('.btn-delete').addEventListener('click', () => {
-                                if (confirm('정말 삭제하시겠습니까?')) {
-                                    const endpoint = item.type === 'place' ? `/api/places/${item.id}` : `/api/memos/${item.id}`;
-                                    fetch(endpoint, {
-                                        method: 'DELETE'
-                                    }).then(res => {
-                                        if (res.ok) {
-                                            row.remove();
-                                            refreshDayCards();
-                                        } else {
-                                            alert('삭제에 실패했습니다.');
-                                        }
-                                    });
-                                }
-                            });
-
-                            // ✅ 수정
-                            buttonWrapper.querySelector('.btn-edit').addEventListener('click', () => {
-                                if (item.type === 'place') {
-                                    const newText = prompt('장소 이름과 주소를 수정하세요', contentItem.innerText);
-                                    if (newText !== null) {
-                                        const [name, addressPart] = newText.split(' (');
-                                        const address = addressPart?.replace(')', '');
-                                        fetch(`/api/places/${item.id}`, {
-                                            method: 'PATCH',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ name: name.trim(), address: address.trim() })
-                                        }).then(res => {
-                                            if (res.ok) {
-                                                contentItem.innerText = newText;
-                                            } else {
-                                                alert('수정 실패');
-                                            }
-                                        });
-                                    }
-                                } else {
-                                    const memoText = contentItem.querySelector('.memo-text');
-                                    const newText = prompt('메모 내용을 수정하세요', memoText.innerText);
-                                    if (newText !== null) {
-                                        fetch(`/api/memos/${item.id}`, {
-                                            method: 'PATCH',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ content: newText })
-                                        }).then(res => {
-                                            if (res.ok) {
-                                                memoText.innerText = newText;
-                                            } else {
-                                                alert('수정 실패');
-                                            }
-                                        });
-                                    }
-                                }
-                            });
-
-                            // ✅ 비용 추가
-                            buttonWrapper.querySelector('.btn-cost').addEventListener('click', () => {
-                                if (item.type === 'memo') {
-                                    const costText = contentItem.querySelector('.memo-cost');
-                                    const newCost = prompt('비용을 입력하세요 (예: 5,000원)', costText.innerText);
-                                    if (newCost !== null) {
-                                        fetch(`/api/memos/${item.id}/cost`, {
-                                            method: 'PATCH',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ costText: newCost })
-                                        }).then(res => {
-                                            if (res.ok) {
-                                                costText.innerText = newCost;
-                                            } else {
-                                                alert('비용 추가 실패');
-                                            }
-                                        });
-                                    }
-                                } else {
-                                    alert('비용 추가는 메모 항목에만 가능합니다.');
-                                }
-                            });
-
-                            editArea.appendChild(editToggle);
-                            editArea.appendChild(buttonWrapper);
-
-                            row.appendChild(circle);
-                            row.appendChild(contentItem);
-                            row.appendChild(editArea);
-                            entryList.appendChild(row);
-
-                            if (item.type === 'place' && prevPlace) {
-                                const distanceDiv = document.createElement('div');
-                                distanceDiv.className = 'distance-item';
-                                calculateDistance(prevPlace, {
-                                    latitude: item.latitude,
-                                    longitude: item.longitude
-                                }, (distanceText) => {
-                                    distanceDiv.innerText = `거리: ${distanceText}`;
-                                });
-                                entryList.insertBefore(distanceDiv, row);
-                            }
-
-                            if (item.type === 'place') {
-                                prevPlace = {
-                                    latitude: item.latitude,
-                                    longitude: item.longitude
-                                };
-                            }
-                        });
-                    });
-                }
+          callback(`${distance.toFixed(2)} km`);
+        }
     </script>
     <script th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${@environment.getProperty('google.maps.api-key')} + '&libraries=places,geometry&loading=async'" async></script>
 </div>

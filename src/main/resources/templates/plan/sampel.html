@@ -1,0 +1,321 @@
+<script>
+  let currentEditingItem = null;
+let currentDayCard = null;
+
+// 저장 버튼 리스너 - 중복 등록 방지
+document.addEventListener('DOMContentLoaded', () => {
+    const autocomplete = document.getElementById('autocomplete');
+    if (autocomplete) {
+        autocomplete.addEventListener('input', function () {
+            const query = this.value.trim();
+            const list = document.getElementById('recommendationList');
+            list.style.display = 'block';
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                loadRecommendations(cityIds, query);
+            }, DEBOUNCE_DELAY);
+        });
+    }
+
+    const modalSaveBtn = document.getElementById('modalSaveBtn');
+    const modalCancelBtn = document.getElementById('modalCancelBtn');
+
+    modalSaveBtn?.addEventListener('click', () => {
+        if (!currentEditingItem || !currentDayCard) return;
+
+        const formattedCost = document.getElementById('modalCost').value;
+        const numericCost = parseInt(formattedCost.replace(/[^\d]/g, ''), 10) || 0;
+        const timeValue = document.getElementById('modalTime').value;
+
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+        fetch(`/api/travel/schedule-item/${currentEditingItem.id}/meta`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                [csrfHeader]: csrfToken
+            },
+            body: JSON.stringify({
+                expectedCost: numericCost,
+                time: timeValue
+            })
+        }).then(res => {
+            if (res.ok) {
+                const scheduleId = currentDayCard?.dataset?.scheduleId;
+                if (scheduleId) {
+                    fetch(`/api/travel/schedule-items?scheduleId=${scheduleId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            refreshDayCards(data, currentDayCard);
+                        });
+                }
+            } else {
+                alert('저장에 실패했습니다.');
+            }
+        });
+
+        document.getElementById('editModal').classList.remove('active');
+    });
+
+    modalCancelBtn?.addEventListener('click', () => {
+        document.getElementById('editModal').classList.remove('active');
+    });
+});
+
+
+
+
+  document.addEventListener('DOMContentLoaded', () => {
+      const dayCards = document.querySelectorAll('.day-card');
+
+      dayCards.forEach(dayCard => {
+          const scheduleId = dayCard.dataset.scheduleId;
+          fetch(`/api/travel/schedule-items?scheduleId=${scheduleId}`)
+              .then(res => res.json())
+              .then(data => {
+                  refreshDayCards(data, dayCard); // 받아온 데이터와 해당 dayCard 전달
+              });
+      });
+      calculateTotalCost();
+  });
+
+  // 다른 영역 클릭 시 숨김 처리
+  document.addEventListener('click', (e) => {
+      // 편집 영역 바깥을 클릭했을 때만 동작
+      if (!e.target.closest('.edit-area')) {
+          document.querySelectorAll('.edit-buttons').forEach(btn => btn.classList.add('hidden'));
+      }
+  });
+
+
+  function calculateTotalCost() {
+      let total = 0;
+      const costElements = document.querySelectorAll(".item-cost");
+
+<!--            console.log(`총 ${costElements.length}개의 .item-cost 요소를 찾음`);-->
+
+      costElements.forEach((costEl, idx) => {
+          const costText = costEl.textContent.trim();
+          const numericCost = parseInt(costText.replace(/[^\d]/g, ""), 10);
+
+<!--                console.log(`[${idx}] 원본 텍스트: "${costText}"`);-->
+<!--                console.log(`[${idx}] 숫자 변환 값: ${numericCost}`);-->
+
+          if (!isNaN(numericCost)) {
+              total += numericCost;
+          }
+      });
+
+      console.log(`총 계산된 비용: ₩${total.toLocaleString()}`);
+      document.getElementById("totalCost").textContent = `₩${total.toLocaleString()}`;
+  }
+
+
+  function addMemo(button) {
+      const scheduleId = button.closest('.day-card')?.dataset?.scheduleId;
+      const memo = prompt("메모를 입력하세요:");
+
+      if (memo === null || memo.trim() === "") return;
+
+      const scheduleItem = {
+          scheduleId,
+          content: memo,
+      };
+
+      const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+      const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+      fetch('/api/travel/memo', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              [csrfHeader]: csrfToken,
+          },
+          body: JSON.stringify(scheduleItem),
+      }).then(res => {
+          if (res.ok) {
+              location.reload();
+          } else {
+              alert("메모 추가에 실패했습니다.");
+          }
+      });
+  }
+
+  function calculateDistance(prevPlace, newPlace, callback) {
+      const R = 6371;
+      const toRad = deg => deg * Math.PI / 180;
+      const dLat = toRad(newPlace.latitude - prevPlace.latitude);
+      const dLon = toRad(newPlace.longitude - prevPlace.longitude);
+      const lat1 = toRad(prevPlace.latitude);
+      const lat2 = toRad(newPlace.latitude);
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const distance = R * c;
+      callback(`${distance.toFixed(2)} km`);
+  }
+
+  function refreshDayCards(data, dayCard) {
+      const entryList = dayCard.querySelector('.entry-list');
+      const originalItems = [];
+
+      // 데이터 기반으로 아이템 처리
+      data.forEach((item, idx) => {
+          if (item.type === 'PLACE') {
+              originalItems.push({
+                  id: item.id,
+                  type: 'place',
+                  latitude: item.latitude,
+                  longitude: item.longitude,
+                  name: item.name || '이름 없음',
+                  address: item.address || '',
+                  expectedCost : item.expectedCost,
+              });
+          } else {
+              originalItems.push({
+                  id: item.id,
+                  type: 'memo',
+                  content: item.content || '내용 없음',
+                  expectedCost : item.expectedCost
+              });
+          }
+      });
+
+      entryList.innerHTML = '';
+
+      let prevPlace = null;
+      let placeCount = 0;
+
+      originalItems.forEach(item => {
+          const row = document.createElement('div');
+          row.className = item.type === 'place' ? 'entry-row place-row' : 'entry-row memo-row';
+          if (item.id) row.dataset.id = item.id;
+
+          const circle = document.createElement('div');
+          circle.className = item.type === 'place' ? 'circle-number' : 'circle-memo';
+          circle.innerText = item.type === 'place' ? ++placeCount : '🟡';
+
+          const contentItem = document.createElement('div');
+          contentItem.className = item.type === 'place' ? 'entry-item place-entry' : 'entry-item';
+          if (item.type === 'place') {
+              contentItem.innerText = `📍 ${item.name} (${item.address})`;
+              contentItem.dataset.latitude = item.latitude;
+              contentItem.dataset.longitude = item.longitude;
+              contentItem.dataset.id = item.id;
+              contentItem.dataset.expectedCost = item.expectedCost;
+          } else {
+              contentItem.innerHTML = `✏️ <span class="memo-text">${item.content}</span><br>`;
+              contentItem.dataset.id = item.id;
+              contentItem.dataset.expectedCost = item.expectedCost;
+          }
+
+          // 편집 버튼 영역
+          const editArea = document.createElement('div');
+          editArea.className = 'edit-area';
+
+          const editToggle = document.createElement('span');
+          editToggle.className = 'edit-toggle';
+          editToggle.innerText = '편집';
+
+          const buttonWrapper = document.createElement('div');
+          buttonWrapper.className = 'edit-buttons hidden';
+          buttonWrapper.innerHTML = `
+              <button class="btn-delete">삭제</button>
+              <button class="btn-edit">수정</button>
+              <button class="btn-cost-time">지출·시간</button>
+          `;
+
+          editToggle.addEventListener('click', (e) => {
+              e.stopPropagation();
+              document.querySelectorAll('.edit-buttons').forEach(btn => btn.classList.add('hidden'));
+              buttonWrapper.classList.remove('hidden');
+          });
+
+          // ✅ 삭제
+          buttonWrapper.querySelector('.btn-delete').addEventListener('click', (event) => {
+              if (confirm('정말 삭제하시겠습니까?')) {
+                  const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+                  const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+                  fetch(`/api/travel/${item.id}`, {
+                      method: 'DELETE',
+                      headers: {
+                          'Content-Type': 'application/json',
+                          [csrfHeader]: csrfToken
+                      }
+                  }).then(res => {
+                      if (res.ok) {
+                          // ✅ 삭제 성공 후: 해당 dayCard를 찾아서 scheduleId로 최신 데이터 fetch
+                          const dayCard = event.target.closest('.day-card');
+                          const scheduleId = dayCard.dataset.scheduleId;
+
+                          fetch(`/api/travel/schedule-items?scheduleId=${scheduleId}`)
+                              .then(res => res.json())
+                              .then(data => {
+                                  refreshDayCards(data, dayCard); // 최신 데이터로 갱신
+                              });
+                      } else {
+                          alert('삭제에 실패했습니다.');
+                      }
+                  });
+              }
+          });
+
+          // ✅ 지출·시간
+
+          buttonWrapper.querySelector('.btn-cost-time').addEventListener('click', () => {
+              const modal = document.getElementById('editModal');
+              modal.classList.add('active');
+              currentEditingItem = item;
+              currentDayCard = buttonWrapper.closest('.day-card');
+
+              const rawCost = parseInt(String(item.expectedCost || '').replace(/[^\d]/g, '')) || 0;
+              document.getElementById('modalCost').value = rawCost.toLocaleString();
+              document.getElementById('modalTime').value = item.time || '';
+          });
+
+          // 지출 수정 값 입력
+          document.getElementById('modalCost').addEventListener('input', (e) => {
+              const val = e.target.value.replace(/[^\d]/g, '');
+              if (val) {
+                  e.target.value = Number(val).toLocaleString();
+              } else {
+                  e.target.value = '';
+              }
+          });
+
+          // 취소 버튼 클릭 시 모달 닫기
+          document.getElementById('modalCancelBtn').addEventListener('click', () => {
+              document.getElementById('editModal').classList.remove('active');
+          });
+
+
+          editArea.appendChild(editToggle);
+          editArea.appendChild(buttonWrapper);
+
+          row.appendChild(circle);
+          row.appendChild(contentItem);
+          row.appendChild(editArea);
+          entryList.appendChild(row);
+
+          if (item.type === 'place' && prevPlace) {
+              const distanceDiv = document.createElement('div');
+              distanceDiv.className = 'distance-item';
+              calculateDistance(prevPlace, {
+                  latitude: item.latitude,
+                  longitude: item.longitude
+              }, (distanceText) => {
+                  distanceDiv.innerText = `거리: ${distanceText}`;
+              });
+              entryList.insertBefore(distanceDiv, row);
+          }
+
+          if (item.type === 'place') {
+              prevPlace = {
+                  latitude: item.latitude,
+                  longitude: item.longitude
+              };
+          }
+      });
+  }
+</script>
