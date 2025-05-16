@@ -1,5 +1,6 @@
 package com.trippia.travel.domain.post.diary;
 
+import com.trippia.travel.controller.dto.diary.request.DiarySaveRequest;
 import com.trippia.travel.domain.common.CityType;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
@@ -8,6 +9,10 @@ import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.location.city.CityRepository;
 import com.trippia.travel.domain.location.country.Country;
 import com.trippia.travel.domain.location.country.CountryRepository;
+import com.trippia.travel.domain.location.place.Place;
+import com.trippia.travel.domain.location.place.PlaceRepository;
+import com.trippia.travel.domain.post.diaryplace.DiaryPlace;
+import com.trippia.travel.domain.post.diaryplace.DiaryPlaceRepository;
 import com.trippia.travel.domain.post.diarytheme.DiaryThemeRepository;
 import com.trippia.travel.domain.theme.Theme;
 import com.trippia.travel.domain.theme.ThemeRepository;
@@ -15,7 +20,6 @@ import com.trippia.travel.domain.user.User;
 import com.trippia.travel.domain.user.UserRepository;
 import com.trippia.travel.exception.diary.DiaryException;
 import com.trippia.travel.file.FileService;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -24,18 +28,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
 import static com.trippia.travel.domain.common.CityType.JAPAN;
-import static com.trippia.travel.controller.dto.DiaryDto.SaveRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@Transactional
 class DiaryServiceTest {
 
     @Autowired
@@ -56,6 +62,12 @@ class DiaryServiceTest {
     @Autowired
     private ThemeRepository themeRepository;
 
+    @Autowired
+    private PlaceRepository placeRepository;
+
+    @Autowired
+    private DiaryPlaceRepository diaryPlaceRepository;
+
     @Mock
     private FileService fileService;
 
@@ -65,19 +77,9 @@ class DiaryServiceTest {
     @Mock
     private MultipartFile thumbnail;
 
-    @AfterEach
-    void tearDown() {
-        diaryThemeRepository.deleteAllInBatch();
-        diaryRepository.deleteAllInBatch();
-        userRepository.deleteAllInBatch();
-        cityRepository.deleteAllInBatch();
-        countryRepository.deleteAllInBatch();
-        themeRepository.deleteAllInBatch();
-    }
-
     @DisplayName("여행일지를 생성하고 저장한다.")
     @Test
-    void saveDiary() {
+    void saveDiary() throws IOException {
         // given
         User user = createUser("email");
         userRepository.save(user);
@@ -90,13 +92,17 @@ class DiaryServiceTest {
         List<Theme> themes = themeRepository.saveAll(List.of(theme1, theme2));
         List<Long> themeIds = themes.stream().map(Theme::getId).toList();
 
-        SaveRequest request = createSaveRequest("test", "친구", tokyo.getId(), themeIds,
-                LocalDate.of(2024, 4, 1), LocalDate.of(2024, 4, 10));
-        String email = user.getEmail();
+        String placeId1 = "ChIJlaUrm3mZfDURv0xPXhWjoM4";
+        String placeId2 = "ChIJ7xbMEwCZfDUR_HdWf-TNSDU";
+        List<String> placeIds = List.of(placeId1, placeId2);
 
-        // when
+        DiarySaveRequest request = createSaveRequest("test", "친구", tokyo.getId(), themeIds,
+                LocalDate.of(2024, 4, 1), LocalDate.of(2024, 4, 10)
+                , placeIds);
+        String email = user.getEmail();
         MockMultipartFile thumbnail = getMockMultipartFile();
 
+        // when
         diaryService.saveDiary(email, request, thumbnail);
 
         // then
@@ -106,6 +112,57 @@ class DiaryServiceTest {
         assertThat(savedDiary.getCompanion()).isEqualTo(TravelCompanion.FRIEND);
         assertThat(savedDiary.getStartDate()).isEqualTo(request.getStartDate());
         assertThat(savedDiary.getEndDate()).isEqualTo(request.getEndDate());
+
+        List<Place> savedPlaces = placeRepository.findAll();
+        assertThat(savedPlaces).hasSize(2);
+
+        List<DiaryPlace> savedDiaryPlaces = diaryPlaceRepository.findAll();
+        assertThat(savedDiaryPlaces).hasSize(2);
+    }
+
+    @DisplayName("이미 저장된 장소는 Place 테이블에 저장하지 않고 DiaryPlace 테이블에만 저장한다.")
+    @Test
+    void saveDiary_shouldNotDuplicateExistingPlace() throws IOException {
+        // given
+        User user = createUser("email");
+        userRepository.save(user);
+        Country japan = createCountry("일본");
+        City tokyo = createCity("도쿄", japan, JAPAN);
+
+        // theme 저장
+        Theme theme1 = Theme.builder().name("액티비티").build();
+        Theme theme2 = Theme.builder().name("문화").build();
+        List<Theme> themes = themeRepository.saveAll(List.of(theme1, theme2));
+        List<Long> themeIds = themes.stream().map(Theme::getId).toList();
+
+        String placeId1 = "ChIJlaUrm3mZfDURv0xPXhWjoM4";
+        String placeId2 = "ChIJ7xbMEwCZfDUR_HdWf-TNSDU";
+        String placeId3 = "ChIJNYUq8XxfezUR9ZNIMTkhBBc";
+
+
+        List<String> firstPlaceIds = List.of(placeId1, placeId2);
+        List<String> secondPlaceIds = List.of(placeId1, placeId2, placeId3);
+
+        DiarySaveRequest firstRequest = createSaveRequest("test", "친구", tokyo.getId(), themeIds,
+                LocalDate.of(2024, 4, 1), LocalDate.of(2024, 4, 10)
+                , firstPlaceIds);
+        DiarySaveRequest secondRequest = createSaveRequest("test", "친구", tokyo.getId(), themeIds,
+                LocalDate.of(2024, 4, 1), LocalDate.of(2024, 4, 10)
+                , secondPlaceIds);
+        String email = user.getEmail();
+        MockMultipartFile thumbnail = getMockMultipartFile();
+
+        // when
+        diaryService.saveDiary(email, firstRequest, thumbnail);
+        diaryService.saveDiary(email, secondRequest, thumbnail);
+
+        // then
+        List<Place> savedPlaces = placeRepository.findAll();
+        assertThat(savedPlaces).hasSize(3);
+
+        List<DiaryPlace> savedDiaryPlaces = diaryPlaceRepository.findAll();
+        assertThat(savedDiaryPlaces).hasSize(5);
+
     }
 
     private MockMultipartFile getMockMultipartFile() {
@@ -131,9 +188,9 @@ class DiaryServiceTest {
         List<Theme> themes = themeRepository.saveAll(List.of(theme1, theme2));
         List<Long> themeIds = themes.stream().map(Theme::getId).toList();
 
-        SaveRequest request = createSaveRequest("test", "연인", tokyo.getId(),themeIds,
+        DiarySaveRequest request = createSaveRequest("test", "연인", tokyo.getId(), themeIds,
                 LocalDate.of(2024, 2, 10), // startDate
-                LocalDate.of(2024, 2, 1)); // endDate (startDate보다 이전)
+                LocalDate.of(2024, 2, 1), List.of()); // endDate (startDate보다 이전)
 
         String email = user.getEmail();
         MockMultipartFile thumbnail = getMockMultipartFile();
@@ -158,9 +215,8 @@ class DiaryServiceTest {
 
         LocalDate pastDate = LocalDate.now().plusDays(1);
         LocalDate endDate = LocalDate.now().plusDays(5);
-        SaveRequest request = createSaveRequest("test", "연인", tokyo.getId(),themeIds,
-                pastDate,
-                endDate);
+        DiarySaveRequest request = createSaveRequest("test", "연인", tokyo.getId(), themeIds,
+                pastDate, endDate, List.of());
         String email = user.getEmail();
         MockMultipartFile thumbnail = getMockMultipartFile();
         // when & then
@@ -191,9 +247,9 @@ class DiaryServiceTest {
                 .build());
     }
 
-    private SaveRequest createSaveRequest(String title, String companion, Long cityId, List<Long> themeIds,
-                                          LocalDate startDate, LocalDate endDate) {
-        return SaveRequest.builder()
+    private DiarySaveRequest createSaveRequest(String title, String companion, Long cityId, List<Long> themeIds,
+                                               LocalDate startDate, LocalDate endDate, List<String> placeIds) {
+        return DiarySaveRequest.builder()
                 .title(title)
                 .companion(companion)
                 .content("content")
@@ -203,6 +259,7 @@ class DiaryServiceTest {
                 .themeIds(themeIds)
                 .startDate(startDate)
                 .endDate(endDate)
+                .placeIds(placeIds)
                 .build();
 
 

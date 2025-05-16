@@ -1,5 +1,7 @@
 package com.trippia.travel.domain.post.diary;
 
+import com.trippia.travel.controller.dto.CursorData;
+import com.trippia.travel.controller.dto.diary.request.DiarySearchCondition;
 import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.location.city.CityRepository;
 import com.trippia.travel.domain.post.diarytheme.DiaryTheme;
@@ -13,8 +15,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-
-import static com.trippia.travel.controller.dto.DiaryDto.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -53,11 +53,6 @@ public class DiaryClientImpl implements DiaryClient {
     @Override
     public void deleteDiaryThemeByDiaryId(Long diaryId) {
         diaryThemeRepository.deleteByDiaryId(diaryId);
-    }
-
-    @Override
-    public List<Diary> findAllDiary() {
-        return diaryRepository.findAll();
     }
 
     @Override

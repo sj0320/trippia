@@ -1,6 +1,14 @@
 package com.trippia.travel.controller;
 
 import com.trippia.travel.annotation.CurrentUser;
+import com.trippia.travel.controller.dto.CursorData;
+import com.trippia.travel.controller.dto.diary.request.DiarySaveRequest;
+import com.trippia.travel.controller.dto.diary.request.DiarySearchCondition;
+import com.trippia.travel.controller.dto.diary.request.DiaryUpdateRequest;
+import com.trippia.travel.controller.dto.diary.response.DiaryDetailResponse;
+import com.trippia.travel.controller.dto.diary.response.DiaryEditFormResponse;
+import com.trippia.travel.controller.dto.diary.response.DiaryListResponse;
+import com.trippia.travel.controller.dto.diary.response.DiaryListViewModel;
 import com.trippia.travel.domain.common.SortOption;
 import com.trippia.travel.domain.location.city.CityService;
 import com.trippia.travel.domain.location.country.CountryRepository;
@@ -26,7 +34,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import static com.trippia.travel.controller.dto.DiaryDto.*;
+import java.io.IOException;
 
 @Controller
 @RequiredArgsConstructor
@@ -52,14 +60,15 @@ public class DiaryController {
 
     @GetMapping("/new")
     public String createDiaryForm(Model model) {
-        model.addAttribute("diary", new SaveRequest());
+        model.addAttribute("diary", new DiarySaveRequest());
         return "post/create";
     }
 
     @PostMapping("/new")
-    public String createDiary(@Valid @ModelAttribute("diary") SaveRequest request,
+    public String saveDiary(@Valid @ModelAttribute("diary") DiarySaveRequest request,
                               BindingResult bindingResult, @RequestParam("thumbnail") MultipartFile thumbnail,
                               @CurrentUser String email, Model model) {
+
         String thumbnailUrl = null;
         if (!thumbnail.isEmpty()) {
             thumbnailUrl = fileService.uploadFile(thumbnail).getUrl();
@@ -67,6 +76,7 @@ public class DiaryController {
         }
 
         if (bindingResult.hasErrors()) {
+            log.error(bindingResult.getAllErrors().toString());
             return "post/create";
         }
         try {
@@ -75,6 +85,8 @@ public class DiaryController {
         } catch (DiaryException | FileException e) {
             bindingResult.rejectValue(e.getFieldName(), e.getCode());
             return "post/create";
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -141,28 +153,21 @@ public class DiaryController {
 
     @GetMapping("/{id}/edit")
     public String editDiaryForm(@CurrentUser String email, @PathVariable Long id, Model model) {
-        EditFormResponse diary = diaryService.getEditForm(email, id);
+        DiaryEditFormResponse diary = diaryService.getEditForm(email, id);
         model.addAttribute("diary", diary);
         return "post/edit";
     }
 
     @PutMapping("/{id}")
     public String editDiary(@CurrentUser String email, @PathVariable Long id,
-                            @ModelAttribute("diary") UpdateRequest request,
-                            BindingResult bindingResult, @RequestParam("thumbnail") MultipartFile thumbnail) {
+                            @ModelAttribute("diary") DiaryUpdateRequest request,
+                            BindingResult bindingResult, @RequestParam("thumbnail") MultipartFile thumbnail) throws IOException {
         if (bindingResult.hasErrors()) {
             return "/post/edit";
         }
         diaryService.editDiary(email, id, request, thumbnail);
         return "redirect:/diary/" + id;
     }
-
-//    @GetMapping("/search")
-//    public String searchDiariesWithConditions(@RequestParam(required = false) String theme,
-//                                @RequestParam(required = false) String city,
-//                                @RequestParam(required = false) String keyword){
-//
-//    }
 
 
 }

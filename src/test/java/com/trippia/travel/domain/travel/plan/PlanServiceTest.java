@@ -1,5 +1,9 @@
 package com.trippia.travel.domain.travel.plan;
 
+import com.trippia.travel.controller.dto.plan.request.PlanCreateRequest;
+import com.trippia.travel.controller.dto.plan.response.PlanDetailsResponse;
+import com.trippia.travel.controller.dto.schedule.response.ScheduleDetailsResponse;
+import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemResponse;
 import com.trippia.travel.domain.common.CityType;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
@@ -27,10 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.trippia.travel.controller.dto.PlanDto.PlanCreateRequest;
-import static com.trippia.travel.controller.dto.PlanDto.PlanDetailsResponse;
-import static com.trippia.travel.controller.dto.ScheduleDto.ScheduleDetailsResponse;
-import static com.trippia.travel.controller.dto.ScheduleItemDto.ScheduleItemResponse;
 import static com.trippia.travel.domain.common.CityType.JAPAN;
 import static com.trippia.travel.domain.common.CityType.KOREA;
 import static org.assertj.core.api.Assertions.assertThat;

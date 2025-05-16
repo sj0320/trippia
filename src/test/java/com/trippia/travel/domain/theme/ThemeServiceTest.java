@@ -1,5 +1,6 @@
 package com.trippia.travel.domain.theme;
 
+import com.trippia.travel.controller.dto.theme.response.ThemeResponse;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -10,7 +11,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
-import static com.trippia.travel.controller.dto.ThemeDto.*;
 
 @ActiveProfiles("test")
 @SpringBootTest

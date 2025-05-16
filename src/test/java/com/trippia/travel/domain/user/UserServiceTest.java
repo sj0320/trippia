@@ -1,5 +1,6 @@
 package com.trippia.travel.domain.user;
 
+import com.trippia.travel.controller.dto.user.requset.UserSaveRequest;
 import com.trippia.travel.domain.common.EmailAuthPurpose;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
@@ -10,11 +11,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import static com.trippia.travel.controller.dto.UserDto.SaveRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -34,7 +34,7 @@ class UserServiceTest {
     @Autowired
     private UserService userService;
 
-    @MockBean
+    @MockitoBean
     private MailService mailService;
 
     @AfterEach
@@ -47,7 +47,7 @@ class UserServiceTest {
     @Test
     void saveUser_success() {
         // given
-        SaveRequest request = createUserSaveRequest("test@example.com", "password", "test");
+        UserSaveRequest request = createUserSaveRequest("test@example.com", "password", "test");
         // when
         userService.saveUser(request);
         // then
@@ -61,8 +61,8 @@ class UserServiceTest {
     @Test
     void saveUser_duplicateEmail_fail() {
         // given
-        SaveRequest request_1 = createUserSaveRequest("test@example.com", "password", "test");
-        SaveRequest request_2 = createUserSaveRequest("test@example.com", "password_2", "test_2");
+        UserSaveRequest request_1 = createUserSaveRequest("test@example.com", "password", "test");
+        UserSaveRequest request_2 = createUserSaveRequest("test@example.com", "password_2", "test_2");
         userService.saveUser(request_1);
 
         // when & then
@@ -75,8 +75,8 @@ class UserServiceTest {
     @Test
     void saveUser_duplicateNickname_fail() {
         // given
-        SaveRequest request_1 = createUserSaveRequest("test@example.com", "password", "test");
-        SaveRequest request_2 = createUserSaveRequest("test2@example.com", "password_2", "test");
+        UserSaveRequest request_1 = createUserSaveRequest("test@example.com", "password", "test");
+        UserSaveRequest request_2 = createUserSaveRequest("test2@example.com", "password_2", "test");
         userService.saveUser(request_1);
         // when & then
         UserException userException = (UserException) catchThrowable(() -> userService.saveUser(request_2));
@@ -117,8 +117,8 @@ class UserServiceTest {
     }
 
 
-    private SaveRequest createUserSaveRequest(String email, String password, String nickname) {
-        SaveRequest request = new SaveRequest();
+    private UserSaveRequest createUserSaveRequest(String email, String password, String nickname) {
+        UserSaveRequest request = new UserSaveRequest();
         request.setEmail(email);
         request.setPassword(password);
         request.setNickname(nickname);

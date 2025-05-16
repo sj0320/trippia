@@ -1,5 +1,7 @@
 package com.trippia.travel.domain.post.comment;
 
+import com.trippia.travel.controller.dto.comment.requset.CommentSaveRequest;
+import com.trippia.travel.controller.dto.comment.response.CommentResponse;
 import com.trippia.travel.domain.post.diary.Diary;
 import com.trippia.travel.domain.post.diary.DiaryRepository;
 import com.trippia.travel.domain.user.User;
@@ -9,9 +11,6 @@ import com.trippia.travel.exception.user.UserException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import static com.trippia.travel.controller.dto.CommentDto.*;
-import static com.trippia.travel.controller.dto.CommentDto.CommentSaveRequest;
 
 @Service
 @RequiredArgsConstructor

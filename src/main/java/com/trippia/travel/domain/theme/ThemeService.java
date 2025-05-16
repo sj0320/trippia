@@ -1,11 +1,11 @@
 package com.trippia.travel.domain.theme;
 
+import com.trippia.travel.controller.dto.theme.response.ThemeResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static com.trippia.travel.controller.dto.ThemeDto.ThemeResponse;
 
 @Service
 @RequiredArgsConstructor

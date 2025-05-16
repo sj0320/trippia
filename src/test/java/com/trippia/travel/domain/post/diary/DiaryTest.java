@@ -1,5 +1,7 @@
 package com.trippia.travel.domain.post.diary;
 
+import com.trippia.travel.controller.dto.diary.request.DiarySaveRequest;
+import com.trippia.travel.controller.dto.diary.request.UpdateDiaryDto;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
 import com.trippia.travel.domain.common.TravelCompanion;
@@ -21,8 +23,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static com.trippia.travel.domain.common.CityType.*;
-import static com.trippia.travel.controller.dto.DiaryDto.SaveRequest;
-import static com.trippia.travel.controller.dto.DiaryDto.UpdateDiaryDto;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ActiveProfiles("test")
@@ -49,7 +49,7 @@ class DiaryTest {
         // given
         City seoul = setupCountriesAndCities();
         User user = createUser();
-        SaveRequest request= createDiarySaveRequest(seoul.getId());
+        DiarySaveRequest request= createDiarySaveRequest(seoul.getId());
         // when
         Diary diary = request.toEntity(user, seoul, "thumbnail");
 
@@ -65,7 +65,7 @@ class DiaryTest {
         // given
         City seoul = setupCountriesAndCities();
         User user = createUser();
-        SaveRequest request= createDiarySaveRequest(seoul.getId());
+        DiarySaveRequest request= createDiarySaveRequest(seoul.getId());
         Diary diary = request.toEntity(user, seoul, "thumbnail");
         UpdateDiaryDto updateDiaryDto = UpdateDiaryDto.builder()
                 .title("부산 여행")
@@ -116,8 +116,8 @@ class DiaryTest {
         return userRepository.save(user);
     }
 
-    private SaveRequest createDiarySaveRequest(Long cityId) {
-        return SaveRequest.builder()
+    private DiarySaveRequest createDiarySaveRequest(Long cityId) {
+        return DiarySaveRequest.builder()
                 .cityId(cityId)
                 .title("test")
                 .content("test content")

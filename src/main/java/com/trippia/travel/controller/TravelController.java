@@ -1,6 +1,9 @@
 package com.trippia.travel.controller;
 
 import com.trippia.travel.annotation.CurrentUser;
+import com.trippia.travel.controller.dto.place.response.RecommendPlaceResponse;
+import com.trippia.travel.controller.dto.plan.request.PlanCreateRequest;
+import com.trippia.travel.controller.dto.plan.response.PlanDetailsResponse;
 import com.trippia.travel.domain.location.city.CityService;
 import com.trippia.travel.domain.location.place.PlaceService;
 import com.trippia.travel.domain.travel.plan.PlanService;
@@ -14,10 +17,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Set;
-
-import static com.trippia.travel.controller.dto.PlaceDto.RecommendPlaceResponse;
-import static com.trippia.travel.controller.dto.PlanDto.PlanCreateRequest;
-import static com.trippia.travel.controller.dto.PlanDto.PlanDetailsResponse;
 
 @Controller
 @RequiredArgsConstructor
@@ -61,9 +60,15 @@ public class TravelController {
 
     @GetMapping("/places/recommend")
     @ResponseBody
-    public Set<RecommendPlaceResponse> getRecommendPlace(@RequestParam List<Long> cityIds,
+    public Set<RecommendPlaceResponse> getRecommendPlace(@RequestParam(required = false) List<Long> cityIds,
                                                          @RequestParam(required = false) String query) {
-        log.info("cityIds={}", cityIds.toString());
+
+        log.info("!!!");
+        if (cityIds == null || cityIds.isEmpty()) {
+            log.info("글로벌 자동검색 실행");
+            return placeService.getAutocompletePlace(query);
+        }
+
         if (query == null || query.isBlank()) {
             log.info("검색창에 아무런 입력 없을 경우");
             return placeService.getRecommendPlacesByType(cityIds, "관광");
@@ -78,6 +83,5 @@ public class TravelController {
         log.info("국가에 속한 지역 자동 검색");
         return placeService.getAutocompletePlaces(cityIds, query);
     }
-
 
 }

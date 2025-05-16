@@ -1,7 +1,12 @@
 package com.trippia.travel.controller.api;
 
 import com.trippia.travel.annotation.CurrentUser;
-import com.trippia.travel.controller.dto.MemoDto;
+import com.trippia.travel.controller.dto.memo.requset.MemoSaveRequest;
+import com.trippia.travel.controller.dto.memo.requset.MemoUpdateRequest;
+import com.trippia.travel.controller.dto.scheduleitem.requset.ScheduleItemMetaRequest;
+import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemIdResponse;
+import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemResponse;
+import com.trippia.travel.controller.dto.scheduleplace.request.SchedulePlaceSaveRequest;
 import com.trippia.travel.domain.travel.scheduleitem.ScheduleItemService;
 import com.trippia.travel.domain.travel.scheduleitem.memo.MemoService;
 import com.trippia.travel.domain.travel.scheduleitem.scheduleplace.SchedulePlaceService;
@@ -12,10 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.trippia.travel.controller.dto.MemoDto.*;
-import static com.trippia.travel.controller.dto.MemoDto.MemoSaveRequest;
-import static com.trippia.travel.controller.dto.ScheduleItemDto.*;
-import static com.trippia.travel.controller.dto.SchedulePlaceDto.SchedulePlaceSaveRequest;
 
 @RestController
 @RequestMapping("/api/travel")

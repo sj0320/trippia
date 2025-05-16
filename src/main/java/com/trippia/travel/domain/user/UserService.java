@@ -1,5 +1,6 @@
 package com.trippia.travel.domain.user;
 
+import com.trippia.travel.controller.dto.user.requset.UserSaveRequest;
 import com.trippia.travel.domain.common.EmailAuthPurpose;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.exception.user.UserException;
@@ -12,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 import java.util.Random;
 
-import static com.trippia.travel.controller.dto.UserDto.SaveRequest;
 import static com.trippia.travel.exception.ErrorMessageSource.*;
 
 @Service
@@ -25,7 +25,7 @@ public class UserService {
     private static final String DEFAULT_PROFILE_IMAGE = "https://trippia-storage.s3.ap-northeast-2.amazonaws.com/default-image-trrippia.png";
 
     @Transactional
-    public void saveUser(SaveRequest request) {
+    public void saveUser(UserSaveRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new UserException("email", DUPLICATE_EMAIL);
         }

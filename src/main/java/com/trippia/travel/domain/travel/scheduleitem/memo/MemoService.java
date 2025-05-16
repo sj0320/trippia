@@ -1,5 +1,6 @@
 package com.trippia.travel.domain.travel.scheduleitem.memo;
 
+import com.trippia.travel.controller.dto.memo.requset.MemoSaveRequest;
 import com.trippia.travel.domain.travel.schedule.Schedule;
 import com.trippia.travel.domain.travel.schedule.ScheduleRepository;
 import com.trippia.travel.domain.travel.scheduleitem.ScheduleItemRepository;
@@ -7,8 +8,6 @@ import com.trippia.travel.exception.schedule.ScheduleException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import static com.trippia.travel.controller.dto.MemoDto.MemoSaveRequest;
 
 @RequiredArgsConstructor
 @Service

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${place.name} + ' - 여행지 상세보기'">여행지 상세보기</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #ffffff;
+            font-family: 'Noto Sans KR', sans-serif;
+            color: #343a40;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .place-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .place-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .place-header p {
+            font-size: 1.1rem;
+            color: #6c757d;
+        }
+
+        .place-image {
+            max-height: 300px;
+            object-fit: cover;
+            object-position: center;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+        }
+
+
+        .place-image-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 700px; /* 가로 제한 */
+            height: 350px;     /* 필요 시 원하는 높이 */
+            margin: 0 auto 50px auto; /* 가운데 정렬 및 아래 여백 */
+            overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .place-image-wrapper img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .rating-badge {
+            display: inline-block;
+            margin-top: 12px;
+            background-color: #ffe066;
+            color: #212529;
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .btn-website {
+            margin-top: 15px;
+        }
+
+        .btn-website a {
+            font-size: 0.9rem;
+        }
+
+
+        .section-divider {
+            height: 2px;
+            background-color: #f1f3f5;
+            margin: 60px auto;
+            width: 80%;
+            border-radius: 2px;
+        }
+
+        .diary-card {
+            width: 360px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .diary-thumbnail {
+            width: 100%;
+            height: 195px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .diary-info {
+            padding: 10px;
+            text-align: center;
+        }
+
+        .diary-card h5 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            line-height: 1.5;
+            color: #212529;
+            margin: 0 0 12px 0;
+        }
+
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .author-avatar {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .stats {
+            font-size: 0.85rem;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container">
+        <!-- 여행지 정보 -->
+        <div class="place-header text-center">
+            <h1 th:text="${place.name}" class="fw-bold">여행지 이름</h1>
+            <p class="text-muted" th:text="${place.address}">여행지 주소</p>
+            <span class="rating-badge">
+                ★ <span th:text="${place.rating}">4.5</span> / 리뷰 <span th:text="${place.reviewCount}">100</span>개
+            </span>
+            <div class="btn-website">
+                <a th:href="${place.webSite}" target="_blank" class="btn btn-outline-dark btn-sm">공식 웹사이트 방문</a>
+            </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- 대표 이미지 -->
+        <div class="place-image-wrapper">
+            <img th:src="${place.imageUrl}" alt="여행지 대표 이미지">
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- 관련 여행 일기 섹션 -->
+        <div style="margin-top: 30px;">
+            <h5 style="font-size: 1rem; font-weight: 500; color: #868e96; margin-bottom: 12px;">
+                이곳에 다녀간 사람들의 이야기
+            </h5>
+            <div style="display: flex; gap: 12px; overflow-x: auto;">
+
+                <!-- 여기서 기존 인라인 스타일 대신 diary-card 클래스를 씌웁니다 -->
+                <div th:each="diary : ${place.relatedDiaries}" class="diary-card">
+                    <a th:href="@{/diary/{id}(id=${diary.id})}">
+                        <img th:src="${diary.thumbnail}" alt="썸네일" class="diary-thumbnail">
+                    </a>
+                    <h5 th:text="${diary.title}">일기 제목</h5>
+                    <div class="author-info">
+                        <img th:src="${diary.authorProfile}" alt="Author" class="author-avatar">
+                        <span th:text="${diary.authorNickname}">작성자</span>
+                    </div>
+                    <div class="stats">
+                        <span th:text="'조회수 ' + ${diary.viewCount}"></span> ·
+                        <span th:text="'좋아요 ' + ${diary.likeCount}"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

@@ -1,5 +1,6 @@
 package com.trippia.travel.domain.travel.scheduleitem.scheduleplace;
 
+import com.trippia.travel.controller.dto.scheduleplace.request.SchedulePlaceSaveRequest;
 import com.trippia.travel.domain.travel.schedule.Schedule;
 import com.trippia.travel.domain.travel.schedule.ScheduleRepository;
 import com.trippia.travel.domain.travel.scheduleitem.ScheduleItemRepository;
@@ -9,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.trippia.travel.controller.dto.SchedulePlaceDto.SchedulePlaceSaveRequest;
 
 @Service
 @RequiredArgsConstructor
