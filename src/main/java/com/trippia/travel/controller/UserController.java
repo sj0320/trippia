@@ -1,5 +1,7 @@
 package com.trippia.travel.controller;
 
+import com.trippia.travel.controller.dto.user.requset.SocialSaveRequest;
+import com.trippia.travel.controller.dto.user.requset.UserSaveRequest;
 import com.trippia.travel.domain.common.EmailAuthPurpose;
 import com.trippia.travel.domain.user.UserService;
 import com.trippia.travel.exception.user.UserException;
@@ -15,8 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.trippia.travel.controller.dto.UserDto.SaveRequest;
-import static com.trippia.travel.controller.dto.UserDto.SocialSaveRequest;
 import static com.trippia.travel.mail.MailDto.MailRequest;
 import static com.trippia.travel.mail.MailDto.MailVerificationRequest;
 
@@ -37,12 +37,12 @@ public class UserController {
 
     @GetMapping("/sign-up")
     public String signUpForm(Model model) {
-        model.addAttribute("user", new SaveRequest());
+        model.addAttribute("user", new UserSaveRequest());
         return "auth/sign-up";
     }
 
     @PostMapping("/sign-up")
-    public String signUp(@Valid @ModelAttribute("user") SaveRequest request, BindingResult bindingResult) {
+    public String signUp(@Valid @ModelAttribute("user") UserSaveRequest request, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return "auth/sign-up";
         }

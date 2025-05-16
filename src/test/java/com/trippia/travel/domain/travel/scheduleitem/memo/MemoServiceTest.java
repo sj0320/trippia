@@ -1,5 +1,6 @@
 package com.trippia.travel.domain.travel.scheduleitem.memo;
 
+import com.trippia.travel.controller.dto.memo.requset.MemoSaveRequest;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
 import com.trippia.travel.domain.travel.plan.Plan;
@@ -20,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.trippia.travel.controller.dto.MemoDto.MemoSaveRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 

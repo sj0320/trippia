@@ -8,184 +8,171 @@
     <link rel="stylesheet" href="/css/dropdown.css">
     <link rel="stylesheet" href="/css/diary-list.css">
     <script defer src="/js/diary-scroll.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap');
-
         .write-button {
             font-size: 13px;
             font-weight: 600;
-            color: #000; /* 검정색 텍스트 */
-            background-color: transparent; /* 배경 없음 */
-            border: 1px solid #000; /* 테두리 추가 */
+            color: #000;
+            background-color: transparent;
+            border: 1px solid #000;
             border-radius: 6px;
-            cursor: pointer;
             padding: 5px 14px;
+            cursor: pointer;
             text-decoration: none;
-            transition: background-color 0.2s, color 0.2s;
+            transition: 0.2s;
         }
 
         .write-button:hover {
             background-color: #000;
             color: #fff;
         }
+
         .filter-chip {
-        background-color: #f2f2f2;
-        padding: 6px 10px;
-        border-radius: 20px;
-        font-size: 14px;
-        display: inline-flex;
-        align-items: center;
-    }
+            background-color: #f2f2f2;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+        }
 
-    .remove-btn {
-        margin-left: 6px;
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 16px;
-        line-height: 1;
-        color: #888;
-    }
+        .remove-btn {
+            margin-left: 6px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #888;
+        }
 
-    .remove-btn:hover {
-        color: #000;
-    }
+        .remove-btn:hover {
+            color: #000;
+        }
     </style>
     <script>
         function goToFilteredUrl(event) {
             event.preventDefault();
-
             const target = event.target;
             const theme = target.getAttribute('data-theme');
             const country = target.getAttribute('data-country');
 
-            // 현재 검색 조건을 담고 있는 메타에서 값 추출
             const meta = document.getElementById('diary-meta');
             let sort = meta.getAttribute('data-sort');
             let keyword = meta.getAttribute('data-keyword');
             let currentTheme = meta.getAttribute('data-theme');
             let currentCountry = meta.getAttribute('data-country');
 
-            // 선택한 필터로 교체
-            if (theme !== null) {
-                currentTheme = theme;
-            }
-            if (country !== null) {
-                currentCountry = country;
-            }
+            if (theme !== null) currentTheme = theme;
+            if (country !== null) currentCountry = country;
 
             const params = new URLSearchParams();
-
             if (keyword && keyword !== 'null') params.append('keyword', keyword);
             if (sort && sort !== 'null') params.append('sort', sort);
             if (currentTheme && currentTheme !== 'null') params.append('themeName', currentTheme);
             if (currentCountry && currentCountry !== 'null') params.append('countryName', currentCountry);
 
-            const url = `/diary/list?${params.toString()}`;
-            window.location.href = url;
+            window.location.href = `/diary/list?${params.toString()}`;
         }
-        function removeFilter(type) {
-        const url = new URL(window.location.href);
-        url.searchParams.delete(type);
-        url.searchParams.delete('cursor'); // 페이지네이션도 리셋
 
-        window.location.href = url.toString();
-    }
+        function removeFilter(type) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete(type);
+            url.searchParams.delete('cursor');
+            window.location.href = url.toString();
+        }
     </script>
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="toolbar"
-         style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+    <!-- 상단 툴바 -->
+    <div class="toolbar" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
 
-        <!-- 왼쪽: 카테고리 탭 -->
+        <!-- 필터 탭 -->
         <div class="category-tabs" style="display: flex; gap: 24px;">
-            <!-- 테마 -->
+            <!-- 테마 필터 -->
             <div class="category-group">
                 <div class="category-tab">여행 테마</div>
                 <div class="category-list">
-                    <a class="category-item"
-                       th:each="theme : ${themes}"
-                       href="#"
-                       th:attr="data-theme=${theme.name}"
+                    <a th:each="theme : ${themes}"
                        th:text="${theme.name}"
+                       th:attr="data-theme=${theme.name}"
+                       href="#"
+                       class="category-item"
                        onclick="goToFilteredUrl(event)">테마명</a>
                 </div>
             </div>
 
-            <!-- 국가 -->
+            <!-- 국가 필터 -->
             <div class="category-group">
                 <div class="category-tab">국가</div>
                 <div class="category-list">
-                    <a class="category-item"
-                       th:each="country : ${countries}"
-                       href="#"
-                       th:attr="data-country=${country.name}"
+                    <a th:each="country : ${countries}"
                        th:text="${country.name}"
-                       onclick="goToFilteredUrl(event)">테마명</a>
+                       th:attr="data-country=${country.name}"
+                       href="#"
+                       class="category-item"
+                       onclick="goToFilteredUrl(event)">국가명</a>
                 </div>
             </div>
         </div>
 
-        <!-- 선택된 필터 표시 영역 -->
-        <div class="selected-filters" style="margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
-            <span th:if="${diaryListModel.searchCondition.themeName != null}" class="filter-chip">
-                테마: <b th:text="${diaryListModel.searchCondition.themeName}"></b>
-                <button onclick="removeFilter('themeName')" class="remove-btn">×</button>
-            </span>
-
-            <span th:if="${diaryListModel.searchCondition.countryName != null}" class="filter-chip">
-                국가: <b th:text="${diaryListModel.searchCondition.countryName}"></b>
-                <button onclick="removeFilter('countryName')" class="remove-btn">×</button>
-            </span>
-            <span th:if="${diaryListModel.searchCondition.keyword != null}" class="filter-chip">
-                검색어: <b th:text="${diaryListModel.searchCondition.keyword}"></b>
-                <button onclick="removeFilter('keyword')" class="remove-btn">×</button>
-            </span>
-        </div>
-
-        <!-- 오른쪽: 검색창, 정렬, 작성 버튼 -->
-        <div id="diary-meta"
-             th:attr="
-         data-sort=${diaryListModel.searchCondition.sort != null ? diaryListModel.searchCondition.sort : 'latest'},
-         data-keyword=${diaryListModel.searchCondition.keyword != null ? diaryListModel.searchCondition.keyword : 'null'},
-         data-theme=${diaryListModel.searchCondition.themeName != null ? diaryListModel.searchCondition.themeName : 'null'},
-         data-country=${diaryListModel.searchCondition.countryName != null ? diaryListModel.searchCondition.countryName : 'null'}">
-        </div>
-
-        <div id="last-cursor"
-             th:if="${cursorData != null}"
-             th:attr="data-id=${cursorData.lastId},
-                      data-created-at=${cursorData.lastCreatedAt},
-                      data-like-count=${cursorData.lastLikeCount},
-                      data-view-count=${cursorData.lastViewCount}">
-        </div>
-
+        <!-- 검색/정렬/작성 버튼 -->
         <div style="display: flex; align-items: center; gap: 12px;">
             <!-- 검색창 -->
             <form th:action="@{/diary/list}" method="get" class="search-form">
-                <input type="text" name="keyword" placeholder="검색어를 입력하세요" class="search-input"
-                       th:value="${diaryListModel.searchCondition.keyword}">
+                <input type="text" name="keyword" placeholder="검색어를 입력하세요"
+                       th:value="${diaryListModel.searchCondition.keyword}" class="search-input">
                 <button type="submit" class="search-button">
                     <img src="/images/reading-glass.png" alt="검색" class="search-icon">
                 </button>
             </form>
 
-            <!-- 정렬 드롭다운 -->
+            <!-- 정렬 -->
             <form th:action="@{/diary/list}" method="get">
                 <select name="sort" onchange="this.form.submit()"
-                        style="padding: 6px 12px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px;">
+                        style="padding: 6px 12px; border-radius: 6px; border: 1px solid #ccc;">
                     <option value="latest" th:selected="${diaryListModel.searchCondition.sort == 'latest'}">최신순</option>
                     <option value="likes" th:selected="${diaryListModel.searchCondition.sort == 'likes'}">인기순</option>
                     <option value="views" th:selected="${diaryListModel.searchCondition.sort == 'views'}">조회순</option>
                 </select>
             </form>
 
-            <!-- 작성 버튼 -->
-            <a href="/diary/new" class="write-button">
-                여행일지 작성
-            </a>
+            <!-- 작성 -->
+            <a href="/diary/new" class="write-button">여행일지 작성</a>
         </div>
+    </div>
+
+    <!-- 선택된 필터 -->
+    <div class="selected-filters" style="margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
+        <span th:if="${diaryListModel.searchCondition.themeName}" class="filter-chip">
+            테마: <b th:text="${diaryListModel.searchCondition.themeName}"></b>
+            <button onclick="removeFilter('themeName')" class="remove-btn">×</button>
+        </span>
+        <span th:if="${diaryListModel.searchCondition.countryName}" class="filter-chip">
+            국가: <b th:text="${diaryListModel.searchCondition.countryName}"></b>
+            <button onclick="removeFilter('countryName')" class="remove-btn">×</button>
+        </span>
+        <span th:if="${diaryListModel.searchCondition.keyword}" class="filter-chip">
+            검색어: <b th:text="${diaryListModel.searchCondition.keyword}"></b>
+            <button onclick="removeFilter('keyword')" class="remove-btn">×</button>
+        </span>
+    </div>
+
+    <!-- 메타 정보 -->
+    <div id="diary-meta"
+         th:attr="data-sort=${diaryListModel.searchCondition.sort ?: 'latest'},
+                  data-keyword=${diaryListModel.searchCondition.keyword ?: 'null'},
+                  data-theme=${diaryListModel.searchCondition.themeName ?: 'null'},
+                  data-country=${diaryListModel.searchCondition.countryName ?: 'null'}">
+    </div>
+
+    <div id="last-cursor"
+         th:if="${cursorData != null}"
+         th:attr="data-id=${cursorData.lastId},
+                  data-created-at=${cursorData.lastCreatedAt},
+                  data-like-count=${cursorData.lastLikeCount},
+                  data-view-count=${cursorData.lastViewCount}">
     </div>
 
     <!-- 여행일지 목록 -->
@@ -195,10 +182,10 @@
                 <img th:src="${diary.thumbnail}" alt="Thumbnail" class="thumbnail">
             </a>
             <div class="diary-info">
-                <h3 th:text="${diary.title}" style="margin-bottom: 10px;"></h3>
+                <h3 th:text="${diary.title}"></h3>
                 <div class="author-info">
                     <img th:src="${diary.authorProfile}" alt="Author Profile" class="author-profile">
-                    <span class="nickname" th:text="${diary.authorNickname}"></span>
+                    <span th:text="${diary.authorNickname}"></span>
                 </div>
                 <div class="stats">
                     <span th:text="'조회수: ' + ${diary.viewCount}"></span> |

@@ -5,6 +5,8 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.trippia.travel.controller.dto.CursorData;
+import com.trippia.travel.controller.dto.diary.request.DiarySearchCondition;
 import com.trippia.travel.domain.location.city.QCity;
 import com.trippia.travel.domain.post.diarytheme.QDiaryTheme;
 import com.trippia.travel.domain.theme.QTheme;
@@ -18,8 +20,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static com.trippia.travel.controller.dto.DiaryDto.*;
-import static com.trippia.travel.controller.dto.DiaryDto.DiarySearchCondition;
 
 @Repository
 @RequiredArgsConstructor

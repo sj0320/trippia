@@ -1,5 +1,6 @@
 package com.trippia.travel.domain.travel.scheduleitem;
 
+import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemResponse;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
 import com.trippia.travel.domain.common.ScheduleItemType;
@@ -25,7 +26,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-import static com.trippia.travel.controller.dto.ScheduleItemDto.ScheduleItemResponse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;

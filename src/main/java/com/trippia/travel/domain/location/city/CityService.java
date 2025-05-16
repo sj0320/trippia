@@ -1,5 +1,7 @@
 package com.trippia.travel.domain.location.city;
 
+import com.trippia.travel.controller.dto.city.response.CityGroupedByTypeResponse;
+import com.trippia.travel.controller.dto.city.response.CitySummary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -8,8 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static com.trippia.travel.controller.dto.CityDto.*;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +23,9 @@ public class CityService {
         List<City> cities = cityRepository.findAll();
 
         Map<String, List<CitySummary>> groupedCities = groupCitiesByType(cities);
-        return new CityGroupedByTypeResponse(groupedCities);
+        return CityGroupedByTypeResponse.builder().
+                groupedCities(groupedCities)
+                .build();
     }
 
     // CityType별로 도시를 그룹화하는 메서드

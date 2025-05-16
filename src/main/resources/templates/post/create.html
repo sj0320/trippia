@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>게시글 작성</title>
-
-
     <link rel="stylesheet" href="/css/radiobutton.css">
     <link rel="stylesheet" href="/css/city-modal.css">
     <link rel="stylesheet" href="/css/theme-modal.css">
@@ -19,7 +17,106 @@
             th:src="'https://cdn.tiny.cloud/1/' + @{${@environment.getProperty('tinymce.api.key')}} + '/tinymce/5/tinymce.min.js'"
             referrerpolicy="origin">
     </script>
+    <style>
+        /* 모달 배경 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
 
+        /* 모달 내용 박스 */
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 500px;
+            max-width: 90vw;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 장소 태그 컨테이너 */
+        .place-tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        /* 장소 태그 스타일 */
+        .place-tag {
+            background-color: #e0f7fa;
+            color: #00796b;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        /* 태그 내 삭제 버튼 */
+        .place-tag .remove-btn {
+            background: transparent;
+            border: none;
+            color: #00796b;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .place-tag .remove-btn:hover {
+            color: #004d40;
+        }
+
+        /* 추천 아이템 박스 */
+        .recommend-item {
+            background-color: #f9f9f9;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            transition: all 0.2s ease;
+        }
+
+        .recommend-item:hover {
+            background-color: #e0f7fa;
+            border-color: #00bcd4;
+        }
+
+        /* 추천 아이템 내용 */
+        .recommend-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .recommend-title {
+            font-weight: bold;
+            font-size: 1rem;
+            color: #00796b;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .recommend-address {
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
 </head>
 
 <body>
@@ -39,6 +136,31 @@
                 </div>
                 <input type="hidden" id="cityId" th:field="*{cityId}" required/>
                 <p class="error-message" th:if="${#fields.hasErrors('cityId')}" th:errors="*{cityId}"></p>
+            </div>
+
+            <!-- 장소 검색 버튼 -->
+            <div class="input-container" style="margin-top: 20px;">
+                <label>다녀온 장소를 선택해주세요!</label>
+                <button type="button" onclick="openPlaceModal()">장소 검색하기</button>
+            </div>
+
+            <!-- 선택한 장소 ID 저장용 히든 -->
+            <div id="hiddenPlaceInputs"></div>
+
+            <!-- 선택한 장소 이름 보여주기 (읽기전용) -->
+            <div class="input-container">
+                <label>선택된 장소</label>
+                <div id="selectedPlaceNames" class="place-tag-container"></div>
+            </div>
+            <div id="placeModal" class="modal" style="display:none;">
+                <div class="modal-content">
+                    <h3>장소 검색</h3>
+                    <input id="placeQuery" type="text" placeholder="맛집, 관광, 카페 등 키워드를 입력하세요" autocomplete="off" style="width:100%; margin-bottom:10px; padding:8px; font-size:1rem;"/>
+                    <div id="recommendationList" style="max-height:300px; overflow-y:auto; border:1px solid #ddd; border-radius:6px; padding:10px;"></div>
+                    <div style="margin-top: 10px; text-align: right;">
+                        <button type="button" onclick="closePlaceModal()">취소</button>
+                    </div>
+                </div>
             </div>
 
             <!-- 도시 선택 모달 -->
@@ -219,7 +341,6 @@
             <div class="button-container">
                 <button type="submit">여행 후기 작성</button>
             </div>
-        </div>
     </form>
 </div>
 <div th:replace="~{fragments/footer::footer}"></div>
@@ -244,5 +365,111 @@
         }
     }
 </script>
+
+<script>
+    let selectedPlaces = []; // { placeId, placeName }
+    let cityIds = []; // 도시 ID는 필요 시 동적으로 채워넣으세요
+
+    function openPlaceModal() {
+      document.getElementById('placeModal').style.display = 'flex';
+      document.getElementById('placeQuery').value = '';
+      document.getElementById('recommendationList').innerHTML = '<p>추천 장소를 불러오는 중...</p>';
+      loadRecommendations(cityIds, '');
+    }
+
+    function closePlaceModal() {
+      document.getElementById('placeModal').style.display = 'none';
+    }
+
+    function loadRecommendations(cityIds, query = '') {
+      const queryParam =
+        cityIds.map(id => `cityIds=${id}`).join('&') +
+        (query ? `&query=${encodeURIComponent(query)}` : '');
+
+      fetch(`/travel/places/recommend?${queryParam}`)
+        .then(res => res.json())
+        .then(places => {
+          const list = document.getElementById('recommendationList');
+          list.innerHTML = '';
+
+          if (!places || places.length === 0) {
+            list.innerHTML = '<p>추천 장소가 없습니다.</p>';
+            return;
+          }
+
+          places.forEach(place => {
+              const div = document.createElement('div');
+              div.className = 'recommend-item';
+              div.onclick = () => selectPlace(place);
+
+              div.innerHTML = `
+                <div class="recommend-content">
+                  <div class="recommend-title">${place.placeName}</div>
+                  <div class="recommend-address">${place.address}</div>
+                </div>
+              `;
+              list.appendChild(div);
+            });
+        });
+    }
+
+    function selectPlace(place) {
+      if (selectedPlaces.find(p => p.placeId === place.placeId)) {
+        alert('이미 선택된 장소입니다.');
+        return;
+      }
+      selectedPlaces.push(place);
+      renderSelectedPlaces();
+    }
+
+    function removePlace(placeId) {
+      selectedPlaces = selectedPlaces.filter(p => p.placeId !== placeId);
+      renderSelectedPlaces();
+    }
+
+   function renderSelectedPlaces() {
+  const container = document.getElementById('selectedPlaceNames');
+  container.innerHTML = '';
+
+  const hiddenContainer = document.getElementById('hiddenPlaceInputs');
+  hiddenContainer.innerHTML = ''; // 기존 hidden input 초기화
+
+  selectedPlaces.forEach(place => {
+    // UI 표시용
+    const tag = document.createElement('div');
+    tag.className = 'place-tag';
+    tag.textContent = place.placeName;
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-btn';
+    removeBtn.textContent = '×';
+    removeBtn.onclick = () => removePlace(place.placeId);
+    tag.appendChild(removeBtn);
+    container.appendChild(tag);
+
+    // ✅ 배열 형태로 처리되도록 name을 동일하게 유지
+    const hiddenInput = document.createElement('input');
+    hiddenInput.type = 'hidden';
+    hiddenInput.name = 'placeIds'; // 💡 인덱스 없이!
+    hiddenInput.value = place.placeId;
+    hiddenContainer.appendChild(hiddenInput);
+  });
+}
+
+    // 디바운스 처리
+    let debounceTimer;
+    document.addEventListener('DOMContentLoaded', () => {
+      const input = document.getElementById('placeQuery');
+      if (input) {
+        input.addEventListener('input', () => {
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => {
+            loadRecommendations(cityIds, input.value.trim());
+          }, 300);
+        });
+      }
+    });
+</script>
+
 </body>
 </html>

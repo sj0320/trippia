@@ -1,7 +1,21 @@
 package com.trippia.travel.domain.post.diary;
 
+import com.trippia.travel.controller.dto.CursorData;
+import com.trippia.travel.controller.dto.diary.request.DiarySaveRequest;
+import com.trippia.travel.controller.dto.diary.request.DiarySearchCondition;
+import com.trippia.travel.controller.dto.diary.request.DiaryUpdateRequest;
+import com.trippia.travel.controller.dto.diary.request.UpdateDiaryDto;
+import com.trippia.travel.controller.dto.diary.response.DiaryDetailResponse;
+import com.trippia.travel.controller.dto.diary.response.DiaryEditFormResponse;
+import com.trippia.travel.controller.dto.diary.response.DiaryListResponse;
+import com.trippia.travel.controller.dto.place.response.PlaceSummaryResponse;
 import com.trippia.travel.domain.common.TravelCompanion;
 import com.trippia.travel.domain.location.city.City;
+import com.trippia.travel.domain.location.place.Place;
+import com.trippia.travel.domain.location.place.PlaceRepository;
+import com.trippia.travel.domain.location.place.PlaceService;
+import com.trippia.travel.domain.post.diaryplace.DiaryPlace;
+import com.trippia.travel.domain.post.diaryplace.DiaryPlaceRepository;
 import com.trippia.travel.domain.post.diarytheme.DiaryTheme;
 import com.trippia.travel.domain.theme.Theme;
 import com.trippia.travel.domain.user.User;
@@ -20,11 +34,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.trippia.travel.controller.dto.DiaryDto.*;
 import static com.trippia.travel.exception.ErrorMessageSource.START_DATE_AFTER_END_DATE;
 import static com.trippia.travel.exception.ErrorMessageSource.START_DATE_BEFORE_TODAY;
 
@@ -36,13 +50,16 @@ public class DiaryService {
 
     private final DiaryClient diaryClient;
     private final UserRepository userRepository;
+    private final DiaryPlaceRepository diaryPlaceRepository;
+    private final PlaceRepository placeRepository;
     private final FileService fileService;
+    private final PlaceService placeService;
     private final RedisTemplate<String, Object> redisTemplate;
 
     private static final String VIEW_DIARY_REDIS_KEY = "view:diary:%s:%s";
 
     @Transactional
-    public Long saveDiary(String email, SaveRequest request, MultipartFile thumbnail) {
+    public Long saveDiary(String email, DiarySaveRequest request, MultipartFile thumbnail) throws IOException {
         validateDate(request.getStartDate(), request.getEndDate());
         User user = getUserByEmail(email);
         City city = getCity(request.getCityId());
@@ -53,11 +70,26 @@ public class DiaryService {
         diaryClient.saveDiary(diary);
         saveDiaryThemes(request.getThemeIds(), diary);
 
+        // 저장할 placeId가 Place 테이블에 이미 존재하면 저장하지 않음.
+        List<String> placeIds = request.getPlaceIds();
+        for(String placeId : placeIds){
+            PlaceSummaryResponse placeSummary = placeService.getPlaceSummary(placeId);
+            Place place = placeSummary.toEntity();
+            if(!placeRepository.existsById(placeId)){
+                placeRepository.save(place);
+            }
+            DiaryPlace diaryPlace = DiaryPlace.builder()
+                    .diary(diary)
+                    .place(place)
+                    .build();
+            diaryPlaceRepository.save(diaryPlace);
+        }
+
         return diary.getId();
     }
 
     @Transactional
-    public void editDiary(String email, Long diaryId, UpdateRequest request, MultipartFile thumbnail) {
+    public void editDiary(String email, Long diaryId, DiaryUpdateRequest request, MultipartFile thumbnail) throws IOException {
         validateDate(request.getStartDate(), request.getEndDate());
         Diary diary = getDiary(diaryId);
         User user = getUserByEmail(email);
@@ -70,6 +102,25 @@ public class DiaryService {
         diary.update(updateDiaryDto);
 
         updateDiaryThemes(diary, request.getThemeIds());
+
+
+        // 기존의 diary_place 삭제
+        diaryPlaceRepository.deleteByDiary_Id(diaryId);
+
+        // 저장할 placeId가 Place 테이블에 이미 존재하면 저장하지 않음.
+        List<String> placeIds = request.getPlaceIds();
+        for(String placeId : placeIds){
+            PlaceSummaryResponse placeSummary = placeService.getPlaceSummary(placeId);
+            Place place = placeSummary.toEntity();
+            if(!placeRepository.existsById(placeId)){
+                placeRepository.save(place);
+            }
+            DiaryPlace diaryPlace = DiaryPlace.builder()
+                    .diary(diary)
+                    .place(place)
+                    .build();
+            diaryPlaceRepository.save(diaryPlace);
+        }
     }
 
     public Slice<DiaryListResponse> searchDiaryList(DiarySearchCondition condition, CursorData cursorData, Pageable pageable) {
@@ -100,7 +151,7 @@ public class DiaryService {
         }
     }
 
-    public EditFormResponse getEditForm(String email, Long diaryId) {
+    public DiaryEditFormResponse getEditForm(String email, Long diaryId) {
         User user = getUserByEmail(email);
         Diary diary = getDiary(diaryId);
         user.validateAuthorOf(diary);
@@ -108,7 +159,7 @@ public class DiaryService {
         List<Theme> themes = diaryThemes.stream()
                 .map(DiaryTheme::getTheme)
                 .toList();
-        return EditFormResponse.from(diary, themes);
+        return DiaryEditFormResponse.from(diary, themes);
     }
 
     @Transactional
@@ -167,7 +218,7 @@ public class DiaryService {
         return existingThumbnail;
     }
 
-    private UpdateDiaryDto getUpdateDiaryDto(UpdateRequest request, String thumbnailUrl, City city) {
+    private UpdateDiaryDto getUpdateDiaryDto(DiaryUpdateRequest request, String thumbnailUrl, City city) {
         return UpdateDiaryDto.builder()
                 .title(request.getTitle())
                 .content(request.getContent())

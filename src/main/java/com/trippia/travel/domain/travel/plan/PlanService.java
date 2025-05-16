@@ -1,11 +1,13 @@
 package com.trippia.travel.domain.travel.plan;
 
+import com.trippia.travel.controller.dto.plan.request.PlanCreateRequest;
+import com.trippia.travel.controller.dto.plan.response.PlanDetailsResponse;
+import com.trippia.travel.controller.dto.schedule.response.ScheduleDetailsResponse;
+import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemResponse;
 import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.location.city.CityRepository;
 import com.trippia.travel.domain.travel.plancity.PlanCity;
-import com.trippia.travel.domain.travel.plancity.PlanCityRepository;
 import com.trippia.travel.domain.travel.schedule.Schedule;
-import com.trippia.travel.domain.travel.schedule.ScheduleRepository;
 import com.trippia.travel.domain.travel.scheduleitem.ScheduleItem;
 import com.trippia.travel.domain.travel.scheduleitem.ScheduleItemConverter;
 import com.trippia.travel.domain.travel.scheduleitem.ScheduleItemRepository;
@@ -23,10 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.trippia.travel.controller.dto.PlanDto.PlanCreateRequest;
-import static com.trippia.travel.controller.dto.PlanDto.PlanDetailsResponse;
-import static com.trippia.travel.controller.dto.ScheduleDto.ScheduleDetailsResponse;
-import static com.trippia.travel.controller.dto.ScheduleItemDto.ScheduleItemResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -37,8 +35,6 @@ public class PlanService {
     private final PlanRepository planRepository;
     private final CityRepository cityRepository;
     private final UserRepository userRepository;
-    private final ScheduleRepository scheduleRepository;
-    private final PlanCityRepository planCityRepository;
     private final ScheduleItemRepository scheduleItemRepository;
 
     @Transactional
@@ -92,7 +88,12 @@ public class PlanService {
                 .map(schedule -> {
                     List<ScheduleItem> items = scheduleItemMap.getOrDefault(schedule.getId(),List.of());
                     List<ScheduleItemResponse> itemResponses = ScheduleItemConverter.toResponses(items);
-                    return new ScheduleDetailsResponse(schedule.getId(), schedule.getDate(), itemResponses);
+                    return ScheduleDetailsResponse.builder()
+                            .id(schedule.getId())
+                            .date(schedule.getDate())
+                            .scheduleItems(itemResponses)
+                            .build();
+//                    return new ScheduleDetailsResponse(schedule.getId(), schedule.getDate(), itemResponses);
                 })
                 .toList();
         return PlanDetailsResponse.of(plan, planCities, scheduleDetailsResponse);

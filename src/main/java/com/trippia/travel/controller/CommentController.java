@@ -1,6 +1,7 @@
 package com.trippia.travel.controller;
 
 import com.trippia.travel.annotation.CurrentUser;
+import com.trippia.travel.controller.dto.comment.requset.CommentSaveRequest;
 import com.trippia.travel.domain.post.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -8,8 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-
-import static com.trippia.travel.controller.dto.CommentDto.CommentSaveRequest;
 
 @RestController
 @RequestMapping("/api")

@@ -1,5 +1,7 @@
 package com.trippia.travel.domain.location.city;
 
+import com.trippia.travel.controller.dto.city.response.CityGroupedByTypeResponse;
+import com.trippia.travel.controller.dto.city.response.CitySummary;
 import com.trippia.travel.domain.location.country.Country;
 import com.trippia.travel.domain.location.country.CountryRepository;
 import org.assertj.core.api.Assertions;
@@ -14,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.trippia.travel.domain.common.CityType.*;
-import static com.trippia.travel.controller.dto.CityDto.CityGroupedByTypeResponse;
-import static com.trippia.travel.controller.dto.CityDto.CitySummary;
 
 @ActiveProfiles("test")
 @SpringBootTest

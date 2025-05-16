@@ -1,5 +1,6 @@
 package com.trippia.travel.domain.post.diary;
 
+import com.trippia.travel.controller.dto.diary.request.UpdateDiaryDto;
 import com.trippia.travel.domain.common.TravelCompanion;
 import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.post.comment.Comment;
@@ -15,7 +16,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.trippia.travel.controller.dto.DiaryDto.UpdateDiaryDto;
 
 @Entity
 @Builder

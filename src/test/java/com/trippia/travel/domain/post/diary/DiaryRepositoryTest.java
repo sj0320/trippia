@@ -1,6 +1,8 @@
 package com.trippia.travel.domain.post.diary;
 
 import com.trippia.travel.TestConfig;
+import com.trippia.travel.controller.dto.CursorData;
+import com.trippia.travel.controller.dto.diary.request.DiarySearchCondition;
 import com.trippia.travel.domain.common.CityType;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
@@ -9,8 +11,10 @@ import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.location.city.CityRepository;
 import com.trippia.travel.domain.location.country.Country;
 import com.trippia.travel.domain.location.country.CountryRepository;
+import com.trippia.travel.domain.location.place.PlaceRepository;
 import com.trippia.travel.domain.post.comment.Comment;
 import com.trippia.travel.domain.post.comment.CommentRepository;
+import com.trippia.travel.domain.post.diaryplace.DiaryPlaceRepository;
 import com.trippia.travel.domain.post.diarytheme.DiaryTheme;
 import com.trippia.travel.domain.post.diarytheme.DiaryThemeRepository;
 import com.trippia.travel.domain.theme.Theme;
@@ -34,8 +38,6 @@ import java.util.List;
 
 import static com.trippia.travel.domain.common.CityType.JAPAN;
 import static com.trippia.travel.domain.common.CityType.KOREA;
-import static com.trippia.travel.controller.dto.DiaryDto.CursorData;
-import static com.trippia.travel.controller.dto.DiaryDto.DiarySearchCondition;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ActiveProfiles("test")
@@ -63,6 +65,12 @@ class DiaryRepositoryTest {
 
     @Autowired
     private ThemeRepository themeRepository;
+
+    @Autowired
+    private PlaceRepository placeRepository;
+
+    @Autowired
+    private DiaryPlaceRepository diaryPlaceRepository;
 
 
     @DisplayName("여행일지를 조회할때 댓글도 함께 조회한다.")

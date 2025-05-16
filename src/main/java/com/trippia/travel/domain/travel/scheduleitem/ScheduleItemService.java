@@ -1,5 +1,6 @@
 package com.trippia.travel.domain.travel.scheduleitem;
 
+import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemResponse;
 import com.trippia.travel.domain.travel.schedule.Schedule;
 import com.trippia.travel.domain.travel.schedule.ScheduleRepository;
 import com.trippia.travel.domain.travel.scheduleitem.memo.Memo;
@@ -12,8 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
 import java.util.List;
-
-import static com.trippia.travel.controller.dto.ScheduleItemDto.ScheduleItemResponse;
 
 @Service
 @Slf4j

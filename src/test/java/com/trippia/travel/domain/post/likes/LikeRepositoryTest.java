@@ -1,6 +1,7 @@
 package com.trippia.travel.domain.post.likes;
 
 import com.trippia.travel.TestConfig;
+import com.trippia.travel.controller.dto.diary.request.DiarySaveRequest;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
 import com.trippia.travel.domain.location.city.City;
@@ -22,7 +23,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static com.trippia.travel.domain.common.CityType.*;
-import static com.trippia.travel.controller.dto.DiaryDto.SaveRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ActiveProfiles("test")
@@ -52,7 +52,7 @@ class LikeRepositoryTest {
         // given
         City seoul = setupCountriesAndCities();
         User user = createUser();
-        SaveRequest request = createDiarySaveRequest(seoul.getId());
+        DiarySaveRequest request = createDiarySaveRequest(seoul.getId());
         Diary diary = request.toEntity(user, seoul, "thumbnail");
         diaryRepository.save(diary);
 
@@ -68,7 +68,7 @@ class LikeRepositoryTest {
         // given
         City seoul = setupCountriesAndCities();
         User user = createUser();
-        SaveRequest request = createDiarySaveRequest(seoul.getId());
+        DiarySaveRequest request = createDiarySaveRequest(seoul.getId());
         Diary diary = request.toEntity(user, seoul, "thumbnail");
         diaryRepository.save(diary);
         Likes like = Likes.builder()
@@ -88,7 +88,7 @@ class LikeRepositoryTest {
         // given
         City seoul = setupCountriesAndCities();
         User user = createUser();
-        SaveRequest request = createDiarySaveRequest(seoul.getId());
+        DiarySaveRequest request = createDiarySaveRequest(seoul.getId());
         Diary diary = request.toEntity(user, seoul, "thumbnail");
         diaryRepository.save(diary);
         Likes like = Likes.builder()
@@ -115,8 +115,8 @@ class LikeRepositoryTest {
         return userRepository.save(user);
     }
 
-    private SaveRequest createDiarySaveRequest(Long cityId) {
-        return SaveRequest.builder()
+    private DiarySaveRequest createDiarySaveRequest(Long cityId) {
+        return DiarySaveRequest.builder()
                 .cityId(cityId)
                 .title("test")
                 .content("test content")
