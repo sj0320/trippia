@@ -39,6 +39,7 @@ import java.util.List;
 import static com.trippia.travel.domain.common.CityType.JAPAN;
 import static com.trippia.travel.domain.common.CityType.KOREA;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 @ActiveProfiles("test")
 @DataJpaTest
@@ -80,7 +81,7 @@ class DiaryRepositoryTest {
         User user = createUser("email1", "nick1");
         City seoul = createCity("서울", createCountry("한국"), KOREA);
 
-        Diary diary = createDiary(user, seoul, "서울 여행기", "test content");
+        Diary diary = createDiary(user, seoul, "서울 여행기", "test content", 0);
         Comment comment = commentRepository.save(Comment.createComment(user, diary, "test content"));
         diary.addComment(comment);
 
@@ -101,8 +102,8 @@ class DiaryRepositoryTest {
         Country korea = createCountry("한국");
         City seoul = createCity("서울", korea, KOREA);
 
-        createDiary(user, seoul, "My Trip to Seoul", "wonderful trip");
-        createDiary(user, seoul, "Just another day", "boring content");
+        createDiary(user, seoul, "My Trip to Seoul", "wonderful trip", 0);
+        createDiary(user, seoul, "Just another day", "boring content", 0);
 
         DiarySearchCondition condition = DiarySearchCondition.builder()
                 .keyword("trip")
@@ -116,7 +117,7 @@ class DiaryRepositoryTest {
 
         // when
         Slice<Diary> result = diaryRepository.searchDiariesWithConditions(condition, CursorData.init(), pageable);
-        List<Diary> content = result.getContent();
+
         // then
         assertThat(result).hasSize(1);
         assertThat(result.getContent().get(0).getTitle()).contains("Trip");
@@ -130,8 +131,8 @@ class DiaryRepositoryTest {
         Country korea = createCountry("한국");
         City seoul = createCity("서울", korea, KOREA);
 
-        Diary diary1 = createDiary(user, seoul, "My Trip to Seoul", "wonderful trip");
-        Diary diary2 = createDiary(user, seoul, "Just another day", "boring content");
+        Diary diary1 = createDiary(user, seoul, "My Trip to Seoul", "wonderful trip", 0);
+        Diary diary2 = createDiary(user, seoul, "Just another day", "boring content", 0);
 
         DiarySearchCondition condition = DiarySearchCondition.builder()
                 .keyword(null)
@@ -172,8 +173,8 @@ class DiaryRepositoryTest {
         City tokyo = createCity("도쿄", japan, JAPAN);
         City osaka = createCity("오사카", japan, JAPAN);
 
-        createDiary(user, tokyo, "도쿄 여행기", "sushi!");
-        createDiary(user, osaka, "오사카 여행기", "takoyaki!");
+        createDiary(user, tokyo, "도쿄 여행기", "sushi!", 0);
+        createDiary(user, osaka, "오사카 여행기", "takoyaki!", 0);
 
         DiarySearchCondition condition = DiarySearchCondition.builder()
                 .countryName("일본")
@@ -194,6 +195,59 @@ class DiaryRepositoryTest {
                 .extracting(City::getCountry)
                 .extracting(Country::getName)
                 .containsOnly("일본");
+    }
+
+    @DisplayName("요청한 size 만큼 여행일지를 좋아요를 기준으로 내림차순 조회한다.")
+    @Test
+    void findTopDiaries() {
+        // given
+        User user = createUser("email", "nick");
+        Country japan = createCountry("일본");
+        City tokyo = createCity("도쿄", japan, JAPAN);
+        City osaka = createCity("오사카", japan, JAPAN);
+
+        Diary diary1 = createDiary(user, tokyo, "도쿄 여행기", "content1", 10);
+        Diary diary2 = createDiary(user, tokyo, "도쿄 여행기2", "content2", 50);
+        Diary diary3 = createDiary(user, osaka, "오사카 여행기", "content3", 30);
+        Diary diary4 = createDiary(user, osaka, "오사카 여행기2", "content4", 40);
+
+        // when
+        List<Diary> topDiaries = diaryRepository.findTopDiaries(PageRequest.of(0, 3));
+
+        // then
+        assertThat(topDiaries).hasSize(3)
+                .extracting("title", "content", "likeCount")
+                .containsExactly(
+                        tuple(diary2.getTitle(), diary2.getContent(), 50),
+                        tuple(diary4.getTitle(), diary4.getContent(), 40),
+                        tuple(diary3.getTitle(), diary3.getContent(), 30)
+                );
+
+    }
+
+    @DisplayName("가장 좋아요 많은 여행일지를 도시를 기준으로 조회한다.")
+    @Test
+    void findTopDiaryByCityIdOrderByLikeCountDesc() {
+        // given
+        // given
+        User user = createUser("email", "nick");
+        Country japan = createCountry("일본");
+        City tokyo = createCity("도쿄", japan, JAPAN);
+        City osaka = createCity("오사카", japan, JAPAN);
+
+        Diary diary1 = createDiary(user, tokyo, "도쿄 여행기", "content1", 10);
+        Diary diary2 = createDiary(user, tokyo, "도쿄 여행기2", "content2", 50);
+        Diary diary3 = createDiary(user, tokyo, "도쿄 여행기3", "content3", 30);
+        Diary diary4 = createDiary(user, osaka, "오사카 여행기2", "content4", 100);
+
+        // when
+        Diary topDiary = diaryRepository.findTopDiaryByCityIdOrderByLikeCountDesc(tokyo.getId()).orElseThrow();
+
+        // then
+        assertThat(topDiary.getCity()).isEqualTo(tokyo);
+        assertThat(topDiary.getLikeCount()).isEqualTo(50);
+        assertThat(topDiary.getTitle()).isEqualTo(diary2.getTitle());
+
     }
 
     private User createUser(String email, String nickname) {
@@ -219,12 +273,13 @@ class DiaryRepositoryTest {
                 .build());
     }
 
-    private Diary createDiary(User user, City city, String title, String content) {
+    private Diary createDiary(User user, City city, String title, String content, int likeCount) {
         Diary diary = Diary.builder()
                 .user(user)
                 .city(city)
                 .title(title)
                 .content(content)
+                .likeCount(likeCount)
                 .startDate(LocalDate.of(2099, 1, 1))
                 .endDate(LocalDate.of(2099, 1, 10))
                 .createdAt(LocalDateTime.now())

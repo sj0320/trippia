@@ -15,8 +15,6 @@ INSERT INTO theme (theme_id, name) VALUES (13, '레저 활동');
 INSERT INTO theme (theme_id, name) VALUES (14, '테마파크');
 
 
-
-
 INSERT INTO country (country_id, name) VALUES (1, '일본');
 INSERT INTO country (country_id, name) VALUES (2, '한국');
 INSERT INTO country (country_id, name) VALUES (3, '중국');

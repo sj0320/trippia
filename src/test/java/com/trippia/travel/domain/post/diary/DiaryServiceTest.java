@@ -1,6 +1,8 @@
 package com.trippia.travel.domain.post.diary;
 
+import com.trippia.travel.controller.dto.city.response.CityThumbnailResponse;
 import com.trippia.travel.controller.dto.diary.request.DiarySaveRequest;
+import com.trippia.travel.controller.dto.diary.response.DiaryListResponse;
 import com.trippia.travel.domain.common.CityType;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
@@ -25,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
@@ -33,11 +36,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.trippia.travel.domain.common.CityType.*;
 import static com.trippia.travel.domain.common.CityType.JAPAN;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -224,6 +228,83 @@ class DiaryServiceTest {
                 .isInstanceOf(DiaryException.class);
     }
 
+    @DisplayName("좋아요순으로 여행일지들을 원하는 개수만큼 조회한다.")
+    @Test
+    void getTopPopularDiaries() {
+        // given
+        User user = createUser("email");
+        userRepository.save(user);
+        Country korea = createCountry("한국");
+        City seoul = createCity("서울", korea, KOREA);
+
+        Diary diary1 = createDiary(user, seoul, "title1", 50);
+        Diary diary2 = createDiary(user, seoul, "title1", 10);
+        Diary diary3 = createDiary(user, seoul, "title1", 20);
+        Diary diary4 = createDiary(user, seoul, "title1", 60);
+        // when
+        List<DiaryListResponse> diaries = diaryService.getTopPopularDiaries(PageRequest.of(0, 3));
+
+        // then
+        assertThat(diaries).hasSize(3)
+                .extracting("id", "title", "likeCount")
+                .containsExactly(
+                        tuple(diary4.getId(), diary4.getTitle(), 60),
+                        tuple(diary1.getId(), diary1.getTitle(), 50),
+                        tuple(diary3.getId(), diary3.getTitle(), 20)
+                );
+    }
+
+    @DisplayName("여행일지에서 가장 많이 사용된 도시들 중에서, 각 도시들의 썸네일을 가장 많이 좋아요를 받은 여행일지의 썸네일로 가져온다.")
+    @Test
+    void getTopCityThumbnails() {
+        // given
+        User user = createUser("email");
+        userRepository.save(user);
+        Country korea = createCountry("한국");
+        Country japan = createCountry("일본");
+        Country china = createCountry("중국");
+        Country america = createCountry("미국");
+
+        City seoul = createCity("서울", korea, KOREA);
+        City busan = createCity("부산", korea, KOREA);
+        City incheon = createCity("인천", korea, KOREA);
+        City osaka = createCity("오사카", japan, JAPAN);
+        City beijing = createCity("베이징", china, CHINA);
+        City newYork = createCity("뉴욕", america, NORTH_AMERICA);
+
+        // korea
+        Diary kDiary1 = createDiary(user, seoul, "title1", 50);
+        Diary kDiary2 = createDiary(user, seoul, "title2", 51);
+        Diary kDiary3 = createDiary(user, seoul, "title3", 50);
+        Diary kDiary4 = createDiary(user, incheon, "title4", 50);
+
+        // japan
+        Diary jDiary1 = createDiary(user, osaka, "title5", 0);
+        Diary jDiary2 = createDiary(user, osaka, "title6", 0);
+        Diary jDiary3 = createDiary(user, osaka, "title7", 1);
+        Diary jDiary4 = createDiary(user, osaka, "title8", 0);
+
+        // china
+        Diary cDiary1 = createDiary(user, beijing, "title9", 1);
+        Diary cDiary2 = createDiary(user, beijing, "title10", 2);
+
+        // america
+        Diary aDiary1 = createDiary(user, newYork, "title11", 100);
+
+
+        // when
+        List<CityThumbnailResponse> result = diaryService.getTopCityThumbnails(PageRequest.of(0, 3));
+
+        // then
+        assertThat(result).hasSize(3)
+                .extracting("countryName", "imageUrl")
+                .containsExactly(
+                        tuple("일본", jDiary3.getThumbnail()),
+                        tuple("한국", kDiary2.getThumbnail()),
+                        tuple("중국", cDiary2.getThumbnail())
+                );
+    }
+
     private User createUser(String email) {
         User user = User.builder()
                 .email(email)
@@ -233,6 +314,21 @@ class DiaryServiceTest {
                 .role(Role.ROLE_USER)
                 .build();
         return userRepository.save(user);
+    }
+
+    private Diary createDiary(User user, City city, String title, int likeCount) {
+        Diary diary = Diary.builder()
+                .user(user)
+                .city(city)
+                .title(title)
+                .content("content")
+                .likeCount(likeCount)
+                .thumbnail(title + ".jpg")
+                .startDate(LocalDate.of(2099, 1, 1))
+                .endDate(LocalDate.of(2099, 1, 10))
+                .createdAt(LocalDateTime.now())
+                .build();
+        return diaryRepository.save(diary);
     }
 
     private Country createCountry(String name) {

@@ -1,6 +1,8 @@
 package com.trippia.travel.domain.post.diary;
 
 import com.trippia.travel.controller.dto.CursorData;
+import com.trippia.travel.controller.dto.city.response.CityCountResponse;
+import com.trippia.travel.controller.dto.city.response.CityThumbnailResponse;
 import com.trippia.travel.controller.dto.diary.request.DiarySaveRequest;
 import com.trippia.travel.controller.dto.diary.request.DiarySearchCondition;
 import com.trippia.travel.controller.dto.diary.request.DiaryUpdateRequest;
@@ -103,7 +105,6 @@ public class DiaryService {
 
         updateDiaryThemes(diary, request.getThemeIds());
 
-
         // 기존의 diary_place 삭제
         diaryPlaceRepository.deleteByDiary_Id(diaryId);
 
@@ -172,6 +173,28 @@ public class DiaryService {
         diaryClient.deleteDiaryById(diaryId);
     }
 
+    public List<DiaryListResponse> getTopPopularDiaries(Pageable pageable) {
+        List<Diary> diaries = diaryClient.findTopDiaries(pageable);
+        return DiaryListResponse.from(diaries);
+    }
+
+    public List<CityThumbnailResponse> getTopCityThumbnails(Pageable pageable) {
+        List<CityCountResponse> cities = diaryClient.findTopDiaryCities(pageable);
+        System.out.println(cities);
+
+        return cities.stream()
+                .map(city -> {
+                    Diary topDiary = diaryClient.findTopDiaryByCityIdOrderByLikeCountDesc(city.getCityId())
+                            .orElseThrow(() -> new DiaryException("해당 도시에 대한 여행일지가 없습니다."));
+
+                    return new CityThumbnailResponse(
+                            topDiary.getCity().getName(),     // 도시 이름
+                            topDiary.getThumbnail()               // 썸네일 URL
+                    );
+                })
+                .toList();
+    }
+
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
@@ -231,4 +254,6 @@ public class DiaryService {
                 .city(city)
                 .build();
     }
+
+
 }

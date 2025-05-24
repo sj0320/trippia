@@ -52,6 +52,7 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
                 .where(
                         eqThemeName(condition.getThemeName(), themeEntity),
                         eqCountryName(condition.getCountryName(), cityEntity),
+                        eqCityName(condition.getCityName(), cityEntity),
                         containsKeyword(condition.getKeyword(), diary),
                         cursorPredicate(sortProperty, direction, cursorData, diary)
                 )
@@ -119,6 +120,12 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
         log.info("country조건 = {}", country);
         return country != null ? cityEntity.country.name.eq(country) : null;
     }
+
+    private BooleanExpression eqCityName(String city, QCity cityEntity) {
+        log.info("city조건 = {}", city);
+        return city != null ? cityEntity.name.eq(city) : null;
+    }
+
 
     private BooleanExpression containsKeyword(String keyword, QDiary diary) {
         return keyword != null ?

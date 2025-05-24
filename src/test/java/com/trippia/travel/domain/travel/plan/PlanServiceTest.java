@@ -66,16 +66,6 @@ class PlanServiceTest {
     private ScheduleItemRepository scheduleItemRepository;
 
 
-//    @AfterEach
-//    void tearDown() {
-//        planCityRepository.deleteAllInBatch();
-//        scheduleRepository.deleteAllInBatch();
-//        planRepository.deleteAllInBatch();
-//        cityRepository.deleteAllInBatch();
-//        countryRepository.deleteAllInBatch();
-//        userRepository.deleteAllInBatch();
-//    }
-
     @DisplayName("여행 일정을 생성할 수 있다.")
     @Test
     void createPlan() {

@@ -56,21 +56,25 @@
             const target = event.target;
             const theme = target.getAttribute('data-theme');
             const country = target.getAttribute('data-country');
+            const city = target.getAttribute('data-city');
 
             const meta = document.getElementById('diary-meta');
             let sort = meta.getAttribute('data-sort');
             let keyword = meta.getAttribute('data-keyword');
             let currentTheme = meta.getAttribute('data-theme');
             let currentCountry = meta.getAttribute('data-country');
+            let currentCity = meta.getAttribute('data-city');
 
             if (theme !== null) currentTheme = theme;
             if (country !== null) currentCountry = country;
+            if (city !== null) currentCity = city;
 
             const params = new URLSearchParams();
-            if (keyword && keyword !== 'null') params.append('keyword', keyword);
+            if (keyword && keyword !== 'null' && keyword.trim() !== '') params.append('keyword', keyword);
             if (sort && sort !== 'null') params.append('sort', sort);
             if (currentTheme && currentTheme !== 'null') params.append('themeName', currentTheme);
             if (currentCountry && currentCountry !== 'null') params.append('countryName', currentCountry);
+            if (currentCity && currentCity !== 'null' && currentCity.trim() !== '') params.append('cityName', currentCity);
 
             window.location.href = `/diary/list?${params.toString()}`;
         }
@@ -120,9 +124,21 @@
         <!-- 검색/정렬/작성 버튼 -->
         <div style="display: flex; align-items: center; gap: 12px;">
             <!-- 검색창 -->
-            <form th:action="@{/diary/list}" method="get" class="search-form">
+            <form th:action="@{/diary/list}" method="get" class="search-form"
+                  style="display: flex; gap: 8px; align-items: center;">
                 <input type="text" name="keyword" placeholder="검색어를 입력하세요"
                        th:value="${diaryListModel.searchCondition.keyword}" class="search-input">
+
+                <button type="submit" class="search-button">
+                    <img src="/images/reading-glass.png" alt="검색" class="search-icon">
+                </button>
+            </form>
+
+            <form th:action="@{/diary/list}" method="get" class="search-form"
+                  style="display: flex; gap: 8px; align-items: center;">
+                <input type="text" name="cityName" placeholder="도시 이름을 입력하세요"
+                       th:value="${diaryListModel.searchCondition.cityName}" class="search-input">
+
                 <button type="submit" class="search-button">
                     <img src="/images/reading-glass.png" alt="검색" class="search-icon">
                 </button>
@@ -157,6 +173,10 @@
             검색어: <b th:text="${diaryListModel.searchCondition.keyword}"></b>
             <button onclick="removeFilter('keyword')" class="remove-btn">×</button>
         </span>
+        <span th:if="${diaryListModel.searchCondition.cityName}" class="filter-chip">
+            도시: <b th:text="${diaryListModel.searchCondition.cityName}"></b>
+            <button onclick="removeFilter('cityName')" class="remove-btn">×</button>
+        </span>
     </div>
 
     <!-- 메타 정보 -->
@@ -164,7 +184,8 @@
          th:attr="data-sort=${diaryListModel.searchCondition.sort ?: 'latest'},
                   data-keyword=${diaryListModel.searchCondition.keyword ?: 'null'},
                   data-theme=${diaryListModel.searchCondition.themeName ?: 'null'},
-                  data-country=${diaryListModel.searchCondition.countryName ?: 'null'}">
+                  data-country=${diaryListModel.searchCondition.countryName ?: 'null'},
+                  data-city=${diaryListModel.searchCondition.cityName ?: 'null'}">
     </div>
 
     <div id="last-cursor"
@@ -195,7 +216,7 @@
         </div>
     </div>
 
-    <input type="hidden" id="has-next" th:value="${diaryListModel.hasNext}" />
+    <input type="hidden" id="has-next" th:value="${diaryListModel.hasNext}"/>
 </div>
 </body>
 </html>
