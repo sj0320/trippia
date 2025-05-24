@@ -1,6 +1,7 @@
 package com.trippia.travel.domain.post.diary;
 
 import com.trippia.travel.controller.dto.CursorData;
+import com.trippia.travel.controller.dto.city.response.CityCountResponse;
 import com.trippia.travel.controller.dto.diary.request.DiarySearchCondition;
 import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.location.city.CityRepository;
@@ -68,6 +69,21 @@ public class DiaryClientImpl implements DiaryClient {
     @Override
     public Slice<Diary> searchDiariesWithConditions(DiarySearchCondition condition, CursorData cursorData, Pageable pageable) {
         return diaryRepository.searchDiariesWithConditions(condition, cursorData, pageable);
+    }
+
+    @Override
+    public List<CityCountResponse> findTopDiaryCities(Pageable pageable) {
+        return cityRepository.findTopDiaryCities(pageable);
+    }
+
+    @Override
+    public List<Diary> findTopDiaries(Pageable pageable) {
+        return diaryRepository.findTopDiaries(pageable);
+    }
+
+    @Override
+    public Optional<Diary> findTopDiaryByCityIdOrderByLikeCountDesc(Long cityId) {
+        return diaryRepository.findTopDiaryByCityIdOrderByLikeCountDesc(cityId);
     }
 
 }

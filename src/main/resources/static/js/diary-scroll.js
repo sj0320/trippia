@@ -48,12 +48,15 @@ function loadMoreDiaries() {
     const keyword = parseMetaValue(meta.dataset.keyword);
     const theme = parseMetaValue(meta.dataset.theme);
     const city = parseMetaValue(meta.dataset.city);
+    const country = parseMetaValue(meta.dataset.country);
     const sort = parseMetaValue(meta.dataset.sort);
+
 
     // 검색 조건을 URL 파라미터로 추가
     if (keyword) params.append("keyword", keyword);
     if (theme) params.append("theme", theme);
     if (city) params.append("city", city);
+    if (country) params.append("country", country);
     if (sort) params.append("sort", sort);
 
     // 커서 데이터 추가

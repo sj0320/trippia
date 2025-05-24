@@ -2,6 +2,7 @@ package com.trippia.travel.domain.post.diary;
 
 
 import com.trippia.travel.controller.dto.CursorData;
+import com.trippia.travel.controller.dto.city.response.CityCountResponse;
 import com.trippia.travel.controller.dto.diary.request.DiarySearchCondition;
 import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.post.diarytheme.DiaryTheme;
@@ -28,4 +29,9 @@ public interface DiaryClient {
 
     Slice<Diary> searchDiariesWithConditions(DiarySearchCondition condition, CursorData cursorData , Pageable pageable);
 
+    List<CityCountResponse> findTopDiaryCities(Pageable pageable);
+
+    List<Diary> findTopDiaries(Pageable pageable);
+
+    Optional<Diary> findTopDiaryByCityIdOrderByLikeCountDesc(Long cityId);
 }
