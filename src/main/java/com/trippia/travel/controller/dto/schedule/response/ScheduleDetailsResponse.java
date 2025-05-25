@@ -3,11 +3,13 @@ package com.trippia.travel.controller.dto.schedule.response;
 import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemResponse;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Getter
+@ToString
 public class ScheduleDetailsResponse {
 
     private Long id;

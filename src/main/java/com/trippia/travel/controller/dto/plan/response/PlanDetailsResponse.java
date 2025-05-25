@@ -5,11 +5,13 @@ import com.trippia.travel.domain.travel.plan.Plan;
 import com.trippia.travel.domain.travel.plancity.PlanCity;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@ToString
 public class PlanDetailsResponse {
 
     private Long planId;

@@ -4,6 +4,7 @@ import com.trippia.travel.annotation.CurrentUser;
 import com.trippia.travel.controller.dto.memo.requset.MemoSaveRequest;
 import com.trippia.travel.controller.dto.memo.requset.MemoUpdateRequest;
 import com.trippia.travel.controller.dto.scheduleitem.requset.ScheduleItemMetaRequest;
+import com.trippia.travel.controller.dto.scheduleitem.requset.ScheduleItemOrderRequest;
 import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemIdResponse;
 import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemResponse;
 import com.trippia.travel.controller.dto.scheduleplace.request.SchedulePlaceSaveRequest;
@@ -64,5 +65,10 @@ public class TravelApiController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/schedule-item/reorder")
+    public ResponseEntity<Void> reorderItems(@CurrentUser String email, @RequestBody ScheduleItemOrderRequest request){
+        scheduleItemService.reorderItems(email, request);
+        return ResponseEntity.ok().build();
+    }
 
 }

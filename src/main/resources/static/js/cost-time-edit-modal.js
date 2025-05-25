@@ -27,7 +27,7 @@ document.addEventListener('click', (event) => {
   }
 });
 
-// ✅ 지출 입력 포맷 적용 (쉼표)
+// ✅ 지출 입력 포맷 적용
 document.getElementById('costInput')?.addEventListener('input', (e) => {
   const val = e.target.value.replace(/[^\d]/g, '');
   e.target.value = val ? Number(val).toLocaleString() : '';

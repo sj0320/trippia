@@ -12,432 +12,358 @@
     <script defer src="/js/memo-edit-modal.js"></script>
     <style>
         .item-cost {
-  display: none;
-}
+          display: none;
+        }
+
         .itinerary-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            max-width: 900px;
-            margin: 0 auto;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          max-width: 1000px;
+          margin: 0 auto;
         }
 
         .day-card {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          background-color: #ffffff;
+          padding: 30px;
+          border-radius: 15px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .day-title {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: #333;
-            display: flex;
-            align-items: baseline;
-            gap: 10px;
+          font-size: 1.2rem;
+          margin-bottom: 15px;
+          color: #333;
+          display: flex;
+          align-items: baseline;
+          gap: 10px;
         }
-
         .day-title strong {
-            font-weight: bold;
-            font-size: 1.2rem;
+          font-weight: bold;
         }
-
         .day-date {
-            font-size: 0.95rem;
-            color: #777;
-        }
-
-        .btn {
-            margin-right: 10px;
-            padding: 10px 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s ease;
-        }
-
-        .btn-location {
-            background-color: #6c757d; /* 회색 */
-            color: white;
-        }
-
-        .btn-location:hover {
-            background-color: #5a6268; /* 어두운 회색 */
-        }
-
-        .btn-memo {
-            background-color: #f0ad4e; /* 금색 */
-            color: white;
-        }
-
-        .btn-memo:hover {
-            background-color: #ec971f; /* 더 어두운 금색 */
+          font-size: 0.95rem;
+          color: #777;
         }
 
         .entry-list {
-            margin-top: 15px;
+          position: relative;
+          margin-left: 20px;
+          padding-left: 40px;
+        }
+        .entry-list::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 56px;
+          width: 2px;
+          background-color: #ccc;
+          z-index: 0;
         }
 
         .entry-row {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 6px;
+          position: relative;
+          display: flex;
+          align-items: flex-start;
+          margin-bottom: 20px;
         }
 
+        .circle-number,
+        .circle-memo {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          text-align: center;
+          font-weight: bold;
+          z-index: 1;
+          margin-right: 10px;
+          flex-shrink: 0;
+        }
         .circle-number {
-            width: 32px;
-            height: 32px;
-            min-width: 32px;
-            border-radius: 50%;
-            background-color: #495057; /* 미드나잇 블루 */
-            color: white;
-            font-weight: bold;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 10px;
+          background-color: #4e79a7;
+          color: white;
+          line-height: 32px;
         }
-
-        .circle-blank {
-            width: 32px;
-            height: 32px;
-            min-width: 32px;
-            border-radius: 50%;
-            background-color: #ced4da; /* 연한 회색 */
-            margin-right: 10px;
+        .circle-memo {
+          color: black;
+          line-height: 54px;
         }
 
         .entry-item {
-            background-color: #f8f9fa; /* 연한 회색 배경 */
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 1rem;
-            flex: 1;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          background-color: #f8f9fa;
+          padding: 12px;
+          border-radius: 8px;
+          font-size: 1rem;
+          flex: 1;
+          margin-bottom: 10px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .distance-item {
-            margin-left: 36px;
-            color: #888;
-            font-size: 0.9rem;
-            margin-bottom: 8px;
+          margin-left: 42px;
+          margin-bottom: 5px;
+          font-size: 0.9em;
+          color: gray;
+        }
+
+        .edit-area {
+          margin-left: auto;
+          text-align: right;
+          position: relative;
+          font-family: 'Segoe UI', sans-serif;
+        }
+
+        .edit-toggle {
+          cursor: pointer;
+          background-color: #000;
+          color: #fff;
+          padding: 6px 12px;
+          font-size: 14px;
+          border-radius: 4px;
+          display: inline-block;
+          transition: background-color 0.3s;
+        }
+        .edit-toggle:hover {
+          background-color: #333;
+        }
+
+        .edit-buttons {
+          display: flex;
+          flex-direction: column;
+          position: absolute;
+          right: 0;
+          top: 110%;
+          background-color: #fff;
+          border: 1px solid #ccc;
+          padding: 6px;
+          border-radius: 6px;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+          z-index: 999;
+        }
+        .edit-buttons.hidden {
+          display: none;
+        }
+        .edit-buttons button {
+          background-color: #f8f8f8;
+          border: 1px solid #ccc;
+          color: #000;
+          padding: 6px 10px;
+          margin: 4px 0;
+          font-size: 13px;
+          border-radius: 4px;
+          text-align: left;
+          cursor: pointer;
+          transition: all 0.2s ease-in-out;
+          white-space: nowrap;
+        }
+        .edit-buttons button:hover {
+          background-color: #e0e0e0;
+        }
+        .btn-delete {
+          color: #fff;
+          background-color: #d32f2f;
+          border-color: #d32f2f;
+        }
+        .btn-delete:hover {
+          background-color: #b71c1c;
+        }
+
+        /* 모달 공통 */
+        .modal {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background: rgba(0, 0, 0, 0.4);
+          z-index: 999;
+          align-items: center;
+          justify-content: center;
+        }
+        .modal.active {
+          display: flex;
+        }
+        .modal-content {
+          background-color: #ffffff;
+          color: #000000;
+          padding: 2rem;
+          border-radius: 8px;
+          width: 320px;
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+          font-family: 'Segoe UI', sans-serif;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+        .modal-content input,
+        .modal-content textarea {
+          width: 100%;
+          padding: 0.6rem;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          background: #f9f9f9;
+          color: #000;
+          font-size: 0.9rem;
+          resize: vertical;
+        }
+        .modal-content label {
+          font-size: 0.9rem;
+          font-weight: bold;
+          color: #333;
+        }
+        .modal-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 0.5rem;
+        }
+        .modal-actions button {
+          padding: 0.5rem 1rem;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-weight: bold;
+        }
+        .modal-actions .btn-save {
+          background-color: #000;
+          color: #fff;
+        }
+        .modal-actions .btn-save:hover {
+          background-color: #333;
+        }
+        .modal-actions .btn-cancel {
+          background-color: #e0e0e0;
+          color: #000;
+        }
+        .modal-actions .btn-cancel:hover {
+          background-color: #cfcfcf;
         }
 
         #placeModal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            width: 500px;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            z-index: 1000;
+          display: none;
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          width: 500px;
+          transform: translate(-50%, -50%);
+          background-color: white;
+          padding: 30px;
+          border-radius: 15px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+          z-index: 1000;
         }
-
         #autocomplete {
-            width: 100%;
-            padding: 12px;
-            font-size: 1rem;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 10px;
+          width: 100%;
+          padding: 12px;
+          font-size: 1rem;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          margin-bottom: 10px;
         }
-
         #recommendationList {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 10px;
-            background-color: #fafafa;
+          max-height: 200px;
+          overflow-y: auto;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          padding: 10px;
+          margin-bottom: 10px;
+          background-color: #fafafa;
         }
-
         .recommend-item {
-            padding: 10px;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: background-color 0.3s ease;
+          padding: 10px;
+          cursor: pointer;
+          border-radius: 8px;
+          transition: background-color 0.3s ease;
         }
-
         .recommend-item:hover {
-            background-color: #e9ecef; /* 회색 강조 */
+          background-color: #e9ecef;
         }
-
         #placeModal button {
-            padding: 8px 14px;
-            background-color: #f44336;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
+          padding: 8px 14px;
+          background-color: #f44336;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
         }
-
         #placeModal button:hover {
-            background-color: #d32f2f;
+          background-color: #d32f2f;
         }
 
         .cost-input {
-            width: 100px;
-            margin-left: 10px;
-            padding: 6px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 0.95rem;
+          width: 100px;
+          margin-left: 10px;
+          padding: 6px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          font-size: 0.95rem;
         }
-
         .total-cost {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #333;
-            text-align: right;
-            margin-top: 30px;
-            padding-right: 20px;
+          font-size: 1.2rem;
+          font-weight: bold;
+          color: #333;
+          text-align: right;
+          margin-top: 30px;
+          padding-right: 20px;
         }
 
-
-.entry-list {
-    position: relative;
-    margin-left: 20px;
-    padding-left: 40px; /* 여유 공간 확보 */
-}
-
-.entry-list::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 56px; /* <- 여기 수정 */
-    width: 2px;
-    background-color: #ccc;
-    z-index: 0;
-}
-
-/* 공통 entry row 설정 */
-.entry-row {
-    position: relative;
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 20px;
-}
-
-/* 숫자 동그라미 (장소) */
-.circle-number {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background-color: #4e79a7;
-    color: white;
-    text-align: center;
-    line-height: 32px; /* 동그라미 정중앙 텍스트 정렬 */
-    font-weight: bold;
-    z-index: 1;
-    margin-right: 10px;
-    flex-shrink: 0;
-}
-
-/* 메모 동그라미 */
-.circle-memo {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    color: black;
-    text-align: center;
-    line-height: 54px;
-    font-weight: bold;
-    z-index: 1;
-    margin-right: 10px;
-    flex-shrink: 0;
-}
-
-/* 거리 텍스트 */
-.distance-item {
-    margin-left: 42px;
-    margin-bottom: 5px;
-    font-size: 0.9em;
-    color: gray;
-}
-
-
-/* 편집 전체 영역 */
-.edit-area {
-    margin-left: auto;
-    text-align: right;
-    position: relative;
-    font-family: 'Segoe UI', sans-serif;
-}
-
-/* 편집 토글 버튼 */
-.edit-toggle {
-    cursor: pointer;
-    background-color: #000;
-    color: #fff;
-    padding: 6px 12px;
-    font-size: 14px;
-    border-radius: 4px;
-    display: inline-block;
-    transition: background-color 0.3s;
-}
-.edit-toggle:hover {
-    background-color: #333;
-}
-
-/* ===== 편집 버튼 그룹 ===== */
-.edit-buttons {
-  display: flex;
-  flex-direction: column;
-  position: absolute;
-  right: 0;
-  top: 110%;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  padding: 6px;
-  border-radius: 6px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  z-index: 999;
-}
-.edit-buttons.hidden {
-  display: none;
-}
-
-.edit-buttons button {
-  background-color: #f8f8f8;
-  border: 1px solid #ccc;
-  color: #000;
-  padding: 6px 10px;
-  margin: 4px 0;
-  font-size: 13px;
-  border-radius: 4px;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  white-space: nowrap;
-  min-width: max-content;
-}
-.edit-buttons button:hover {
-  background-color: #e0e0e0;
-}
-
-.btn-delete {
-  color: #fff;
-  background-color: #d32f2f;
-  border-color: #d32f2f;
-}
-.btn-delete:hover {
-  background-color: #b71c1c;
-}
-
-.entry-row {
-  position: relative;
-}
-
-/* ===== 공통 모달 ===== */
-.modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.4);
-  z-index: 999;
-  align-items: center;
-  justify-content: center;
-}
-.modal.active {
-  display: flex;
-}
-
-/* 모달 컨텐츠 */
-.modal-content {
-  background-color: #ffffff;
-  color: #000000;
-  padding: 2rem;
-  border-radius: 8px;
-  width: 320px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  font-family: 'Segoe UI', sans-serif;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* 입력 필드 */
-.modal-content input,
-.modal-content textarea {
-  width: 100%;
-  padding: 0.6rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: #f9f9f9;
-  color: #000;
-  font-size: 0.9rem;
-  resize: vertical;
-}
-
-/* 라벨 */
-.modal-content label {
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: #333;
-}
-
-/* 모달 하단 버튼 */
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-}
-
-.modal-actions button {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-/* 재사용 가능한 버튼 스타일 */
-.modal-actions .btn-save {
-  background-color: #000;
-  color: #fff;
-}
-.modal-actions .btn-save:hover {
-  background-color: #333;
-}
-
-.modal-actions .btn-cancel {
-  background-color: #e0e0e0;
-  color: #000;
-}
-.modal-actions .btn-cancel:hover {
-  background-color: #cfcfcf;
-}
-
-/* ===== 숨김 클래스 ===== */
-.hidden {
-  display: none;
-}
         .plan-title {
-    margin: 2rem 0 1rem;
-    text-align: center;
-}
+          margin: 2rem 0 1rem;
+          text-align: center;
+        }
+        .plan-title h2 {
+          font-size: 2rem;
+          font-weight: bold;
+          color: #2c3e50;
+          border-bottom: 2px solid #ddd;
+          padding-bottom: 0.5rem;
+          display: inline-block;
+        }
 
-.plan-title h2 {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #2c3e50;
-    border-bottom: 2px solid #ddd;
-    padding-bottom: 0.5rem;
-    display: inline-block;
-}
+        .day-actions {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 15px; /* entry-list와의 거리 */
+          margin-top: 10px;    /* 위 요소와의 거리 */
+        }
+
+        .left-buttons {
+          display: flex;
+          gap: 8px;
+        }
+
+        .right-button {
+          margin-left: auto;
+        }
+
+        .btn {
+          padding: 6px 12px;
+          margin-right: 8px;
+          background-color: #f0f0f0;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 14px;
+        }
+        .btn:hover {
+          background-color: #e0e0e0;
+        }
+
+        .hidden {
+          display: none;
+        }
+        .day-card.reordering {
+          background-color: #f1f1f1;
+        }
+        .edit-area {
+          margin-left: 12px;   /* entry-item과의 간격 확보 */
+          margin-top: 8px;     /* entry-list 위와의 간격 확보 */
+          text-align: right;
+          position: relative;
+          font-family: 'Segoe UI', sans-serif;
+        }
     </style>
 </head>
 <body>
@@ -488,18 +414,32 @@
                 <span class="day-date" th:text="${schedule.date}"></span>
             </div>
 
-            <button class="btn btn-location" onclick="openPlaceModal(this)">➕ 장소 추가</button>
-            <button class="btn btn-memo" onclick="addMemo(this)">📝 메모 추가</button>
-
+            <div class="day-actions">
+                <div class="left-buttons">
+                    <button class="btn btn-location" onclick="openPlaceModal(this)">➕ 장소 추가</button>
+                    <button class="btn btn-memo" onclick="addMemo(this)">📝 메모 추가</button>
+                </div>
+                <div class="right-button">
+                    <button class="btn btn-sequence" onclick="startReorder(this)">🔃 순서 편집</button>
+                </div>
+            </div>
             <div class="entry-list">
                 <div th:each="item : ${schedule.scheduleItems}">
                     <div th:switch="${item.type.name()}">
                         <!-- 장소일 경우 -->
                         <div th:case="'PLACE'" class="entry-row"
-                             th:attr="data-id=${item.id}, data-execution-time=${item.executionTime}">
+                             th:attr="data-id=${item.id},
+                          data-execution-time=${#temporals.format(item.executionTime, 'HH:mm')},
+                          data-sequence=${item.sequence}">
                             <div class="entry-item place-entry"
-                                 th:attr="data-id=${item.id}, data-latitude=${item.latitude}, data-longitude=${item.longitude}">
-                                <p><strong th:text="${item.name}">장소 이름</strong></p>
+                                 th:attr="data-id=${item.id},
+                              data-latitude=${item.latitude},
+                              data-longitude=${item.longitude},
+                              data-sequence=${item.sequence}">
+                                <p>
+                                    <strong th:text="${item.name}">장소 이름</strong>
+                                    <span class="sequence" th:text="'(#' + ${item.sequence} + ')'"></span>
+                                </p>
                                 <p th:text="'주소: ' + ${item.address}"></p>
                                 <p class="item-cost" th:text="${item.expectedCost}">0</p>
                             </div>
@@ -507,8 +447,11 @@
 
                         <!-- 메모일 경우 -->
                         <div th:case="'MEMO'" class="entry-row"
-                             th:attr="data-id=${item.id}, data-execution-time=${item.executionTime}">
-                            <div class="entry-item memo-entry">
+                             th:attr="data-id=${item.id},
+                          data-execution-time=${#temporals.format(item.executionTime, 'HH:mm')},
+                          data-sequence=${item.sequence}">
+                            <div class="entry-item memo-entry"
+                                 th:attr="data-sequence=${item.sequence}">
                                 <span class="memo-text" th:text="${item.content}">기본 메모</span><br>
                                 <p class="item-cost" th:text="${item.expectedCost}">0</p>
                             </div>
@@ -674,6 +617,123 @@
           callback(`${distance.toFixed(2)} km`);
         }
     </script>
+
+
+    <script>
+        function startReorder(button) {
+          const dayCard = button.closest('.day-card');
+          const entryList = dayCard.querySelector('.entry-list');
+          const scheduleId = dayCard.dataset.scheduleId;
+          let dragged;
+
+          // 배경 회색으로 표시
+          dayCard.classList.add('reordering');
+
+          // 다른 버튼 비활성화
+          document.querySelectorAll('.btn').forEach(btn => {
+            if (!btn.classList.contains('btn-sequence')) {
+              btn.disabled = true;
+            }
+          });
+
+          // 버튼 텍스트 "저장"으로 변경
+          button.innerText = '✅ 저장';
+          button.classList.add('btn-save-mode');
+          button.onclick = () => saveNewOrder(scheduleId, entryList);
+
+          entryList.querySelectorAll('.entry-row').forEach(row => {
+            row.setAttribute('draggable', 'true');
+
+            row.addEventListener('dragstart', (e) => {
+              dragged = row;
+              e.dataTransfer.effectAllowed = 'move';
+            });
+
+            row.addEventListener('dragover', (e) => {
+              e.preventDefault();
+              const bounding = e.currentTarget.getBoundingClientRect();
+              const offset = e.clientY - bounding.top;
+
+              if (offset > bounding.height / 2) {
+                e.currentTarget.style['border-bottom'] = '2px solid #007bff';
+                e.currentTarget.style['border-top'] = '';
+              } else {
+                e.currentTarget.style['border-top'] = '2px solid #007bff';
+                e.currentTarget.style['border-bottom'] = '';
+              }
+            });
+
+            row.addEventListener('dragleave', (e) => {
+              e.currentTarget.style['border-bottom'] = '';
+              e.currentTarget.style['border-top'] = '';
+            });
+
+            row.addEventListener('drop', (e) => {
+              e.preventDefault();
+              const bounding = e.currentTarget.getBoundingClientRect();
+              const offset = e.clientY - bounding.top;
+
+              if (dragged && dragged !== e.currentTarget) {
+                if (offset > bounding.height / 2) {
+                  e.currentTarget.after(dragged);
+                } else {
+                  e.currentTarget.before(dragged);
+                }
+              }
+
+              e.currentTarget.style['border-bottom'] = '';
+              e.currentTarget.style['border-top'] = '';
+            });
+          });
+
+          // drop-zone 추가 (마지막 요소 아래)
+          if (!entryList.querySelector('.drop-zone')) {
+            const dropZone = document.createElement('div');
+            dropZone.className = 'drop-zone';
+            dropZone.style.height = '30px';
+            dropZone.addEventListener('dragover', e => e.preventDefault());
+            dropZone.addEventListener('drop', e => {
+              e.preventDefault();
+              if (dragged) entryList.appendChild(dragged);
+            });
+            entryList.appendChild(dropZone);
+          }
+        }
+
+        function saveNewOrder(scheduleId, entryList) {
+          const orders = Array.from(entryList.querySelectorAll('.entry-row'))
+            .map((row, idx) => ({
+              itemId: row.dataset.id,
+              sequence: idx
+            }));
+
+          const payload = {
+            scheduleId: scheduleId,
+            orders: orders
+          };
+
+          const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+          const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+          fetch('/api/travel/schedule-item/reorder', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(csrfToken && csrfHeader ? { [csrfHeader]: csrfToken } : {})
+            },
+            body: JSON.stringify(payload)
+          }).then(res => {
+            if (res.ok) {
+              location.reload();
+            } else {
+              console.error('순서 저장 실패');
+            }
+          });
+        }
+    </script>
+
+
+
     <script th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${@environment.getProperty('google.maps.api-key')} + '&libraries=places,geometry&loading=async'" async></script>
 </div>
 </body>

@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -68,8 +69,7 @@ public class PlanService {
     }
 
     public PlanDetailsResponse findPlan(String email, Long planId) {
-        Plan plan = planRepository.findById(planId)
-                .orElseThrow(() -> new PlanException("여행 계획을 찾을 수 없습니다."));
+        Plan plan = getPlan(planId);
         plan.validateOwnerOf(email);
 
         List<PlanCity> planCities = plan.getPlanCities();
@@ -79,10 +79,15 @@ public class PlanService {
         List<Long> scheduleIds = schedules.stream()
                 .map(Schedule::getId)
                 .toList();
-        List<ScheduleItem> scheduleItems = scheduleItemRepository.findAllByScheduleIdIn(scheduleIds);
+        List<ScheduleItem> scheduleItems = scheduleItemRepository.findAllByScheduleIdInOrderBySequence(scheduleIds);
+
 
         Map<Long, List<ScheduleItem>> scheduleItemMap = scheduleItems.stream()
-                .collect(Collectors.groupingBy(item -> item.getSchedule().getId()));
+                .collect(Collectors.groupingBy(
+                        item -> item.getSchedule().getId(),
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
 
         List<ScheduleDetailsResponse> scheduleDetailsResponse = schedules.stream()
                 .map(schedule -> {
@@ -93,10 +98,15 @@ public class PlanService {
                             .date(schedule.getDate())
                             .scheduleItems(itemResponses)
                             .build();
-//                    return new ScheduleDetailsResponse(schedule.getId(), schedule.getDate(), itemResponses);
                 })
                 .toList();
         return PlanDetailsResponse.of(plan, planCities, scheduleDetailsResponse);
+    }
+
+
+    private Plan getPlan(Long planId) {
+        return planRepository.findById(planId)
+                .orElseThrow(() -> new PlanException("여행 계획을 찾을 수 없습니다."));
     }
 
     private String getDefaultTitleByCities(List<City> cities) {

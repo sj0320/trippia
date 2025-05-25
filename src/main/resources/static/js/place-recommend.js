@@ -3,7 +3,7 @@ function loadRecommendations(cityIds, query = '', containerId = 'recommendationL
     cityIds.map(id => `cityIds=${id}`).join('&') +
     (query ? `&query=${encodeURIComponent(query)}` : '');
 
-  fetch(`/travel/places/recommend?${queryParam}`)
+  fetch(`/api/places/recommend?${queryParam}`)
     .then(res => res.json())
     .then(places => {
       const list = document.getElementById(containerId);
