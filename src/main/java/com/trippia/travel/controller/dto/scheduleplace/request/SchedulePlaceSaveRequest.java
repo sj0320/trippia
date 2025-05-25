@@ -34,7 +34,7 @@ public class SchedulePlaceSaveRequest {
         this.category = category;
     }
 
-    public SchedulePlace toEntity(Schedule schedule){
+    public SchedulePlace toEntity(Schedule schedule, int sequence){
         return SchedulePlace.builder()
                 .schedule(schedule)
                 .googleMapId(placeId)
@@ -43,6 +43,7 @@ public class SchedulePlaceSaveRequest {
                 .latitude(latitude)
                 .longitude(longitude)
                 .category(category)
+                .sequence(sequence)
                 .build();
     }
 

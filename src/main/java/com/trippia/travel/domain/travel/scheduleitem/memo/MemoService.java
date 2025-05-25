@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class MemoService {
 
-    private final MemoRepository memoRepository;
     private final ScheduleRepository scheduleRepository;
     private final ScheduleItemRepository scheduleItemRepository;
 
@@ -25,7 +24,11 @@ public class MemoService {
                 .orElseThrow(() -> new ScheduleException("해당 스케줄을 찾을 수 없습니다."));
         schedule.validateOwnerOf(email);
 
-        Memo memo = scheduleItemRepository.save(request.toEntity(schedule));
+        Integer lastSequence = scheduleItemRepository.findLastSequenceByScheduleId(schedule.getId())
+                .orElse(0);
+        int sequence = lastSequence + 1;
+
+        Memo memo = scheduleItemRepository.save(request.toEntity(schedule, sequence));
         return memo.getId();
     }
 }

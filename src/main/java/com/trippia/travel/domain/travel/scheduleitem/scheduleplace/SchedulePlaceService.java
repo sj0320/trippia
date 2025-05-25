@@ -25,7 +25,11 @@ public class SchedulePlaceService {
         Schedule schedule = getSchedule(request.getScheduleId());
         schedule.validateOwnerOf(email);
 
-        SchedulePlace schedulePlace = scheduleItemRepository.save(request.toEntity(schedule));
+        Integer lastSequence = scheduleItemRepository.findLastSequenceByScheduleId(schedule.getId())
+                .orElse(0);
+        int sequence = lastSequence + 1;
+
+        SchedulePlace schedulePlace = scheduleItemRepository.save(request.toEntity(schedule,sequence));
         return schedulePlace.getId();
     }
 

@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalTime;
 
@@ -13,6 +14,7 @@ import java.time.LocalTime;
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "item_type")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString
 public abstract class ScheduleItem {
 
     @Id
@@ -29,8 +31,12 @@ public abstract class ScheduleItem {
 
     private LocalTime executionTime;
 
-    public ScheduleItem(Schedule schedule) {
+    @Column(nullable = false)
+    private Integer sequence;
+
+    public ScheduleItem(Schedule schedule, Integer sequence) {
         this.schedule = schedule;
+        this.sequence = sequence;
     }
 
     public void updateMeta(Integer expectedCost, LocalTime executionTime){
@@ -38,7 +44,7 @@ public abstract class ScheduleItem {
         this.executionTime = executionTime;
     }
 
-//    public void updateExpectedCost(Integer expectedCost) {
-//        this.expectedCost = expectedCost;
-//    }
+    public void updateSequence(Integer sequence) {
+        this.sequence = sequence;
+    }
 }

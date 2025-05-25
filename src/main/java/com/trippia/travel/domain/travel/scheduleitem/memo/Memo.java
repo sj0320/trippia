@@ -20,8 +20,8 @@ public class Memo extends ScheduleItem {
     private LocalDateTime createdAt;
 
     @Builder
-    private Memo(Schedule schedule, String content) {
-        super(schedule);
+    private Memo(Schedule schedule, String content, Integer sequence) {
+        super(schedule,sequence);
         this.createdAt = LocalDateTime.now();
         this.content = content;
     }

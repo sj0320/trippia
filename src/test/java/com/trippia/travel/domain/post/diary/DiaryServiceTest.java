@@ -297,11 +297,11 @@ class DiaryServiceTest {
 
         // then
         assertThat(result).hasSize(3)
-                .extracting("countryName", "imageUrl")
+                .extracting("cityName", "imageUrl")
                 .containsExactly(
-                        tuple("일본", jDiary3.getThumbnail()),
-                        tuple("한국", kDiary2.getThumbnail()),
-                        tuple("중국", cDiary2.getThumbnail())
+                        tuple("오사카", jDiary3.getThumbnail()),
+                        tuple("서울", kDiary2.getThumbnail()),
+                        tuple("베이징", cDiary2.getThumbnail())
                 );
     }
 

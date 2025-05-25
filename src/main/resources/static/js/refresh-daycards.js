@@ -33,7 +33,8 @@ function refreshDayCards(data, dayCard) {
   originalItems.forEach(item => {
     const row = document.createElement('div');
     row.className = item.type === 'place' ? 'entry-row place-row' : 'entry-row memo-row';
-    if (item.id) row.dataset.id = item.id;
+    row.dataset.id = item.id;
+    row.dataset.executionTime = item.executionTime || '';
 
     const circle = document.createElement('div');
     circle.className = item.type === 'place' ? 'circle-number' : 'circle-memo';

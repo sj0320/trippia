@@ -26,8 +26,9 @@ public class SchedulePlace extends ScheduleItem {
     private String category;
 
     @Builder
-    private SchedulePlace(Schedule schedule, String googleMapId, String name, String address, double latitude, double longitude, String category) {
-        super(schedule);
+    private SchedulePlace(Schedule schedule, String googleMapId, String name, String address,
+                          double latitude, double longitude, String category, Integer sequence) {
+        super(schedule,sequence);
         this.googleMapId = googleMapId;
         this.name = name;
         this.address = address;

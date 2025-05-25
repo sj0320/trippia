@@ -17,10 +17,11 @@ public class MemoSaveRequest {
         this.content = content;
     }
 
-    public Memo toEntity(Schedule schedule){
+    public Memo toEntity(Schedule schedule, int sequence){
         return Memo.builder()
                 .schedule(schedule)
                 .content(content)
+                .sequence(sequence)
                 .build();
     }
 

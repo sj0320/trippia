@@ -6,10 +6,12 @@ import com.trippia.travel.domain.travel.scheduleitem.memo.Memo;
 import com.trippia.travel.domain.travel.scheduleitem.scheduleplace.SchedulePlace;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.time.LocalTime;
 
 @Getter
+@ToString
 public class ScheduleItemResponse {
     private Long id;
     private ScheduleItemType type;
@@ -23,9 +25,12 @@ public class ScheduleItemResponse {
     @JsonFormat(pattern = "HH:mm")
     private LocalTime executionTime;
 
+    private Integer sequence;
+
     @Builder
     private ScheduleItemResponse(Long id, ScheduleItemType type, String content, String name,
-                                 String address, double latitude, double longitude, Integer expectedCost, LocalTime executionTime) {
+                                 String address, double latitude, double longitude, Integer expectedCost,
+                                 LocalTime executionTime, Integer sequence) {
         this.id = id;
         this.type = type;
         this.content = content;
@@ -35,6 +40,7 @@ public class ScheduleItemResponse {
         this.longitude = longitude;
         this.expectedCost = expectedCost;
         this.executionTime = executionTime;
+        this.sequence = sequence;
     }
 
     public static ScheduleItemResponse ofMemo(Memo memo) {
@@ -44,6 +50,7 @@ public class ScheduleItemResponse {
                 .content(memo.getContent())
                 .expectedCost(memo.getExpectedCost())
                 .executionTime(memo.getExecutionTime())
+                .sequence(memo.getSequence())
                 .build();
     }
 
@@ -57,6 +64,7 @@ public class ScheduleItemResponse {
                 .longitude(schedulePlace.getLongitude())
                 .expectedCost(schedulePlace.getExpectedCost())
                 .executionTime(schedulePlace.getExecutionTime())
+                .sequence(schedulePlace.getSequence())
                 .build();
     }
 }

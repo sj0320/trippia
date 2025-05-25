@@ -1,5 +1,6 @@
 package com.trippia.travel.domain.travel.scheduleitem;
 
+import com.trippia.travel.controller.dto.scheduleitem.requset.ScheduleItemOrderRequest;
 import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemResponse;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
@@ -26,6 +27,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+import static com.trippia.travel.controller.dto.scheduleitem.requset.ScheduleItemOrderRequest.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -67,18 +69,19 @@ class ScheduleItemServiceTest {
         Schedule schedule = new Schedule(savedPlan, LocalDate.of(2099, 1, 1));
         Schedule savedSchedule = scheduleRepository.save(schedule);
         // Memo 생성
-        Memo memo = Memo.builder().schedule(savedSchedule).content("content").build();
+        Memo memo = createMemo(savedSchedule, "content1", 1);
         Memo scheduleItem = scheduleItemRepository.save(memo);
 
         // when
-        List<ScheduleItem> before = scheduleItemRepository.findAllByScheduleIdIn(List.of(savedSchedule.getId()));
+        List<ScheduleItem> before = scheduleItemRepository.findByScheduleIdOrderBySequence(savedSchedule.getId());
         assertThat(before).hasSize(1);
         scheduleItemService.deleteScheduleItem(user.getEmail(), scheduleItem.getId());
 
         // then
-        List<ScheduleItem> after = scheduleItemRepository.findAllByScheduleIdIn(List.of(savedSchedule.getId()));
+        List<ScheduleItem> after = scheduleItemRepository.findByScheduleIdOrderBySequence(savedSchedule.getId());
         assertThat(after).hasSize(0);
     }
+
 
     @DisplayName("스케줄에 속한 모든 스케줄항목들을 조회한다.")
     @Test
@@ -94,8 +97,8 @@ class ScheduleItemServiceTest {
         Schedule savedSchedule = scheduleRepository.save(schedule);
 
         // ScheduleItem 생성
-        Memo memo = Memo.builder().schedule(savedSchedule).content("hello").build();
-        SchedulePlace schedulePlace = SchedulePlace.builder().schedule(savedSchedule).name("서울역").build();
+        Memo memo = createMemo(savedSchedule, "hello", 1);
+        SchedulePlace schedulePlace = createSchedulePlace(savedSchedule, "서울역", 2);
         scheduleItemRepository.saveAll(List.of(memo, schedulePlace));
 
         // when
@@ -124,7 +127,7 @@ class ScheduleItemServiceTest {
         Schedule savedSchedule = scheduleRepository.save(schedule);
 
         // ScheduleItem 생성
-        Memo memo = Memo.builder().schedule(savedSchedule).content("hello").build();
+        Memo memo = Memo.builder().schedule(savedSchedule).content("hello").sequence(1).build();
         Memo savedMemo = scheduleItemRepository.save(memo);
 
         // when
@@ -149,7 +152,7 @@ class ScheduleItemServiceTest {
         Schedule savedSchedule = scheduleRepository.save(schedule);
 
         // Memo 생성
-        Memo memo = Memo.builder().schedule(savedSchedule).content("content").build();
+        Memo memo = createMemo(savedSchedule, "content", 1);
         Memo scheduleItem = memoRepository.save(memo);
 
         // when & then
@@ -172,7 +175,7 @@ class ScheduleItemServiceTest {
         Schedule savedSchedule = scheduleRepository.save(schedule);
 
         // ScheduleItem 생성
-        Memo memo = Memo.builder().schedule(savedSchedule).content("hello").build();
+        Memo memo = Memo.builder().schedule(savedSchedule).content("hello").sequence(1).build();
         Memo savedMemo = scheduleItemRepository.save(memo);
 
         // when
@@ -196,13 +199,84 @@ class ScheduleItemServiceTest {
         Schedule savedSchedule = scheduleRepository.save(schedule);
 
         // schedulePlace 생성
-        SchedulePlace schedulePlace = SchedulePlace.builder().schedule(savedSchedule).name("서울역").build();
+        SchedulePlace schedulePlace = createSchedulePlace(savedSchedule, "서울역", 1);
         SchedulePlace scheduleItem = scheduleItemRepository.save(schedulePlace);
 
         // when & then
         assertThatThrownBy(() -> scheduleItemService.updateMemo(
                 user.getEmail(), scheduleItem.getId(), "modify"))
                 .isInstanceOf(ScheduleItemException.class);
+    }
+
+    @DisplayName("스케줄 아이템들의 순서를 재정렬한다.")
+    @Test
+    void reorderItems() {
+        // given
+        User user = createUser("email1", "nickname1");
+        // Plan 생성
+        Plan plan = Plan.createPlan(user, "plan", LocalDate.of(2099, 1, 1),
+                LocalDate.of(2099, 2, 1));
+        Plan savedPlan = planRepository.save(plan);
+        // Schedule 생성
+        Schedule schedule = new Schedule(savedPlan, LocalDate.of(2099, 1, 1));
+        Schedule savedSchedule = scheduleRepository.save(schedule);
+
+        // item 생성
+        SchedulePlace item1 = createSchedulePlace(savedSchedule, "서울역", 1);
+        SchedulePlace item2 = createSchedulePlace(savedSchedule, "강남역", 2);
+        Memo item3 = createMemo(savedSchedule, "content1", 3);
+        Memo item4 = createMemo(savedSchedule, "content2", 4);
+
+        scheduleItemRepository.saveAll(List.of(item1, item2, item3, item4));
+
+        // when
+        ScheduleItemOrder itemOrder1 = createItemOrder(item1, 2);
+        ScheduleItemOrder itemOrder2 = createItemOrder(item2, 4);
+        ScheduleItemOrder itemOrder3 = createItemOrder(item3, 1);
+        ScheduleItemOrder itemOrder4 = createItemOrder(item4, 3);
+
+
+        ScheduleItemOrderRequest request = ScheduleItemOrderRequest.builder()
+                .scheduleId(savedSchedule.getId())
+                .orders(List.of(itemOrder1, itemOrder2, itemOrder3, itemOrder4))
+                .build();
+
+        scheduleItemService.reorderItems(user.getEmail(), request);
+
+        // then
+
+        List<ScheduleItem> scheduleItems = scheduleItemRepository.findByScheduleId(savedSchedule.getId());
+        assertThat(scheduleItems).hasSize(4)
+                .extracting("id", "sequence")
+                .containsExactlyInAnyOrder(
+                        tuple(item3.getId(), 1),
+                        tuple(item1.getId(), 2),
+                        tuple(item4.getId(), 3),
+                        tuple(item2.getId(), 4)
+                );
+    }
+
+    private ScheduleItemOrder createItemOrder(ScheduleItem item, Integer sequence) {
+        return ScheduleItemOrder.builder()
+                .itemId(item.getId())
+                .sequence(sequence)
+                .build();
+    }
+
+    private SchedulePlace createSchedulePlace(Schedule schedule, String name, Integer sequence) {
+        return SchedulePlace.builder()
+                .schedule(schedule)
+                .name(name)
+                .sequence(sequence)
+                .build();
+    }
+
+    private Memo createMemo(Schedule schedule, String content, Integer sequence) {
+        return Memo.builder()
+                .schedule(schedule)
+                .content(content)
+                .sequence(sequence)
+                .build();
     }
 
 

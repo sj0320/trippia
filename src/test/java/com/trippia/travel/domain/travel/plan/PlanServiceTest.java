@@ -114,9 +114,9 @@ class PlanServiceTest {
         Plan savePlan = planRepository.save(plan);
 
         // ScheduleItem 생성
-        Memo item1 = Memo.builder().schedule(schedule1).content("content1").build();
-        SchedulePlace item2 = SchedulePlace.builder().schedule(schedule1).name("스타벅스 강남점").build();
-        Memo item3 = Memo.builder().schedule(schedule2).content("content2").build();
+        Memo item1 = Memo.builder().schedule(schedule1).content("content1").sequence(1).build();
+        SchedulePlace item2 = SchedulePlace.builder().schedule(schedule1).name("스타벅스 강남점").sequence(2).build();
+        Memo item3 = Memo.builder().schedule(schedule2).content("content2").sequence(3).build();
         scheduleItemRepository.saveAll(List.of(item1, item2, item3));
 
         // when
