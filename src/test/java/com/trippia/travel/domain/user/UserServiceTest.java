@@ -1,6 +1,7 @@
 package com.trippia.travel.domain.user;
 
 import com.trippia.travel.controller.dto.user.requset.UserSaveRequest;
+import com.trippia.travel.controller.dto.user.response.MyPageUserInfoResponse;
 import com.trippia.travel.domain.common.EmailAuthPurpose;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
@@ -114,6 +115,32 @@ class UserServiceTest {
         verify(mailService).sendEmail(
                 eq(email), eq(purpose), anyString()
         );
+    }
+
+    @DisplayName("사용자의 마이페이지 내용을 조회한다.")
+    @Test
+    void getMyPageUserInfo() {
+        // given
+        User user = createUser();
+        User savedUser = userRepository.save(user);
+        // when
+        MyPageUserInfoResponse result = userService.getMyPageUserInfo(user.getEmail());
+        // then
+        assertThat(result)
+                .extracting("userId", "nickname", "profileImageUrl")
+                .containsExactly(savedUser.getId(), savedUser.getNickname(), savedUser.getProfileImageUrl());
+
+    }
+
+    private static User createUser() {
+        return User.builder()
+                .email("email")
+                .password("pwd")
+                .role(Role.ROLE_USER)
+                .loginType(LoginType.LOCAL)
+                .nickname("nick")
+                .profileImageUrl("profileImageUrl")
+                .build();
     }
 
 

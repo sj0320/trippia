@@ -229,7 +229,6 @@ class DiaryRepositoryTest {
     @Test
     void findTopDiaryByCityIdOrderByLikeCountDesc() {
         // given
-        // given
         User user = createUser("email", "nick");
         Country japan = createCountry("일본");
         City tokyo = createCity("도쿄", japan, JAPAN);
@@ -247,6 +246,33 @@ class DiaryRepositoryTest {
         assertThat(topDiary.getCity()).isEqualTo(tokyo);
         assertThat(topDiary.getLikeCount()).isEqualTo(50);
         assertThat(topDiary.getTitle()).isEqualTo(diary2.getTitle());
+
+    }
+
+    @DisplayName("사용자가 작성한 여행일지들을 조회한다.")
+    @Test
+    void findAllByUserId() {
+        // given
+        User user = createUser("email", "nick");
+
+        Country japan = createCountry("일본");
+        City tokyo = createCity("도쿄", japan, JAPAN);
+
+        Diary diary1 = createDiary(user, tokyo, "도쿄 여행기", "content1", 10);
+        Diary diary2 = createDiary(user, tokyo, "도쿄 여행기2", "content2", 50);
+        Diary diary3 = createDiary(user, tokyo, "도쿄 여행기3", "content3", 30);
+
+        // when
+        List<Diary> diaries = diaryRepository.findAllByUserId(user.getId());
+
+        // then
+        assertThat(diaries).hasSize(3)
+                .extracting("title", "content", "likeCount")
+                .containsExactlyInAnyOrder(
+                        tuple("도쿄 여행기", "content1", 10),
+                        tuple("도쿄 여행기2", "content2", 50),
+                        tuple("도쿄 여행기3", "content3", 30)
+                );
 
     }
 

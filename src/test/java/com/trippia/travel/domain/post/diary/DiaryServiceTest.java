@@ -3,6 +3,7 @@ package com.trippia.travel.domain.post.diary;
 import com.trippia.travel.controller.dto.city.response.CityThumbnailResponse;
 import com.trippia.travel.controller.dto.diary.request.DiarySaveRequest;
 import com.trippia.travel.controller.dto.diary.response.DiaryListResponse;
+import com.trippia.travel.controller.dto.diary.response.DiarySummaryResponse;
 import com.trippia.travel.domain.common.CityType;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
@@ -302,6 +303,31 @@ class DiaryServiceTest {
                         tuple("오사카", jDiary3.getThumbnail()),
                         tuple("서울", kDiary2.getThumbnail()),
                         tuple("베이징", cDiary2.getThumbnail())
+                );
+    }
+
+    @DisplayName("사용자가 작성한 여행일지들의 목록을 요약해서 조회한다.")
+    @Test
+    void getDiarySummariesByUser() {
+        // given
+        User user = createUser("email");
+        Country korea = createCountry("한국");
+        City seoul = createCity("서울", korea, KOREA);
+
+        Diary diary1 = createDiary(user, seoul, "title1", 1);
+        Diary diary2 = createDiary(user, seoul, "title2", 2);
+        Diary diary3 = createDiary(user, seoul, "title3", 3);
+
+        // when
+        List<DiarySummaryResponse> result = diaryService.getDiarySummariesByUser(user.getEmail());
+
+        // then
+        assertThat(result).hasSize(3)
+                .extracting("diaryId", "title", "thumbnailImageUrl", "likeCount", "viewCount")
+                .containsExactlyInAnyOrder(
+                        tuple(diary1.getId(), diary1.getTitle(), diary1.getThumbnail(), diary1.getLikeCount(), diary1.getViewCount()),
+                        tuple(diary2.getId(), diary2.getTitle(), diary2.getThumbnail(), diary2.getLikeCount(), diary2.getViewCount()),
+                        tuple(diary3.getId(), diary3.getTitle(), diary3.getThumbnail(), diary3.getLikeCount(), diary3.getViewCount())
                 );
     }
 

@@ -86,4 +86,9 @@ public class DiaryClientImpl implements DiaryClient {
         return diaryRepository.findTopDiaryByCityIdOrderByLikeCountDesc(cityId);
     }
 
+    @Override
+    public List<Diary> findAllDiaryByUserId(Long userId) {
+        return diaryRepository.findAllByUserId(userId);
+    }
+
 }

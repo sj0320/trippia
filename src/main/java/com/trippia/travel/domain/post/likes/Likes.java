@@ -4,15 +4,15 @@ import com.trippia.travel.domain.post.diary.Diary;
 import com.trippia.travel.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@Getter
 public class Likes {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

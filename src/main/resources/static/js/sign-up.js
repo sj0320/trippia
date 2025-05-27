@@ -28,7 +28,7 @@ function showAuthCodeInput(purpose) {
     const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-    fetch('/users/email/send-code', {
+    fetch('/api/email/send-code', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -71,7 +71,7 @@ function verifyAuthCode(email, purpose) {
     const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-    fetch('/users/email/verify-code', {
+    fetch('/api/email/verify-code', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',

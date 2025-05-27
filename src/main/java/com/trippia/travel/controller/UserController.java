@@ -8,17 +8,10 @@ import com.trippia.travel.exception.user.UserException;
 import com.trippia.travel.mail.MailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static com.trippia.travel.mail.MailDto.MailRequest;
-import static com.trippia.travel.mail.MailDto.MailVerificationRequest;
 
 @Controller
 @RequiredArgsConstructor
@@ -32,26 +25,26 @@ public class UserController {
     public String login(@RequestParam(value = "redirect", required = false) String redirect,
                         Model model) {
         model.addAttribute("redirect", redirect);
-        return "auth/login";
+        return "user/login";
     }
 
     @GetMapping("/sign-up")
     public String signUpForm(Model model) {
         model.addAttribute("user", new UserSaveRequest());
-        return "auth/sign-up";
+        return "user/sign-up";
     }
 
     @PostMapping("/sign-up")
     public String signUp(@Valid @ModelAttribute("user") UserSaveRequest request, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "auth/sign-up";
+            return "user/sign-up";
         }
         try {
             mailService.isEmailVerified(request.getEmail(), EmailAuthPurpose.REGISTER);
             userService.saveUser(request);
         } catch (UserException e) {
             bindingResult.rejectValue(e.getFieldName(), e.getCode());
-            return "auth/sign-up";
+            return "user/sign-up";
         }
         return "index";
     }
@@ -63,13 +56,13 @@ public class UserController {
         request.setEmail(email);
         request.setSocialType(socialType);
         model.addAttribute("user", request);
-        return "auth/social-sign-up";
+        return "user/social-sign-up";
     }
 
     @PostMapping("/sns-sign-up")
     public String snsSignUp(@Valid @ModelAttribute("user") SocialSaveRequest request, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "auth/social-sign-up";
+            return "user/social-sign-up";
         }
         userService.saveSocialUser(request.getEmail(), request.getNickname());
         return "redirect:/oauth2/authorization/" + request.getSocialType();
@@ -83,39 +76,10 @@ public class UserController {
         model.addAttribute("email", email);
         model.addAttribute("previousType", previousType);
         model.addAttribute("newType", newType);
-        return "auth/select-login-method";
+        return "user/select-login-method";
     }
 
 
-    @PostMapping("/email/send-code")
-    @ResponseBody
-    public ResponseEntity<Map<String, String>> sendEmailCode(@ModelAttribute MailRequest mailRequest) {
-        userService.sendCodeToEmail(mailRequest.getEmail(), mailRequest.getPurpose());
-
-        Map<String, String> response = new HashMap<>();
-        response.put("status", "success");
-
-        return ResponseEntity.ok(response);
-    }
-
-
-    @PostMapping("/email/verify-code")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> verifyEmailCode(@ModelAttribute MailVerificationRequest verificationRequest) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            mailService.verifyEmailCode(
-                    verificationRequest.getEmail(),
-                    verificationRequest.getPurpose(),
-                    verificationRequest.getCode()
-            );
-            response.put("status", "success");
-        } catch (UserException e) {
-            response.put("status", "fail");
-            response.put("message", e.getMessage());
-        }
-        return ResponseEntity.ok(response);
-    }
 
 
 }

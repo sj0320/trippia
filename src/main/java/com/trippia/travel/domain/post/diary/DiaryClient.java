@@ -34,4 +34,6 @@ public interface DiaryClient {
     List<Diary> findTopDiaries(Pageable pageable);
 
     Optional<Diary> findTopDiaryByCityIdOrderByLikeCountDesc(Long cityId);
+
+    List<Diary> findAllDiaryByUserId(Long userId);
 }
