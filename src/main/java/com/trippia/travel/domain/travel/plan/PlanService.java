@@ -2,6 +2,7 @@ package com.trippia.travel.domain.travel.plan;
 
 import com.trippia.travel.controller.dto.plan.request.PlanCreateRequest;
 import com.trippia.travel.controller.dto.plan.response.PlanDetailsResponse;
+import com.trippia.travel.controller.dto.plan.response.PlanSummaryResponse;
 import com.trippia.travel.controller.dto.schedule.response.ScheduleDetailsResponse;
 import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemResponse;
 import com.trippia.travel.domain.location.city.City;
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 
@@ -40,15 +42,13 @@ public class PlanService {
 
     @Transactional
     public Long createPlan(String email, PlanCreateRequest request) {
-        User user = getUserByEmail(email);
+        User user = getUser(email);
 
         LocalDate startDate = LocalDate.parse(request.getStartDate());
         LocalDate endDate = LocalDate.parse(request.getEndDate());
         List<Long> requestCityIds = request.getCityIds();
 
-        log.info("requestCityId={}", requestCityIds.get(0));
         List<City> cities = cityRepository.findAllById(requestCityIds);
-
 
         String title = getDefaultTitleByCities(cities);
         log.info("일정 제목={}", title);
@@ -91,7 +91,7 @@ public class PlanService {
 
         List<ScheduleDetailsResponse> scheduleDetailsResponse = schedules.stream()
                 .map(schedule -> {
-                    List<ScheduleItem> items = scheduleItemMap.getOrDefault(schedule.getId(),List.of());
+                    List<ScheduleItem> items = scheduleItemMap.getOrDefault(schedule.getId(), List.of());
                     List<ScheduleItemResponse> itemResponses = ScheduleItemConverter.toResponses(items);
                     return ScheduleDetailsResponse.builder()
                             .id(schedule.getId())
@@ -103,6 +103,17 @@ public class PlanService {
         return PlanDetailsResponse.of(plan, planCities, scheduleDetailsResponse);
     }
 
+    public List<PlanSummaryResponse> getUpcomingPlanByUser(String email) {
+        User user = getUser(email);
+        List<Plan> plans = planRepository.findByUserIdAndStartDateAfter(user.getId(), LocalDate.now());
+        return mapPlansToSummaryResponses(plans);
+    }
+
+    public List<PlanSummaryResponse> getPastPlanByUser(String email) {
+        User user = getUser(email);
+        List<Plan> plans = planRepository.findByUserIdAndStartDateBefore(user.getId(), LocalDate.now());
+        return mapPlansToSummaryResponses(plans);
+    }
 
     private Plan getPlan(Long planId) {
         return planRepository.findById(planId)
@@ -115,9 +126,24 @@ public class PlanService {
                 .collect(Collectors.joining(", ")) + " 여행";
     }
 
-    private User getUserByEmail(String email) {
+    private User getUser(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
+    }
+
+    private List<PlanSummaryResponse> mapPlansToSummaryResponses(List<Plan> plans) {
+        return plans.stream()
+                .map(plan -> {
+                    String imageUrl = getRandomCityImageUrl(plan.getPlanCities());
+                    return PlanSummaryResponse.from(plan, imageUrl);
+                })
+                .toList();
+    }
+
+    private String getRandomCityImageUrl(List<PlanCity> planCities) {
+        if (planCities == null || planCities.isEmpty()) return "";
+        PlanCity randomPlanCity = planCities.get(ThreadLocalRandom.current().nextInt(planCities.size()));
+        return randomPlanCity.getCity() != null ? randomPlanCity.getCity().getImageUrl() : "";
     }
 
 }

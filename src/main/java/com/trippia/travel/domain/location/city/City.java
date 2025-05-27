@@ -26,10 +26,13 @@ public class City {
     @Enumerated(EnumType.STRING)
     private CityType cityType;
 
+    private String imageUrl;
+
     @Builder
-    private City(String name, Country country, CityType cityType) {
+    private City(String name, Country country, CityType cityType, String imageUrl) {
         this.name = name;
         this.country = country;
         this.cityType = cityType;
+        this.imageUrl = imageUrl;
     }
 }

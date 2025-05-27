@@ -5,10 +5,7 @@ import com.trippia.travel.domain.travel.schedule.Schedule;
 import com.trippia.travel.domain.user.User;
 import com.trippia.travel.exception.plan.PlanException;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

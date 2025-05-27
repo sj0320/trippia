@@ -1,5 +1,6 @@
 package com.trippia.travel.domain.post.likes;
 
+import com.trippia.travel.controller.dto.diary.response.LikedDiarySummaryResponse;
 import com.trippia.travel.domain.post.diary.Diary;
 import com.trippia.travel.domain.post.diary.DiaryRepository;
 import com.trippia.travel.domain.user.User;
@@ -7,6 +8,8 @@ import com.trippia.travel.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -19,7 +22,7 @@ public class LikeService {
 
     @Transactional
     public int likeDiary(String email, Long diaryId) {
-        User user = getUserByEmail(email);
+        User user = getUser(email);
         Diary diary = getDiary(diaryId);
         if (!likeRepository.existsByUserAndDiary(user, diary)) {
             Likes likes = getDiaryUserLikes(diary, user);
@@ -31,7 +34,7 @@ public class LikeService {
 
     @Transactional
     public int unlikeDiary(String email, Long diaryId) {
-        User user = getUserByEmail(email);
+        User user = getUser(email);
         Diary diary = getDiary(diaryId);
         if (likeRepository.existsByUserAndDiary(user, diary)) {
             likeRepository.deleteByUserAndDiary(user, diary);
@@ -46,14 +49,23 @@ public class LikeService {
         return likeRepository.existsByUserAndDiary(user, diary);
     }
 
-    private static Likes getDiaryUserLikes(Diary diary, User user) {
+    public List<LikedDiarySummaryResponse> getLikedDiariesByUser(String email) {
+        User user = getUser(email);
+        List<Likes> likes = likeRepository.findAllByUserId(user.getId());
+
+        return likes.stream()
+                .map(like -> LikedDiarySummaryResponse.from(like.getDiary()))
+                .toList();
+    }
+
+    private Likes getDiaryUserLikes(Diary diary, User user) {
         return Likes.builder()
                 .diary(diary)
                 .user(user)
                 .build();
     }
 
-    private User getUserByEmail(String email) {
+    private User getUser(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
     }
@@ -62,5 +74,6 @@ public class LikeService {
         return diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new IllegalArgumentException("여행일지 데이터를 찾을 수 없습니다."));
     }
+
 
 }

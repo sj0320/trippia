@@ -19,8 +19,8 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 @Slf4j
 public class MailService {
-    private static final String REGISTER_EMAIL_TEMPLATE = "auth/sign-up-email.html";
-    private static final String FIND_PASSWORD_EMAIL_TEMPLATE = "auth/find-password-email.html";
+    private static final String REGISTER_EMAIL_TEMPLATE = "user/sign-up-email.html";
+    private static final String FIND_PASSWORD_EMAIL_TEMPLATE = "user/find-password-email.html";
     private static final String REGISTER_VERIFICATION_KEY = "email_auth:%s:%s";
     private static final String FIND_PASSWORD_VERIFICATION_KEY = "find_password:%s:%s";
 

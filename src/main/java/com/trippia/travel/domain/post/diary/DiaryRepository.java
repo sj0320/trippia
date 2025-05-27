@@ -17,4 +17,6 @@ public interface DiaryRepository extends JpaRepository<Diary, Long>, DiaryReposi
     List<Diary> findTopDiaries(Pageable pageable);
 
     Optional<Diary> findTopDiaryByCityIdOrderByLikeCountDesc(Long cityId);
+
+    List<Diary> findAllByUserId(Long userId);
 }

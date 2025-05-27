@@ -1,5 +1,6 @@
 package com.trippia.travel.domain.post.likes;
 
+import com.trippia.travel.controller.dto.diary.response.LikedDiarySummaryResponse;
 import com.trippia.travel.domain.common.CityType;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
@@ -20,9 +21,11 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static com.trippia.travel.domain.common.CityType.JAPAN;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -130,11 +133,37 @@ class LikeServiceTest {
         assertThat(likeCount).isEqualTo(0);
     }
 
+    @DisplayName("사용자가 좋아요한 여행일지들을 조회한다.")
+    @Test
+    void getLikedDiariesByUser() {
+        User user = createUser("email");
+        User other = createUser("other");
+        Country japan = createCountry("일본");
+        City tokyo = createCity("도쿄", japan, JAPAN);
+        Diary diary1 = createDiary(other, tokyo, "title1", "content1");
+        Diary diary2 = createDiary(other, tokyo, "title2", "content2");
+        Diary diary3 = createDiary(other, tokyo, "title3", "content3");
+
+        // when
+        likeService.likeDiary(user.getEmail(), diary1.getId());
+        likeService.likeDiary(user.getEmail(), diary2.getId());
+        List<LikedDiarySummaryResponse> result = likeService.getLikedDiariesByUser(user.getEmail());
+
+        // then
+        assertThat(result).hasSize(2)
+                .extracting("diaryId", "title", "authorNickname")
+                .containsExactlyInAnyOrder(
+                        tuple(diary1.getId(), diary1.getTitle(), other.getNickname()),
+                        tuple(diary2.getId(), diary2.getTitle(), other.getNickname())
+                );
+
+    }
+
     private User createUser(String email) {
         User user = User.builder()
                 .email(email)
                 .password("password")
-                .nickname("nickname")
+                .nickname("nickname" + email)
                 .loginType(LoginType.LOCAL)
                 .role(Role.ROLE_USER)
                 .build();
@@ -159,6 +188,7 @@ class LikeServiceTest {
                 .city(city)
                 .title(title)
                 .content(content)
+                .thumbnail(city + ".img")
                 .startDate(LocalDate.of(2099, 1, 1))
                 .endDate(LocalDate.of(2099, 1, 10))
                 .createdAt(LocalDateTime.now())

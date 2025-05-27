@@ -1,6 +1,7 @@
 package com.trippia.travel.domain.user;
 
 import com.trippia.travel.controller.dto.user.requset.UserSaveRequest;
+import com.trippia.travel.controller.dto.user.response.MyPageUserInfoResponse;
 import com.trippia.travel.domain.common.EmailAuthPurpose;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.exception.user.UserException;
@@ -46,9 +47,8 @@ public class UserService {
     }
 
     @Transactional
-    public void saveSocialUser(String email, String nickname){
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(USER_NOT_FOUND_MESSAGE));
+    public void saveSocialUser(String email, String nickname) {
+        User user = getUser(email);
 
         if (userRepository.existsByNickname(nickname)) {
             throw new UserException("nickname", DUPLICATE_NICKNAME);
@@ -58,6 +58,7 @@ public class UserService {
         user.completeRegistration();
     }
 
+
     public void sendCodeToEmail(String email, EmailAuthPurpose authPurpose) {
         String authCode = generateRandomCode();
         mailService.sendEmail(email, authPurpose, authCode);
@@ -65,14 +66,27 @@ public class UserService {
 
     public String getProfileImageUrl(String email) {
         Optional<User> optionalUser = userRepository.findByEmail(email);
-        if(optionalUser.isEmpty()){
+        if (optionalUser.isEmpty()) {
             return DEFAULT_PROFILE_IMAGE;
         }
         return optionalUser.get().getProfileImageUrl();
+    }
+
+    public MyPageUserInfoResponse getMyPageUserInfo(String email) {
+        User user = getUser(email);
+        return MyPageUserInfoResponse.builder()
+                .userId(user.getId())
+                .profileImageUrl(user.getProfileImageUrl())
+                .nickname(user.getNickname())
+                .build();
     }
 
     private String generateRandomCode() {
         return String.valueOf(100000 + new Random().nextInt(900000));
     }
 
+    private User getUser(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserException(USER_NOT_FOUND_MESSAGE));
+    }
 }

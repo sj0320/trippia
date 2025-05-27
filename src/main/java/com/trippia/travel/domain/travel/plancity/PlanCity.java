@@ -3,10 +3,7 @@ package com.trippia.travel.domain.travel.plancity;
 import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.travel.plan.Plan;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter

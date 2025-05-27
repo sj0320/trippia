@@ -10,6 +10,7 @@ import com.trippia.travel.controller.dto.diary.request.UpdateDiaryDto;
 import com.trippia.travel.controller.dto.diary.response.DiaryDetailResponse;
 import com.trippia.travel.controller.dto.diary.response.DiaryEditFormResponse;
 import com.trippia.travel.controller.dto.diary.response.DiaryListResponse;
+import com.trippia.travel.controller.dto.diary.response.DiarySummaryResponse;
 import com.trippia.travel.controller.dto.place.response.PlaceSummaryResponse;
 import com.trippia.travel.domain.common.TravelCompanion;
 import com.trippia.travel.domain.location.city.City;
@@ -63,7 +64,7 @@ public class DiaryService {
     @Transactional
     public Long saveDiary(String email, DiarySaveRequest request, MultipartFile thumbnail) throws IOException {
         validateDate(request.getStartDate(), request.getEndDate());
-        User user = getUserByEmail(email);
+        User user = getUser(email);
         City city = getCity(request.getCityId());
         String thumbnailUrl = fileService.uploadFile(thumbnail).getUrl();
 
@@ -94,7 +95,7 @@ public class DiaryService {
     public void editDiary(String email, Long diaryId, DiaryUpdateRequest request, MultipartFile thumbnail) throws IOException {
         validateDate(request.getStartDate(), request.getEndDate());
         Diary diary = getDiary(diaryId);
-        User user = getUserByEmail(email);
+        User user = getUser(email);
         user.validateAuthorOf(diary);
         City city = getCity(request.getCityId());
 
@@ -130,7 +131,6 @@ public class DiaryService {
         return new SliceImpl<>(content, pageable, diaries.hasNext());
     }
 
-
     public DiaryDetailResponse getDiaryDetail(Long diaryId) {
         Diary diary = getDiary(diaryId);
 
@@ -153,7 +153,7 @@ public class DiaryService {
     }
 
     public DiaryEditFormResponse getEditForm(String email, Long diaryId) {
-        User user = getUserByEmail(email);
+        User user = getUser(email);
         Diary diary = getDiary(diaryId);
         user.validateAuthorOf(diary);
         List<DiaryTheme> diaryThemes = diaryClient.findDiaryThemesByDiaryId(diaryId);
@@ -166,7 +166,7 @@ public class DiaryService {
     @Transactional
     public void deleteDiary(String email, Long diaryId) {
         Diary diary = getDiary(diaryId);
-        User user = getUserByEmail(email);
+        User user = getUser(email);
         user.validateAuthorOf(diary);
 
         diaryClient.deleteDiaryThemeByDiaryId(diaryId);
@@ -195,7 +195,18 @@ public class DiaryService {
                 .toList();
     }
 
-    private User getUserByEmail(String email) {
+    public List<DiarySummaryResponse> getDiarySummariesByUser(String email){
+        User user = getUser(email);
+        List<Diary> diaries = diaryClient.findAllDiaryByUserId(user.getId());
+
+        return diaries.stream()
+                .map(DiarySummaryResponse::from)
+                .toList();
+    }
+
+
+
+    private User getUser(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
     }

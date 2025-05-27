@@ -2,6 +2,7 @@ package com.trippia.travel.domain.travel.plan;
 
 import com.trippia.travel.controller.dto.plan.request.PlanCreateRequest;
 import com.trippia.travel.controller.dto.plan.response.PlanDetailsResponse;
+import com.trippia.travel.controller.dto.plan.response.PlanSummaryResponse;
 import com.trippia.travel.controller.dto.schedule.response.ScheduleDetailsResponse;
 import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemResponse;
 import com.trippia.travel.domain.common.CityType;
@@ -155,6 +156,80 @@ class PlanServiceTest {
 
     }
 
+    @DisplayName("다가오는 여행계획 정보들을 조회한다.")
+    @Test
+    void getUpcomingPlanByUser() {
+        // given
+        User user = createUser("email");
+
+        LocalDate now = LocalDate.now();
+        Plan plan1 = createPlan(user, "title1", now.plusDays(1), now.plusDays(2));
+        Plan plan2 = createPlan(user, "title2", now.plusDays(2), now.plusDays(3));
+        Plan plan3 = createPlan(user, "title3", now.minusDays(2), now.minusDays(1));
+
+        Country japan = createCountry("일본");
+        Country korea = createCountry("한국");
+        City tokyo = createCity("도쿄", japan, JAPAN);
+        City seoul = createCity("서울", korea, KOREA);
+
+        PlanCity planCity1 = createPlanCity(plan1, tokyo);
+        PlanCity planCity2 = createPlanCity(plan2, seoul);
+        PlanCity planCity3 = createPlanCity(plan3, seoul);
+
+        plan1.addPlanCity(planCity1);
+        plan2.addPlanCity(planCity2);
+        plan3.addPlanCity(planCity3);
+
+        // when
+        List<PlanSummaryResponse> result = planService.getUpcomingPlanByUser(user.getEmail());
+
+        // then
+        assertThat(result).hasSize(2)
+                .extracting("title", "cityImage")
+                .containsExactly(
+                        tuple(plan1.getTitle(), tokyo.getImageUrl()),
+                        tuple(plan2.getTitle(), seoul.getImageUrl())
+                );
+    }
+
+
+    @DisplayName("이미 지나간 여행계획 정보들을 조회한다.")
+    @Test
+    void getPastPlanByUser() {
+        // given
+        User user = createUser("email");
+
+        LocalDate now = LocalDate.now();
+        Plan plan1 = createPlan(user, "title1", now.plusDays(1), now.plusDays(2));
+        Plan plan2 = createPlan(user, "title2", now.minusDays(5), now.minusDays(4));
+        Plan plan3 = createPlan(user, "title3", now.minusDays(2), now.minusDays(1));
+
+        Country japan = createCountry("일본");
+        Country korea = createCountry("한국");
+        City tokyo = createCity("도쿄", japan, JAPAN);
+        City seoul = createCity("서울", korea, KOREA);
+
+        PlanCity planCity1 = createPlanCity(plan1, tokyo);
+        PlanCity planCity2 = createPlanCity(plan2, seoul);
+        PlanCity planCity3 = createPlanCity(plan3, seoul);
+
+        plan1.addPlanCity(planCity1);
+        plan2.addPlanCity(planCity2);
+        plan3.addPlanCity(planCity3);
+
+        // when
+        List<PlanSummaryResponse> result = planService.getPastPlanByUser(user.getEmail());
+
+        // then
+        assertThat(result).hasSize(2)
+                .extracting("title", "cityImage")
+                .containsExactly(
+                        tuple(plan2.getTitle(), seoul.getImageUrl()),
+                        tuple(plan3.getTitle(), seoul.getImageUrl())
+                );
+
+    }
+
     private User createUser(String email) {
         User user = User.builder()
                 .email(email)
@@ -175,7 +250,27 @@ class PlanServiceTest {
                 .name(name)
                 .country(country)
                 .cityType(cityType)
+                .imageUrl(name + ".jpg")
                 .build());
     }
+
+    private Plan createPlan(User user, String title, LocalDate startDate, LocalDate endDate) {
+        Plan plan = Plan.builder()
+                .user(user)
+                .title(title)
+                .startDate(startDate)
+                .endDate(endDate)
+                .build();
+        return planRepository.save(plan);
+    }
+
+    private PlanCity createPlanCity(Plan plan, City city) {
+        PlanCity planCity = PlanCity.builder()
+                .plan(plan)
+                .city(city)
+                .build();
+        return planCityRepository.save(planCity);
+    }
+
 
 }
