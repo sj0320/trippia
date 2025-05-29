@@ -8,6 +8,9 @@ import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemRespo
 import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.location.city.CityRepository;
 import com.trippia.travel.domain.travel.plancity.PlanCity;
+import com.trippia.travel.domain.travel.planparticipant.PlanParticipant;
+import com.trippia.travel.domain.travel.planparticipant.PlanParticipantRepository;
+import com.trippia.travel.domain.travel.planparticipant.PlanRole;
 import com.trippia.travel.domain.travel.schedule.Schedule;
 import com.trippia.travel.domain.travel.scheduleitem.ScheduleItem;
 import com.trippia.travel.domain.travel.scheduleitem.ScheduleItemConverter;
@@ -36,6 +39,7 @@ import java.util.stream.Collectors;
 public class PlanService {
 
     private final PlanRepository planRepository;
+    private final PlanParticipantRepository planParticipantRepository;
     private final CityRepository cityRepository;
     private final UserRepository userRepository;
     private final ScheduleItemRepository scheduleItemRepository;
@@ -51,9 +55,8 @@ public class PlanService {
         List<City> cities = cityRepository.findAllById(requestCityIds);
 
         String title = getDefaultTitleByCities(cities);
-        log.info("일정 제목={}", title);
 
-        Plan plan = Plan.createPlan(user, title, startDate, endDate);
+        Plan plan = Plan.createPlan(user.getEmail(), title, startDate, endDate);
 
         for (City city : cities) {
             PlanCity planCity = PlanCity.builder().city(city).plan(plan).build();
@@ -65,13 +68,19 @@ public class PlanService {
             plan.addSchedule(schedule);
         }
         Plan savedPlan = planRepository.save(plan);
+        PlanParticipant participant = PlanParticipant.builder()
+                .user(user)
+                .plan(savedPlan)
+                .role(PlanRole.OWNER)
+                .build();
+        planParticipantRepository.save(participant);
+
         return savedPlan.getId();
     }
 
     public PlanDetailsResponse findPlan(String email, Long planId) {
         Plan plan = getPlan(planId);
-        plan.validateOwnerOf(email);
-
+        validatePlanPermission(getUser(email), planId);
         List<PlanCity> planCities = plan.getPlanCities();
 
         // schedule(scheduleItems... ) 불러오기
@@ -105,13 +114,13 @@ public class PlanService {
 
     public List<PlanSummaryResponse> getUpcomingPlanByUser(String email) {
         User user = getUser(email);
-        List<Plan> plans = planRepository.findByUserIdAndStartDateAfter(user.getId(), LocalDate.now());
+        List<Plan> plans = planRepository.findUpcomingPlansByUser(user.getId(), LocalDate.now());
         return mapPlansToSummaryResponses(plans);
     }
 
     public List<PlanSummaryResponse> getPastPlanByUser(String email) {
         User user = getUser(email);
-        List<Plan> plans = planRepository.findByUserIdAndStartDateBefore(user.getId(), LocalDate.now());
+        List<Plan> plans = planRepository.findPastPlansByUser(user.getId(), LocalDate.now());
         return mapPlansToSummaryResponses(plans);
     }
 
@@ -144,6 +153,13 @@ public class PlanService {
         if (planCities == null || planCities.isEmpty()) return "";
         PlanCity randomPlanCity = planCities.get(ThreadLocalRandom.current().nextInt(planCities.size()));
         return randomPlanCity.getCity() != null ? randomPlanCity.getCity().getImageUrl() : "";
+    }
+
+    private void validatePlanPermission(User user, Long planId) {
+        boolean hasPermission = planParticipantRepository.existsByUserIdAndPlanId(user.getId(), planId);
+        if (!hasPermission) {
+            throw new PlanException("접근 권한이 없습니다.");
+        }
     }
 
 }

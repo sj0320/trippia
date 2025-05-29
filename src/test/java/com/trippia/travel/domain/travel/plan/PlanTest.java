@@ -15,7 +15,14 @@ class PlanTest {
     void validateOwnerOf() {
         // given
         User user = User.builder().email("email1").build();
-        Plan plan = Plan.createPlan(user, "제목", LocalDate.now(), LocalDate.now().plusDays(1));
+        Plan plan = Plan.builder()
+                .ownerEmail(user.getEmail())
+                .title("title")
+                .startDate(LocalDate.now().plusDays(1))
+                .endDate(LocalDate.now().plusDays(2))
+                .build();
+        
+
         // when & then
         Assertions.assertThatThrownBy(()-> plan.validateOwnerOf("notOwner"))
                 .isInstanceOf(PlanException.class)

@@ -2,11 +2,15 @@ package com.trippia.travel.domain.travel.scheduleitem;
 
 import com.trippia.travel.controller.dto.scheduleitem.requset.ScheduleItemOrderRequest;
 import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemResponse;
+import com.trippia.travel.domain.travel.planparticipant.PlanParticipantRepository;
 import com.trippia.travel.domain.travel.schedule.Schedule;
 import com.trippia.travel.domain.travel.schedule.ScheduleRepository;
 import com.trippia.travel.domain.travel.scheduleitem.memo.Memo;
+import com.trippia.travel.domain.user.User;
+import com.trippia.travel.domain.user.UserRepository;
 import com.trippia.travel.exception.schedule.ScheduleException;
 import com.trippia.travel.exception.scheduleitem.ScheduleItemException;
+import com.trippia.travel.exception.user.UserException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,21 +27,26 @@ import static com.trippia.travel.controller.dto.scheduleitem.requset.ScheduleIte
 @Transactional(readOnly = true)
 public class ScheduleItemService {
 
+    private final UserRepository userRepository;
     private final ScheduleItemRepository scheduleItemRepository;
     private final ScheduleRepository scheduleRepository;
+    private final PlanParticipantRepository planParticipantRepository;
 
 
     @Transactional
     public void deleteScheduleItem(String email, Long scheduleItemId) {
         ScheduleItem scheduleItem = getScheduleItem(scheduleItemId);
         Schedule schedule = scheduleItem.getSchedule();
-        schedule.validateOwnerOf(email);
+        validatePermission(getUser(email), schedule);
+
         scheduleItemRepository.deleteById(scheduleItemId);
     }
 
     public List<ScheduleItemResponse> getScheduleItemsByScheduleId(String email, Long scheduleId) {
         Schedule schedule = getSchedule(scheduleId);
-        schedule.validateOwnerOf(email);
+        validatePermission(getUser(email), schedule);
+        validatePermission(getUser(email), schedule);
+
         List<ScheduleItem> scheduleItems = scheduleItemRepository.findByScheduleIdOrderBySequence(scheduleId);
         return ScheduleItemConverter.toResponses(scheduleItems);
     }
@@ -46,7 +55,7 @@ public class ScheduleItemService {
     public void updateScheduleItemMeta(String email, Long scheduleItemId, Integer expectedCost, LocalTime executionTime) {
         ScheduleItem scheduleItem = getScheduleItem(scheduleItemId);
         Schedule schedule = scheduleItem.getSchedule();
-        schedule.validateOwnerOf(email);
+        validatePermission(getUser(email), schedule);
         scheduleItem.updateMeta(expectedCost, executionTime);
     }
 
@@ -57,14 +66,14 @@ public class ScheduleItemService {
             throw new ScheduleItemException("유효하지 않은 요청입니다");
         }
         Schedule schedule = scheduleItem.getSchedule();
-        schedule.validateOwnerOf(email);
+        validatePermission(getUser(email), schedule);
         memo.updateContent(content);
     }
 
     @Transactional
     public void reorderItems(String email, ScheduleItemOrderRequest request) {
         Schedule schedule = getSchedule(request.getScheduleId());
-        schedule.validateOwnerOf(email);
+        validatePermission(getUser(email), schedule);
 
         List<ScheduleItemOrder> orders = request.getOrders();
         for(ScheduleItemOrder order : orders){
@@ -84,6 +93,19 @@ public class ScheduleItemService {
     private ScheduleItem getScheduleItem(Long scheduleItemId) {
         return scheduleItemRepository.findById(scheduleItemId)
                 .orElseThrow(() -> new ScheduleItemException("스케줄 항목을 찾을 수 없습니다."));
+    }
+
+    private void validatePermission(User user, Schedule schedule) {
+        Long planId = schedule.getPlan().getId();
+        boolean hasPermission = planParticipantRepository.existsByUserIdAndPlanId(user.getId(), planId);
+        if (!hasPermission) {
+            throw new ScheduleException("접근 권한이 없습니다.");
+        }
+    }
+
+    private User getUser(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
     }
 
 }

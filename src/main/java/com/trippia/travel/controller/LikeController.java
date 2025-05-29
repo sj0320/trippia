@@ -21,7 +21,6 @@ public class LikeController {
     public ResponseEntity<Map<String, Object>> likeDairy(@CurrentUser String email, @PathVariable Long id) throws Exception {
         System.out.println(email);
         if (email == null || email.isEmpty()) {
-            System.out.println("!!");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "로그인이 필요한 기능입니다."));
         }

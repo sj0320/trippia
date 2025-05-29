@@ -48,8 +48,6 @@ public class TravelController {
     @GetMapping("/plan/{planId}")
     public String planForm(@CurrentUser String email, @PathVariable Long planId, Model model){
         PlanDetailsResponse plan = planService.findPlan(email, planId);
-        log.info("plan={}", plan.toString());
-
         model.addAttribute("plan", plan);
 
         return "plan/plan-form";
