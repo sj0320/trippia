@@ -9,33 +9,30 @@
             </p>
 
             <!-- 여행 관련 링크 -->
-            <a href="/diary/list" style="position: absolute; left: 225px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">여행 일지</a>
-            <a href="/travel/question/city" style="position: absolute; left: 360px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">여행 일정</a>
-            <a href="/destination" style="position: absolute; left: 495px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">여행지 추천</a>
-            <a href="/course" style="position: absolute; left: 644px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">여행 코스 추천</a>
+            <a href="/diary/list" style="position: absolute; left: 225px; top: 45px; font-size: 15px; color: #000; text-decoration: none;">여행 일지</a>
+            <a href="/travel/question/city" style="position: absolute; left: 360px; top: 45px; font-size: 15px; color: #000; text-decoration: none;">여행 일정</a>
+            <a href="/destination" style="position: absolute; left: 495px; top: 45px; font-size: 15px; color: #000; text-decoration: none;">여행지 추천</a>
+            <a href="/course" style="position: absolute; left: 644px; top: 45px; font-size: 15px; color: #000; text-decoration: none;">여행 코스 추천</a>
 
-            <!-- 로그인 및 회원가입 버튼 (ROLE_GUEST 또는 인증되지 않은 사용자만 보임) -->
-            <div sec:authorize="hasRole('ROLE_GUEST') or isAnonymous()">
-                <a href="/users/login" style="position: absolute; left: 1183px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">로그인</a>
-                <a href="/users/sign-up" style="position: absolute; left: 1250px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">회원가입</a>
-            </div>
+            <!-- 로그인 관련 영역 (공통 위치) -->
+            <div style="position: absolute; right: 75px; top: 45px; display: flex; gap: 20px;">
+                <!-- 비로그인 상태 -->
+                <div sec:authorize="isAnonymous() or hasRole('ROLE_GUEST')" style="display: flex; gap: 20px;">
+                    <a href="/users/login" style="font-size: 15px; color: #000; text-decoration: none;">로그인</a>
+                    <a href="/users/sign-up" style="font-size: 15px; color: #000; text-decoration: none;">회원가입</a>
+                </div>
 
-            <!-- 마이페이지 및 로그아웃 버튼 (ROLE_USER 또는 ROLE_ADMIN인 사용자만 보임) -->
-            <div sec:authorize="hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')">
-                <a href="/users/mypage"
-                   style="position: absolute; left: 1246px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">
-                    마이페이지
-                </a>
+                <!-- 로그인 상태 -->
+                <div sec:authorize="hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')" style="display: flex; gap: 20px;">
+                    <a href="/users/mypage" style="font-size: 15px; color: #000; text-decoration: none;">마이페이지</a>
 
-                <!-- 로그아웃 폼 -->
-                <form id="logout-form" th:action="@{/users/logout}" method="post" style="display: none;">
-                    <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
-                </form>
+                    <form id="logout-form" th:action="@{/users/logout}" method="post" style="display: none;">
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                    </form>
 
-                <a href="#" onclick="document.getElementById('logout-form').submit(); return false;"
-                   style="position: absolute; left: 1320px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">
-                    로그아웃
-                </a>
+                    <a href="#" onclick="document.getElementById('logout-form').submit(); return false;"
+                       style="font-size: 15px; color: #000; text-decoration: none;">로그아웃</a>
+                </div>
             </div>
         </div>
     </header>

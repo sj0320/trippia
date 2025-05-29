@@ -8,6 +8,7 @@ import com.trippia.travel.controller.dto.scheduleitem.requset.ScheduleItemOrderR
 import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemIdResponse;
 import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemResponse;
 import com.trippia.travel.controller.dto.scheduleplace.request.SchedulePlaceSaveRequest;
+import com.trippia.travel.domain.travel.plan.PlanService;
 import com.trippia.travel.domain.travel.scheduleitem.ScheduleItemService;
 import com.trippia.travel.domain.travel.scheduleitem.memo.MemoService;
 import com.trippia.travel.domain.travel.scheduleitem.scheduleplace.SchedulePlaceService;
@@ -24,6 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TravelApiController {
 
+    private final PlanService planService;
     private final MemoService memoService;
     private final SchedulePlaceService schedulePlaceService;
     private final ScheduleItemService scheduleItemService;
@@ -60,14 +62,20 @@ public class TravelApiController {
 
     @PatchMapping("/memo/{scheduleItemId}")
     public ResponseEntity<Void> updateMemo(@CurrentUser String email, @PathVariable Long scheduleItemId,
-                                           @Valid @RequestBody MemoUpdateRequest request){
+                                           @Valid @RequestBody MemoUpdateRequest request) {
         scheduleItemService.updateMemo(email, scheduleItemId, request.getContent());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/schedule-item/reorder")
-    public ResponseEntity<Void> reorderItems(@CurrentUser String email, @RequestBody ScheduleItemOrderRequest request){
+    public ResponseEntity<Void> reorderItems(@CurrentUser String email, @RequestBody ScheduleItemOrderRequest request) {
         scheduleItemService.reorderItems(email, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/plan/{planId}")
+    public ResponseEntity<Void> deletePlan(@CurrentUser String email, @PathVariable Long planId) {
+        planService.deletePlan(email, planId);
         return ResponseEntity.ok().build();
     }
 

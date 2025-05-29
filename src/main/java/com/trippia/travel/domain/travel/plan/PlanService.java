@@ -3,6 +3,7 @@ package com.trippia.travel.domain.travel.plan;
 import com.trippia.travel.controller.dto.plan.request.PlanCreateRequest;
 import com.trippia.travel.controller.dto.plan.response.PlanDetailsResponse;
 import com.trippia.travel.controller.dto.plan.response.PlanSummaryResponse;
+import com.trippia.travel.controller.dto.planparticipant.PlanParticipantResponse;
 import com.trippia.travel.controller.dto.schedule.response.ScheduleDetailsResponse;
 import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemResponse;
 import com.trippia.travel.domain.location.city.City;
@@ -109,7 +110,16 @@ public class PlanService {
                             .build();
                 })
                 .toList();
-        return PlanDetailsResponse.of(plan, planCities, scheduleDetailsResponse);
+
+        List<PlanParticipant> participants = planParticipantRepository.findByPlanId(planId);
+        List<PlanParticipantResponse> participantResponse = participants.stream()
+                .map(participant -> PlanParticipantResponse.builder()
+                        .userId(participant.getUser().getId())
+                        .nickname(participant.getUser().getNickname())
+                        .role(participant.getRole().name())
+                        .build())
+                .toList();
+        return PlanDetailsResponse.of(plan, planCities, scheduleDetailsResponse, participantResponse);
     }
 
     public List<PlanSummaryResponse> getUpcomingPlanByUser(String email) {
@@ -122,6 +132,16 @@ public class PlanService {
         User user = getUser(email);
         List<Plan> plans = planRepository.findPastPlansByUser(user.getId(), LocalDate.now());
         return mapPlansToSummaryResponses(plans);
+    }
+
+    @Transactional
+    public void deletePlan(String email, Long planId) {
+        User user = getUser(email);
+        validatePlanPermission(user, planId);
+
+        planParticipantRepository.deleteByPlanId(planId);
+        Plan plan = getPlan(planId);
+        planRepository.delete(plan);
     }
 
     private Plan getPlan(Long planId) {
@@ -161,5 +181,6 @@ public class PlanService {
             throw new PlanException("접근 권한이 없습니다.");
         }
     }
+
 
 }
