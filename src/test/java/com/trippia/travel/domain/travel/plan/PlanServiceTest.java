@@ -3,6 +3,7 @@ package com.trippia.travel.domain.travel.plan;
 import com.trippia.travel.controller.dto.plan.request.PlanCreateRequest;
 import com.trippia.travel.controller.dto.plan.response.PlanDetailsResponse;
 import com.trippia.travel.controller.dto.plan.response.PlanSummaryResponse;
+import com.trippia.travel.controller.dto.planparticipant.PlanParticipantResponse;
 import com.trippia.travel.controller.dto.schedule.response.ScheduleDetailsResponse;
 import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemResponse;
 import com.trippia.travel.domain.common.CityType;
@@ -35,9 +36,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static com.trippia.travel.domain.common.CityType.JAPAN;
 import static com.trippia.travel.domain.common.CityType.KOREA;
+import static com.trippia.travel.domain.travel.planparticipant.PlanRole.OWNER;
+import static com.trippia.travel.domain.travel.planparticipant.PlanRole.PARTICIPANT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
@@ -105,7 +109,7 @@ class PlanServiceTest {
         assertThat(participants).hasSize(1);
         assertThat(participants.get(0).getUser()).isEqualTo(user);
         assertThat(participants.get(0).getPlan()).isEqualTo(plans.get(0));
-        assertThat(participants.get(0).getRole()).isEqualTo(PlanRole.OWNER);
+        assertThat(participants.get(0).getRole()).isEqualTo(OWNER);
 
         List<PlanCity> planCities = planCityRepository.findAll();
         assertThat(planCities).hasSize(2);
@@ -116,10 +120,12 @@ class PlanServiceTest {
     void findPlan() {
         // given
         // User 생성
-        User user = createUser("email");
+        User user1 = createUser("email1");
+        User user2 = createUser("email2");
+        User user3 = createUser("email3");
 
         // Plan 생성
-        Plan plan = Plan.createPlan(user.getEmail(), "title", LocalDate.now(), LocalDate.now().plusDays(1));
+        Plan plan = Plan.createPlan(user1.getEmail(), "title", LocalDate.now(), LocalDate.now().plusDays(1));
 
         // Schedule 생성
         Schedule schedule1 = new Schedule(plan, LocalDate.now());
@@ -128,7 +134,9 @@ class PlanServiceTest {
         Schedule schedule2 = new Schedule(plan, LocalDate.now().plusDays(1));
         plan.addSchedule(schedule2);
         Plan savePlan = planRepository.save(plan);
-        addPlanParticipant(user, savePlan, PlanRole.OWNER);
+        addPlanParticipant(user1, savePlan, OWNER);
+        addPlanParticipant(user2, savePlan, PARTICIPANT);
+        addPlanParticipant(user3, savePlan, PARTICIPANT);
 
         // ScheduleItem 생성
         Memo item1 = Memo.builder().schedule(schedule1).content("content1").sequence(1).build();
@@ -137,7 +145,7 @@ class PlanServiceTest {
         scheduleItemRepository.saveAll(List.of(item1, item2, item3));
 
         // when
-        PlanDetailsResponse result = planService.findPlan(user.getEmail(), savePlan.getId());
+        PlanDetailsResponse result = planService.findPlan(user1.getEmail(), savePlan.getId());
 
         // then
         assertThat(result.getTitle()).isEqualTo(plan.getTitle());
@@ -170,6 +178,16 @@ class PlanServiceTest {
         assertThat(schedule2Items).extracting("type", "content", "name")
                 .containsExactlyInAnyOrder(tuple(ScheduleItemType.MEMO, "content2", null));
 
+
+        // PlanParticipants 검증
+        List<PlanParticipantResponse> participants = result.getParticipants();
+        assertThat(participants).hasSize(3)
+                .extracting("userId", "nickname", "role")
+                .containsExactlyInAnyOrder(
+                        tuple(user1.getId(), user1.getNickname(), OWNER.name()),
+                        tuple(user2.getId(), user2.getNickname(), PARTICIPANT.name()),
+                        tuple(user3.getId(), user3.getNickname(), PARTICIPANT.name())
+                );
     }
 
     @DisplayName("여행계획 참여자가 아닌 경우 여행 계획 상세정보를 조회하면 예외가 발생한다.")
@@ -190,7 +208,7 @@ class PlanServiceTest {
         Schedule schedule2 = new Schedule(plan, LocalDate.now().plusDays(1));
         plan.addSchedule(schedule2);
         Plan savePlan = planRepository.save(plan);
-        addPlanParticipant(user1, savePlan, PlanRole.OWNER);
+        addPlanParticipant(user1, savePlan, OWNER);
 
         // when & then
         assertThatThrownBy(() -> planService.findPlan(user2.getEmail(), savePlan.getId()))
@@ -210,9 +228,9 @@ class PlanServiceTest {
         Plan plan2 = createPlan(user.getEmail(), "title2", now.plusDays(2), now.plusDays(3));
         Plan plan3 = createPlan(user.getEmail(), "title3", now.minusDays(2), now.minusDays(1));
 
-        addPlanParticipant(user, plan1, PlanRole.PARTICIPANT);
-        addPlanParticipant(user, plan2, PlanRole.PARTICIPANT);
-        addPlanParticipant(user, plan3, PlanRole.OWNER);
+        addPlanParticipant(user, plan1, PARTICIPANT);
+        addPlanParticipant(user, plan2, PARTICIPANT);
+        addPlanParticipant(user, plan3, OWNER);
 
         Country japan = createCountry("일본");
         Country korea = createCountry("한국");
@@ -251,9 +269,9 @@ class PlanServiceTest {
         Plan plan2 = createPlan(user.getEmail(), "title2", now.minusDays(5), now.minusDays(4));
         Plan plan3 = createPlan(user.getEmail(), "title3", now.minusDays(2), now.minusDays(1));
 
-        addPlanParticipant(user, plan1, PlanRole.OWNER);
-        addPlanParticipant(user, plan2, PlanRole.OWNER);
-        addPlanParticipant(user, plan3, PlanRole.OWNER);
+        addPlanParticipant(user, plan1, OWNER);
+        addPlanParticipant(user, plan2, OWNER);
+        addPlanParticipant(user, plan3, OWNER);
 
         Country japan = createCountry("일본");
         Country korea = createCountry("한국");
@@ -278,6 +296,25 @@ class PlanServiceTest {
                         tuple(plan2.getTitle(), seoul.getImageUrl()),
                         tuple(plan3.getTitle(), seoul.getImageUrl())
                 );
+
+    }
+
+    @DisplayName("여행 계획을 삭제한다.")
+    @Test
+    void deletePlan() {
+        // given
+        User user = createUser("email");
+
+        LocalDate now = LocalDate.now();
+        Plan plan = createPlan(user.getEmail(), "title1", now.plusDays(1), now.plusDays(2));
+        addPlanParticipant(user, plan, OWNER);
+
+        // when
+        planService.deletePlan(user.getEmail(), plan.getId());
+
+        // then
+        Optional<Plan> foundPlan = planRepository.findById(plan.getId());
+        assertThat(foundPlan).isEmpty();
 
     }
 
