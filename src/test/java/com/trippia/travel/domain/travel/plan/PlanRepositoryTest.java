@@ -3,6 +3,9 @@ package com.trippia.travel.domain.travel.plan;
 import com.trippia.travel.TestConfig;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
+import com.trippia.travel.domain.travel.planparticipant.PlanParticipant;
+import com.trippia.travel.domain.travel.planparticipant.PlanParticipantRepository;
+import com.trippia.travel.domain.travel.planparticipant.PlanRole;
 import com.trippia.travel.domain.user.User;
 import com.trippia.travel.domain.user.UserRepository;
 import org.assertj.core.api.Assertions;
@@ -29,6 +32,9 @@ class PlanRepositoryTest {
     @Autowired
     private PlanRepository planRepository;
 
+    @Autowired
+    private PlanParticipantRepository planParticipantRepository;
+
     @DisplayName("사용자의 다가오는 여행계획들을 조회한다.")
     @Test
     void findByUserIdAndStartDateAfter() {
@@ -36,12 +42,16 @@ class PlanRepositoryTest {
         User user = createUser();
 
         LocalDate now = LocalDate.now();
-        Plan plan1 = createPlan(user, "title1", now.plusDays(1), now.plusDays(2));
-        Plan plan2 = createPlan(user, "title2", now.plusDays(2), now.plusDays(3));
-        Plan plan3 = createPlan(user, "title3", now.minusDays(2), now.minusDays(1));
+        Plan plan1 = createPlan("title1", now.plusDays(1), now.plusDays(2));
+        Plan plan2 = createPlan("title2", now.plusDays(2), now.plusDays(3));
+        Plan plan3 = createPlan("title3", now.minusDays(2), now.minusDays(1));
+
+        addParticipant(user, plan1);
+        addParticipant(user, plan2);
+        addParticipant(user, plan3);
 
         // when
-        List<Plan> result = planRepository.findByUserIdAndStartDateAfter(user.getId(), now);
+        List<Plan> result = planRepository.findUpcomingPlansByUser(user.getId(), now);
 
         // then
         Assertions.assertThat(result).hasSize(2)
@@ -53,21 +63,23 @@ class PlanRepositoryTest {
 
     }
 
+
     @DisplayName("사용자의 날짜가 지나간 여행계획들을 조회한다.")
     @Test
     void findByUserIdAndStartDateBefore() {
         User user = createUser();
 
         LocalDate now = LocalDate.now();
-        Plan plan1 = createPlan(user, "title1", now.plusDays(1), now.plusDays(2));
-        Plan plan2 = createPlan(user, "title2", now.plusDays(2), now.plusDays(3));
-        Plan plan3 = createPlan(user, "title3", now.minusDays(2), now.minusDays(1));
+        Plan plan1 = createPlan("title1", now.plusDays(1), now.plusDays(2));
+        Plan plan2 = createPlan("title2", now.plusDays(2), now.plusDays(3));
+        Plan plan3 = createPlan("title3", now.minusDays(2), now.minusDays(1));
+
+        addParticipant(user, plan1);
+        addParticipant(user, plan2);
+        addParticipant(user, plan3);
 
         // when
-        List<Plan> result = planRepository.findByUserIdAndStartDateBefore(user.getId(), now);
-        for (Plan plan : result) {
-            System.out.println(plan.getTitle());
-        }
+        List<Plan> result = planRepository.findPastPlansByUser(user.getId(), now);
 
         // then
         Assertions.assertThat(result).hasSize(1)
@@ -78,9 +90,8 @@ class PlanRepositoryTest {
 
     }
 
-    private Plan createPlan(User user, String title, LocalDate startDate, LocalDate endDate) {
+    private Plan createPlan(String title, LocalDate startDate, LocalDate endDate) {
         Plan plan = Plan.builder()
-                .user(user)
                 .title(title)
                 .startDate(startDate)
                 .endDate(endDate)
@@ -98,6 +109,15 @@ class PlanRepositoryTest {
                 .profileImageUrl("image.jpg")
                 .build();
         return userRepository.save(user);
+    }
+
+    private void addParticipant(User user, Plan plan) {
+        PlanParticipant planParticipant = PlanParticipant.builder()
+                .user(user)
+                .plan(plan)
+                .role(PlanRole.OWNER)
+                .build();
+        planParticipantRepository.save(planParticipant);
     }
 
 }

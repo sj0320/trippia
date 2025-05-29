@@ -15,6 +15,9 @@ import com.trippia.travel.domain.location.country.Country;
 import com.trippia.travel.domain.location.country.CountryRepository;
 import com.trippia.travel.domain.travel.plancity.PlanCity;
 import com.trippia.travel.domain.travel.plancity.PlanCityRepository;
+import com.trippia.travel.domain.travel.planparticipant.PlanParticipant;
+import com.trippia.travel.domain.travel.planparticipant.PlanParticipantRepository;
+import com.trippia.travel.domain.travel.planparticipant.PlanRole;
 import com.trippia.travel.domain.travel.schedule.Schedule;
 import com.trippia.travel.domain.travel.schedule.ScheduleRepository;
 import com.trippia.travel.domain.travel.scheduleitem.ScheduleItemRepository;
@@ -22,6 +25,7 @@ import com.trippia.travel.domain.travel.scheduleitem.memo.Memo;
 import com.trippia.travel.domain.travel.scheduleitem.scheduleplace.SchedulePlace;
 import com.trippia.travel.domain.user.User;
 import com.trippia.travel.domain.user.UserRepository;
+import com.trippia.travel.exception.plan.PlanException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +39,7 @@ import java.util.List;
 import static com.trippia.travel.domain.common.CityType.JAPAN;
 import static com.trippia.travel.domain.common.CityType.KOREA;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 @SpringBootTest
@@ -47,6 +52,9 @@ class PlanServiceTest {
 
     @Autowired
     private PlanRepository planRepository;
+
+    @Autowired
+    private PlanParticipantRepository planParticipantRepository;
 
     @Autowired
     private CountryRepository countryRepository;
@@ -90,7 +98,14 @@ class PlanServiceTest {
         List<Plan> plans = planRepository.findAll();
         assertThat(plans).hasSize(1);
         assertThat(plans.get(0).getTitle()).isEqualTo("도쿄, 서울 여행");
-        assertThat(plans.get(0).getUser().getEmail()).isEqualTo(email);
+        assertThat(plans.get(0).getOwnerEmail()).isEqualTo(email);
+
+
+        List<PlanParticipant> participants = planParticipantRepository.findByPlanId(plans.get(0).getId());
+        assertThat(participants).hasSize(1);
+        assertThat(participants.get(0).getUser()).isEqualTo(user);
+        assertThat(participants.get(0).getPlan()).isEqualTo(plans.get(0));
+        assertThat(participants.get(0).getRole()).isEqualTo(PlanRole.OWNER);
 
         List<PlanCity> planCities = planCityRepository.findAll();
         assertThat(planCities).hasSize(2);
@@ -104,7 +119,7 @@ class PlanServiceTest {
         User user = createUser("email");
 
         // Plan 생성
-        Plan plan = Plan.createPlan(user, "title", LocalDate.now(), LocalDate.now().plusDays(1));
+        Plan plan = Plan.createPlan(user.getEmail(), "title", LocalDate.now(), LocalDate.now().plusDays(1));
 
         // Schedule 생성
         Schedule schedule1 = new Schedule(plan, LocalDate.now());
@@ -113,6 +128,7 @@ class PlanServiceTest {
         Schedule schedule2 = new Schedule(plan, LocalDate.now().plusDays(1));
         plan.addSchedule(schedule2);
         Plan savePlan = planRepository.save(plan);
+        addPlanParticipant(user, savePlan, PlanRole.OWNER);
 
         // ScheduleItem 생성
         Memo item1 = Memo.builder().schedule(schedule1).content("content1").sequence(1).build();
@@ -156,6 +172,33 @@ class PlanServiceTest {
 
     }
 
+    @DisplayName("여행계획 참여자가 아닌 경우 여행 계획 상세정보를 조회하면 예외가 발생한다.")
+    @Test
+    void findPlan_NoPermission() {
+        // given
+        // User 생성
+        User user1 = createUser("email1");
+        User user2 = createUser("email2");
+
+        // Plan 생성
+        Plan plan = Plan.createPlan(user1.getEmail(), "title", LocalDate.now(), LocalDate.now().plusDays(1));
+
+        // Schedule 생성
+        Schedule schedule1 = new Schedule(plan, LocalDate.now());
+        plan.addSchedule(schedule1);
+
+        Schedule schedule2 = new Schedule(plan, LocalDate.now().plusDays(1));
+        plan.addSchedule(schedule2);
+        Plan savePlan = planRepository.save(plan);
+        addPlanParticipant(user1, savePlan, PlanRole.OWNER);
+
+        // when & then
+        assertThatThrownBy(() -> planService.findPlan(user2.getEmail(), savePlan.getId()))
+                .isInstanceOf(PlanException.class)
+                .hasMessage("접근 권한이 없습니다.");
+
+    }
+
     @DisplayName("다가오는 여행계획 정보들을 조회한다.")
     @Test
     void getUpcomingPlanByUser() {
@@ -163,9 +206,13 @@ class PlanServiceTest {
         User user = createUser("email");
 
         LocalDate now = LocalDate.now();
-        Plan plan1 = createPlan(user, "title1", now.plusDays(1), now.plusDays(2));
-        Plan plan2 = createPlan(user, "title2", now.plusDays(2), now.plusDays(3));
-        Plan plan3 = createPlan(user, "title3", now.minusDays(2), now.minusDays(1));
+        Plan plan1 = createPlan(user.getEmail(), "title1", now.plusDays(1), now.plusDays(2));
+        Plan plan2 = createPlan(user.getEmail(), "title2", now.plusDays(2), now.plusDays(3));
+        Plan plan3 = createPlan(user.getEmail(), "title3", now.minusDays(2), now.minusDays(1));
+
+        addPlanParticipant(user, plan1, PlanRole.PARTICIPANT);
+        addPlanParticipant(user, plan2, PlanRole.PARTICIPANT);
+        addPlanParticipant(user, plan3, PlanRole.OWNER);
 
         Country japan = createCountry("일본");
         Country korea = createCountry("한국");
@@ -200,9 +247,13 @@ class PlanServiceTest {
         User user = createUser("email");
 
         LocalDate now = LocalDate.now();
-        Plan plan1 = createPlan(user, "title1", now.plusDays(1), now.plusDays(2));
-        Plan plan2 = createPlan(user, "title2", now.minusDays(5), now.minusDays(4));
-        Plan plan3 = createPlan(user, "title3", now.minusDays(2), now.minusDays(1));
+        Plan plan1 = createPlan(user.getEmail(), "title1", now.plusDays(1), now.plusDays(2));
+        Plan plan2 = createPlan(user.getEmail(), "title2", now.minusDays(5), now.minusDays(4));
+        Plan plan3 = createPlan(user.getEmail(), "title3", now.minusDays(2), now.minusDays(1));
+
+        addPlanParticipant(user, plan1, PlanRole.OWNER);
+        addPlanParticipant(user, plan2, PlanRole.OWNER);
+        addPlanParticipant(user, plan3, PlanRole.OWNER);
 
         Country japan = createCountry("일본");
         Country korea = createCountry("한국");
@@ -234,7 +285,7 @@ class PlanServiceTest {
         User user = User.builder()
                 .email(email)
                 .password("password")
-                .nickname("nickname")
+                .nickname("nick_" + email)
                 .loginType(LoginType.LOCAL)
                 .role(Role.ROLE_USER)
                 .build();
@@ -254,9 +305,9 @@ class PlanServiceTest {
                 .build());
     }
 
-    private Plan createPlan(User user, String title, LocalDate startDate, LocalDate endDate) {
+    private Plan createPlan(String email, String title, LocalDate startDate, LocalDate endDate) {
         Plan plan = Plan.builder()
-                .user(user)
+                .ownerEmail(email)
                 .title(title)
                 .startDate(startDate)
                 .endDate(endDate)
@@ -270,6 +321,15 @@ class PlanServiceTest {
                 .city(city)
                 .build();
         return planCityRepository.save(planCity);
+    }
+
+    private void addPlanParticipant(User user, Plan plan, PlanRole role) {
+        PlanParticipant participant = PlanParticipant.builder()
+                .user(user)
+                .plan(plan)
+                .role(role)
+                .build();
+        planParticipantRepository.save(participant);
     }
 
 

@@ -49,7 +49,7 @@ class ScheduleItemRepositoryTest {
         User user = createUser();
 
         // plan 생성
-        Plan plan = Plan.createPlan(user, "title", LocalDate.now(), LocalDate.now().plusDays(1));
+        Plan plan = Plan.createPlan(user.getEmail(), "title", LocalDate.now(), LocalDate.now().plusDays(1));
 
         // schedule 생성
         Schedule schedule = new Schedule(plan, LocalDate.now());
@@ -87,7 +87,7 @@ class ScheduleItemRepositoryTest {
         User user = createUser();
 
         // plan 생성
-        Plan plan = Plan.createPlan(user, "title", LocalDate.now(), LocalDate.now().plusDays(1));
+        Plan plan = Plan.createPlan(user.getEmail(), "title", LocalDate.now(), LocalDate.now().plusDays(1));
         planRepository.save(plan);
 
         // schedule 생성
@@ -122,7 +122,7 @@ class ScheduleItemRepositoryTest {
         User user = createUser();
 
         // plan 생성
-        Plan plan = Plan.createPlan(user, "title", LocalDate.now(), LocalDate.now().plusDays(1));
+        Plan plan = Plan.createPlan(user.getEmail(), "title", LocalDate.now(), LocalDate.now().plusDays(1));
 
         // schedule 생성
         Schedule schedule = new Schedule(plan, LocalDate.now());

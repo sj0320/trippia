@@ -1,7 +1,6 @@
 package com.trippia.travel.domain.travel.schedule;
 
 import com.trippia.travel.domain.travel.plan.Plan;
-import com.trippia.travel.exception.schedule.ScheduleException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -29,12 +28,12 @@ public class Schedule {
         this.date = date;
     }
 
-    public void validateOwnerOf(String email){
-        String authorEmail = plan.getUser().getEmail();
-        if(!authorEmail.equals(email)){
-            throw new ScheduleException("접근 권한이 없습니다.");
-        }
-    }
+//    public void validateOwnerOf(String email){
+//        String ownerEmail = plan.getOwnerEmail();
+//        if(!ownerEmail.equals(email)){
+//            throw new ScheduleException("접근 권한이 없습니다.");
+//        }
+//    }
 
     public void setPlan(Plan plan) {
         this.plan = plan;

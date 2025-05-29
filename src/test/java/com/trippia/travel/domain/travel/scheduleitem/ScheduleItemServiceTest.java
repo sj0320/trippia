@@ -7,6 +7,9 @@ import com.trippia.travel.domain.common.Role;
 import com.trippia.travel.domain.common.ScheduleItemType;
 import com.trippia.travel.domain.travel.plan.Plan;
 import com.trippia.travel.domain.travel.plan.PlanRepository;
+import com.trippia.travel.domain.travel.planparticipant.PlanParticipant;
+import com.trippia.travel.domain.travel.planparticipant.PlanParticipantRepository;
+import com.trippia.travel.domain.travel.planparticipant.PlanRole;
 import com.trippia.travel.domain.travel.schedule.Schedule;
 import com.trippia.travel.domain.travel.schedule.ScheduleRepository;
 import com.trippia.travel.domain.travel.scheduleitem.memo.Memo;
@@ -28,6 +31,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 import static com.trippia.travel.controller.dto.scheduleitem.requset.ScheduleItemOrderRequest.*;
+import static com.trippia.travel.domain.travel.planparticipant.PlanRole.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -55,6 +59,9 @@ class ScheduleItemServiceTest {
     @Autowired
     private ScheduleItemRepository scheduleItemRepository;
 
+    @Autowired
+    private PlanParticipantRepository planParticipantRepository;
+
 
     @DisplayName("스케줄 주인이 스케줄 항목을 삭제한다.")
     @Test
@@ -62,9 +69,11 @@ class ScheduleItemServiceTest {
         // given
         User user = createUser("email1", "nickname1");
         // Plan 생성
-        Plan plan = Plan.createPlan(user, "plan", LocalDate.of(2099, 1, 1),
+        Plan plan = Plan.createPlan(user.getEmail(), "plan", LocalDate.of(2099, 1, 1),
                 LocalDate.of(2099, 2, 1));
         Plan savedPlan = planRepository.save(plan);
+        addPlanParticipant(user, plan, OWNER);
+
         // Schedule 생성
         Schedule schedule = new Schedule(savedPlan, LocalDate.of(2099, 1, 1));
         Schedule savedSchedule = scheduleRepository.save(schedule);
@@ -82,6 +91,32 @@ class ScheduleItemServiceTest {
         assertThat(after).hasSize(0);
     }
 
+    @DisplayName("여행 계획 참여자가 아닌 사용자가 스케줄 항목을 삭제할 경웅 예외가 발생한다.")
+    @Test
+    void deleteScheduleItem_NoPermission() {
+        // given
+        User user1 = createUser("email1", "nickname1");
+        User user2 = createUser("email2", "nickname2");
+
+        // Plan 생성
+        Plan plan = Plan.createPlan(user1.getEmail(), "plan", LocalDate.of(2099, 1, 1),
+                LocalDate.of(2099, 2, 1));
+        Plan savedPlan = planRepository.save(plan);
+        addPlanParticipant(user1, plan, OWNER);
+
+        // Schedule 생성
+        Schedule schedule = new Schedule(savedPlan, LocalDate.of(2099, 1, 1));
+        Schedule savedSchedule = scheduleRepository.save(schedule);
+        // Memo 생성
+        Memo memo = createMemo(savedSchedule, "content1", 1);
+        Memo scheduleItem = scheduleItemRepository.save(memo);
+
+        // when
+        assertThatThrownBy(() -> scheduleItemService.deleteScheduleItem(user2.getEmail(), scheduleItem.getId()))
+                .isInstanceOf(ScheduleException.class)
+                .hasMessage("접근 권한이 없습니다.");
+    }
+
 
     @DisplayName("스케줄에 속한 모든 스케줄항목들을 조회한다.")
     @Test
@@ -89,9 +124,11 @@ class ScheduleItemServiceTest {
         // given
         User user = createUser("email1", "nickname1");
         // Plan 생성
-        Plan plan = Plan.createPlan(user, "plan", LocalDate.of(2099, 1, 1),
+        Plan plan = Plan.createPlan(user.getEmail(), "plan", LocalDate.of(2099, 1, 1),
                 LocalDate.of(2099, 2, 1));
         Plan savedPlan = planRepository.save(plan);
+        addPlanParticipant(user, plan, OWNER);
+
         // Schedule 생성
         Schedule schedule = new Schedule(savedPlan, LocalDate.of(2099, 1, 1));
         Schedule savedSchedule = scheduleRepository.save(schedule);
@@ -113,15 +150,47 @@ class ScheduleItemServiceTest {
                 );
     }
 
+    @DisplayName("여행 참여자가 아닌 사용자가 케줄항목들을 조회하면 예외가 발생한다.")
+    @Test
+    void getScheduleItemsByScheduleId_NoPermission() {
+        // given
+        User user1 = createUser("email1", "nickname1");
+        User user2 = createUser("email2", "nickname2");
+        // Plan 생성
+        Plan plan = Plan.createPlan(user1.getEmail(), "plan", LocalDate.of(2099, 1, 1),
+                LocalDate.of(2099, 2, 1));
+        Plan savedPlan = planRepository.save(plan);
+        addPlanParticipant(user1, plan, OWNER);
+
+        // Schedule 생성
+        Schedule schedule = new Schedule(savedPlan, LocalDate.of(2099, 1, 1));
+        Schedule savedSchedule = scheduleRepository.save(schedule);
+
+        // ScheduleItem 생성
+        Memo memo = createMemo(savedSchedule, "hello", 1);
+        SchedulePlace schedulePlace = createSchedulePlace(savedSchedule, "서울역", 2);
+        scheduleItemRepository.saveAll(List.of(memo, schedulePlace));
+
+        // when & then
+        assertThatThrownBy(()-> scheduleItemService.getScheduleItemsByScheduleId(user2.getEmail(), savedSchedule.getId()))
+                .isInstanceOf(ScheduleException.class)
+                .hasMessage("접근 권한이 없습니다.");
+    }
+
+
+
+
     @DisplayName("스케줄 항목들의 부가정보들을 업데이트한다.")
     @Test
     void updateScheduleItemMeta() {
         // given
         User user = createUser("email1", "nickname1");
         // Plan 생성
-        Plan plan = Plan.createPlan(user, "plan", LocalDate.of(2099, 1, 1),
+        Plan plan = Plan.createPlan(user.getEmail(), "plan", LocalDate.of(2099, 1, 1),
                 LocalDate.of(2099, 2, 1));
         Plan savedPlan = planRepository.save(plan);
+        addPlanParticipant(user, savedPlan, OWNER);
+
         // Schedule 생성
         Schedule schedule = new Schedule(savedPlan, LocalDate.of(2099, 1, 1));
         Schedule savedSchedule = scheduleRepository.save(schedule);
@@ -142,11 +211,13 @@ class ScheduleItemServiceTest {
     @Test
     void updateScheduleItemMetaNowOwner() {
         // given
-        User user = createUser("email1", "nickname1");
+        User user1 = createUser("email1", "nickname1");
+        User user2 = createUser("email2", "nickname2");
         // Plan 생성
-        Plan plan = Plan.createPlan(user, "plan", LocalDate.of(2099, 1, 1),
+        Plan plan = Plan.createPlan(user1.getEmail(), "plan", LocalDate.of(2099, 1, 1),
                 LocalDate.of(2099, 2, 1));
         Plan savedPlan = planRepository.save(plan);
+        addPlanParticipant(user1, savedPlan, OWNER);
         // Schedule 생성
         Schedule schedule = new Schedule(savedPlan, LocalDate.of(2099, 1, 1));
         Schedule savedSchedule = scheduleRepository.save(schedule);
@@ -156,7 +227,7 @@ class ScheduleItemServiceTest {
         Memo scheduleItem = memoRepository.save(memo);
 
         // when & then
-        assertThatThrownBy(() -> scheduleItemService.updateScheduleItemMeta("email2", scheduleItem.getId(), 100000, LocalTime.now()))
+        assertThatThrownBy(() -> scheduleItemService.updateScheduleItemMeta(user2.getEmail(), scheduleItem.getId(), 100000, LocalTime.now()))
                 .isInstanceOf(ScheduleException.class)
                 .hasMessage("접근 권한이 없습니다.");
     }
@@ -167,9 +238,10 @@ class ScheduleItemServiceTest {
         // given
         User user = createUser("email1", "nickname1");
         // Plan 생성
-        Plan plan = Plan.createPlan(user, "plan", LocalDate.of(2099, 1, 1),
+        Plan plan = Plan.createPlan(user.getEmail(), "plan", LocalDate.of(2099, 1, 1),
                 LocalDate.of(2099, 2, 1));
         Plan savedPlan = planRepository.save(plan);
+        addPlanParticipant(user, savedPlan, OWNER);
         // Schedule 생성
         Schedule schedule = new Schedule(savedPlan, LocalDate.of(2099, 1, 1));
         Schedule savedSchedule = scheduleRepository.save(schedule);
@@ -191,7 +263,7 @@ class ScheduleItemServiceTest {
         // given
         User user = createUser("email1", "nickname1");
         // Plan 생성
-        Plan plan = Plan.createPlan(user, "plan", LocalDate.of(2099, 1, 1),
+        Plan plan = Plan.createPlan(user.getEmail(), "plan", LocalDate.of(2099, 1, 1),
                 LocalDate.of(2099, 2, 1));
         Plan savedPlan = planRepository.save(plan);
         // Schedule 생성
@@ -214,9 +286,11 @@ class ScheduleItemServiceTest {
         // given
         User user = createUser("email1", "nickname1");
         // Plan 생성
-        Plan plan = Plan.createPlan(user, "plan", LocalDate.of(2099, 1, 1),
+        Plan plan = Plan.createPlan(user.getEmail(), "plan", LocalDate.of(2099, 1, 1),
                 LocalDate.of(2099, 2, 1));
         Plan savedPlan = planRepository.save(plan);
+        addPlanParticipant(user, savedPlan, OWNER);
+
         // Schedule 생성
         Schedule schedule = new Schedule(savedPlan, LocalDate.of(2099, 1, 1));
         Schedule savedSchedule = scheduleRepository.save(schedule);
@@ -290,5 +364,15 @@ class ScheduleItemServiceTest {
                 .build();
         return userRepository.save(user);
     }
+
+    private void addPlanParticipant(User user, Plan plan, PlanRole role){
+        PlanParticipant participant = PlanParticipant.builder()
+                .user(user)
+                .plan(plan)
+                .role(role)
+                .build();
+        planParticipantRepository.save(participant);
+    }
+
 
 }
