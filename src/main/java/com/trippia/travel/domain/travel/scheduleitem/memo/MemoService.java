@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.trippia.travel.domain.travel.planparticipant.InvitationStatus.ACCEPTED;
+
 @RequiredArgsConstructor
 @Service
 @Transactional(readOnly = true)
@@ -41,7 +43,7 @@ public class MemoService {
 
     private void validatePermission(User user, Schedule schedule) {
         Long planId = schedule.getPlan().getId();
-        boolean hasPermission = planParticipantRepository.existsByUserIdAndPlanId(user.getId(), planId);
+        boolean hasPermission = planParticipantRepository.existsByUserIdAndPlanIdAndStatus(user.getId(), planId, ACCEPTED);
         if (!hasPermission) {
             throw new ScheduleException("접근 권한이 없습니다.");
         }

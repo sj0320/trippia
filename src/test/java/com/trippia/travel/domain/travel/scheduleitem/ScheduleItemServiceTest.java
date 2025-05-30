@@ -30,8 +30,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-import static com.trippia.travel.controller.dto.scheduleitem.requset.ScheduleItemOrderRequest.*;
-import static com.trippia.travel.domain.travel.planparticipant.PlanRole.*;
+import static com.trippia.travel.controller.dto.scheduleitem.requset.ScheduleItemOrderRequest.ScheduleItemOrder;
+import static com.trippia.travel.domain.travel.planparticipant.InvitationStatus.ACCEPTED;
+import static com.trippia.travel.domain.travel.planparticipant.PlanRole.OWNER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -370,6 +371,7 @@ class ScheduleItemServiceTest {
                 .user(user)
                 .plan(plan)
                 .role(role)
+                .status(ACCEPTED)
                 .build();
         planParticipantRepository.save(participant);
     }

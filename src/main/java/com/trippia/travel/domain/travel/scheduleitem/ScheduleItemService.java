@@ -19,7 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalTime;
 import java.util.List;
 
-import static com.trippia.travel.controller.dto.scheduleitem.requset.ScheduleItemOrderRequest.*;
+import static com.trippia.travel.controller.dto.scheduleitem.requset.ScheduleItemOrderRequest.ScheduleItemOrder;
+import static com.trippia.travel.domain.travel.planparticipant.InvitationStatus.ACCEPTED;
 
 @Service
 @Slf4j
@@ -97,7 +98,7 @@ public class ScheduleItemService {
 
     private void validatePermission(User user, Schedule schedule) {
         Long planId = schedule.getPlan().getId();
-        boolean hasPermission = planParticipantRepository.existsByUserIdAndPlanId(user.getId(), planId);
+        boolean hasPermission = planParticipantRepository.existsByUserIdAndPlanIdAndStatus(user.getId(), planId, ACCEPTED);
         if (!hasPermission) {
             throw new ScheduleException("접근 권한이 없습니다.");
         }

@@ -4,7 +4,7 @@ import com.trippia.travel.domain.common.LoginType;
 import lombok.Getter;
 
 @Getter
-public class DifferentLoginTypeException extends UserException{
+public class DifferentLoginTypeException extends UserException {
 
     private final LoginType previousType;
     private final LoginType newType;

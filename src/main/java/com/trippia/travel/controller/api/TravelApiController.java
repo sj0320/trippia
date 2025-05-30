@@ -79,4 +79,20 @@ public class TravelApiController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/plan/{planId}/invite")
+    public ResponseEntity<Void> invitePlan(@CurrentUser String email,
+                                           @PathVariable Long planId,
+                                           @RequestParam String nickname) {
+        planService.invitePlan(email, planId, nickname);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/plan/{planId}/accept")
+    public ResponseEntity<Void> acceptPlanInvite(@CurrentUser String email,
+                                                 @PathVariable Long planId) {
+
+        planService.acceptInvite(email, planId);
+        return ResponseEntity.ok().build();
+    }
+
 }

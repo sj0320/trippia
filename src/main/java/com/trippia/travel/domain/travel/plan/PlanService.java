@@ -11,7 +11,6 @@ import com.trippia.travel.domain.location.city.CityRepository;
 import com.trippia.travel.domain.travel.plancity.PlanCity;
 import com.trippia.travel.domain.travel.planparticipant.PlanParticipant;
 import com.trippia.travel.domain.travel.planparticipant.PlanParticipantRepository;
-import com.trippia.travel.domain.travel.planparticipant.PlanRole;
 import com.trippia.travel.domain.travel.schedule.Schedule;
 import com.trippia.travel.domain.travel.scheduleitem.ScheduleItem;
 import com.trippia.travel.domain.travel.scheduleitem.ScheduleItemConverter;
@@ -31,6 +30,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
+
+import static com.trippia.travel.domain.travel.planparticipant.InvitationStatus.ACCEPTED;
+import static com.trippia.travel.domain.travel.planparticipant.InvitationStatus.PENDING;
+import static com.trippia.travel.domain.travel.planparticipant.PlanRole.OWNER;
+import static com.trippia.travel.domain.travel.planparticipant.PlanRole.PARTICIPANT;
 
 
 @Service
@@ -72,7 +76,8 @@ public class PlanService {
         PlanParticipant participant = PlanParticipant.builder()
                 .user(user)
                 .plan(savedPlan)
-                .role(PlanRole.OWNER)
+                .role(OWNER)
+                .status(ACCEPTED)
                 .build();
         planParticipantRepository.save(participant);
 
@@ -111,11 +116,12 @@ public class PlanService {
                 })
                 .toList();
 
-        List<PlanParticipant> participants = planParticipantRepository.findByPlanId(planId);
+        List<PlanParticipant> participants = planParticipantRepository.findByPlanIdAndStatus(planId, ACCEPTED);
         List<PlanParticipantResponse> participantResponse = participants.stream()
                 .map(participant -> PlanParticipantResponse.builder()
                         .userId(participant.getUser().getId())
                         .nickname(participant.getUser().getNickname())
+                        .profileImageUrl(participant.getUser().getProfileImageUrl())
                         .role(participant.getRole().name())
                         .build())
                 .toList();
@@ -142,6 +148,38 @@ public class PlanService {
         planParticipantRepository.deleteByPlanId(planId);
         Plan plan = getPlan(planId);
         planRepository.delete(plan);
+    }
+
+    @Transactional
+    public void invitePlan(String email, Long planId, String nickname) {
+        Plan plan = getPlan(planId);
+        plan.validateOwnerOf(email);
+
+
+        User user = userRepository.findByNickname(nickname)
+                .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
+
+        validateInviteCondition(user.getId(), planId);
+
+        // 저장
+        PlanParticipant participant = PlanParticipant.builder()
+                .user(user)
+                .plan(plan)
+                .role(PARTICIPANT)
+                .status(PENDING)
+                .build();
+        planParticipantRepository.save(participant);
+    }
+
+    @Transactional
+    public void acceptInvite(String email, Long planId) {
+        User user = getUser(email);
+        PlanParticipant participant = planParticipantRepository.findByUserIdAndPlanId(user.getId(), planId)
+                .orElseThrow(() -> new IllegalArgumentException("초대 내역이 존재하지 않습니다."));
+        if(!participant.getStatus().equals(PENDING)){
+            throw new IllegalArgumentException("이미 처리된 초대입니다.");
+        }
+        participant.acceptInvitation();
     }
 
     private Plan getPlan(Long planId) {
@@ -176,11 +214,18 @@ public class PlanService {
     }
 
     private void validatePlanPermission(User user, Long planId) {
-        boolean hasPermission = planParticipantRepository.existsByUserIdAndPlanId(user.getId(), planId);
+        boolean hasPermission = planParticipantRepository.existsByUserIdAndPlanIdAndStatus(user.getId(), planId, ACCEPTED);
         if (!hasPermission) {
             throw new PlanException("접근 권한이 없습니다.");
         }
     }
 
+    private void validateInviteCondition(Long userId, Long planId) {
+        boolean isAlreadyJoin = planParticipantRepository.existsByUserIdAndPlanIdAndStatus(userId, planId, ACCEPTED);
+        boolean isAlreadyInvite = planParticipantRepository.existsByUserIdAndPlanIdAndStatus(userId, planId, PENDING);
+        if (isAlreadyJoin || isAlreadyInvite) {
+            throw new PlanException("이미 초대되었거나 참여중인 사용자입니다.");
+        }
+    }
 
 }

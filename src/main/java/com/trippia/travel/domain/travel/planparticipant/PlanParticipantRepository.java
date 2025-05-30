@@ -3,11 +3,14 @@ package com.trippia.travel.domain.travel.planparticipant;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PlanParticipantRepository extends JpaRepository<PlanParticipant, Long> {
-    List<PlanParticipant> findByPlanId(Long planId);
+    List<PlanParticipant> findByPlanIdAndStatus(Long planId, InvitationStatus status);
 
-    boolean existsByUserIdAndPlanId(Long userId, Long planId);
+    boolean existsByUserIdAndPlanIdAndStatus(Long userId, Long planId, InvitationStatus status);
 
     void deleteByPlanId(Long planId);
+
+    Optional<PlanParticipant> findByUserIdAndPlanId(Long userId, Long planId);
 }

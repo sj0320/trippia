@@ -25,7 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.trippia.travel.domain.travel.planparticipant.PlanRole.*;
+import static com.trippia.travel.domain.travel.planparticipant.InvitationStatus.ACCEPTED;
+import static com.trippia.travel.domain.travel.planparticipant.PlanRole.OWNER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -146,6 +147,7 @@ class SchedulePlaceServiceTest {
                 .user(user)
                 .plan(plan)
                 .role(role)
+                .status(ACCEPTED)
                 .build();
         planParticipantRepository.save(participant);
     }
