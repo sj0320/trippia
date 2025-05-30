@@ -1,3 +1,44 @@
+window.inviteParticipant = function () {
+    const nickname = document.getElementById("participantNickname").value;
+
+    if (!nickname) {
+        alert("닉네임을 입력해주세요.");
+        return;
+    }
+
+    const dataDiv = document.getElementById("planData");
+    const planId = dataDiv ? dataDiv.getAttribute("data-id") : null;
+
+    if (!planId) {
+        alert("플랜 ID를 찾을 수 없습니다.");
+        return;
+    }
+
+    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute("content");
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute("content");
+
+    fetch(`/api/travel/plan/${planId}/invite?nickname=${encodeURIComponent(nickname)}`, {
+        method: "POST",
+        headers: {
+            [csrfHeader]: csrfToken
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            alert("초대 성공!");
+            location.reload();
+        } else {
+            response.text().then(text => {
+                alert("초대 실패: " + text);
+            });
+        }
+    })
+    .catch(error => {
+        alert("오류 발생: " + error.message);
+    });
+};
+
+// ✅ 초기화 로직
 document.addEventListener("DOMContentLoaded", function () {
     const dropdownMenu = document.getElementById("dropdownMenu");
     const hamburgerButton = document.querySelector("button[onclick='toggleMenu()']");
@@ -7,7 +48,6 @@ document.addEventListener("DOMContentLoaded", function () {
         dropdownMenu.style.display = isVisible ? "none" : "block";
     };
 
-    // 메뉴 외부 클릭 시 닫히도록
     document.addEventListener("click", function (event) {
         const isClickInsideMenu = dropdownMenu.contains(event.target);
         const isClickOnHamburger = hamburgerButton.contains(event.target);
@@ -20,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function openModal(id) {
         const modal = document.getElementById(id);
         if (modal) modal.classList.add("active");
-        dropdownMenu.style.display = "none"; // 메뉴도 함께 닫기
+        dropdownMenu.style.display = "none";
     }
 
     function closeModal(id) {
@@ -44,7 +84,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (modal) {
             modal.classList.remove("hidden");
-            modal.classList.add("active");  // 추가!
+            modal.classList.add("active");
         }
     };
 
@@ -55,7 +95,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     window.openDeleteModal = () => openModal("deleteModal");
     window.closeDeleteModal = () => closeModal("deleteModal");
-
 
     window.confirmDeletePlan = function () {
         const dataDiv = document.getElementById("planData");
@@ -70,7 +109,6 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // CSRF 토큰 정보 가져오기
         const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute("content");
         const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute("content");
 
@@ -92,6 +130,4 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("삭제 중 오류 발생: " + error.message);
         });
     };
-
-
 });

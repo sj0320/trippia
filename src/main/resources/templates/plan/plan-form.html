@@ -553,20 +553,38 @@
     <div id="participantModal" class="modal hidden">
         <div class="modal-content">
             <h3>참여자 관리</h3>
-            <input type="email" id="participantEmail" placeholder="이메일로 초대">
-            <button onclick="inviteParticipant()">초대</button>
 
+            <!-- 초대 입력 영역 -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <input type="text"
+                       id="participantNickname"
+                       placeholder="닉네임으로 초대"
+                       style="flex: 1; padding: 0.5rem;" />
+                <button onclick="inviteParticipant()" style="padding: 0.5rem 1rem;">초대</button>
+            </div>
+
+            <!-- 참여자 목록 -->
             <ul style="margin-top: 1rem;">
-                <li th:each="p : ${plan.participants}" style="margin: 5px 0;">
+                <li th:each="p : ${plan.participants}" style="display: flex; align-items: center; margin: 5px 0;">
+
+                    <!-- ✅ 프로필 이미지 -->
+                    <img th:src="${p.profileImageUrl}" alt="프로필"
+                         style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; margin-right: 10px;" />
+
+                    <!-- 닉네임 -->
                     <span th:text="${p.nickname}"></span>
+
+                    <!-- 추방 버튼 -->
                     <span th:if="${p.role != 'OWNER'}">
                     <button onclick="kick([[${p.userId}]])" style="margin-left: 10px;">추방</button>
                 </span>
-                    <span th:if="${p.role == 'OWNER'}" style="color: gray;"> (계획 생성자)</span>
+
+                    <!-- 생성자 표시 -->
+                    <span th:if="${p.role == 'OWNER'}" style="color: gray; margin-left: 10px;">(계획 생성자)</span>
                 </li>
             </ul>
 
-            <div class="modal-actions">
+            <div class="modal-actions" style="margin-top: 1rem;">
                 <button onclick="closeParticipantModal()">닫기</button>
             </div>
         </div>

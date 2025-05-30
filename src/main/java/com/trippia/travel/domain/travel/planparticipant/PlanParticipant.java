@@ -25,12 +25,21 @@ public class PlanParticipant {
     @JoinColumn(name = "plan_id")
     private Plan plan;
 
+    @Enumerated(EnumType.STRING)
     private PlanRole role;
 
+    @Enumerated(EnumType.STRING)
+    private InvitationStatus status;
+
     @Builder
-    private PlanParticipant(User user, Plan plan, PlanRole role) {
+    private PlanParticipant(User user, Plan plan, PlanRole role, InvitationStatus status) {
         this.user = user;
         this.plan = plan;
         this.role = role;
+        this.status = status;
+    }
+
+    public void acceptInvitation(){
+        this.status = InvitationStatus.ACCEPTED;
     }
 }

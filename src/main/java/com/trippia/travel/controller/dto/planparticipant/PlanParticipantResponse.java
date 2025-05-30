@@ -10,12 +10,15 @@ public class PlanParticipantResponse {
 
     private String nickname;
 
+    private String profileImageUrl;
+
     private String role;
 
     @Builder
-    private PlanParticipantResponse(Long userId, String nickname, String role) {
+    private PlanParticipantResponse(Long userId, String nickname, String profileImageUrl, String role) {
         this.userId = userId;
         this.nickname = nickname;
+        this.profileImageUrl = profileImageUrl;
         this.role = role;
     }
 }
