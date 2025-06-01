@@ -88,6 +88,57 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
+
+    window.submitPlanEdit = function () {
+        const dataDiv = document.getElementById("planData");
+        if (!dataDiv) {
+            alert("플랜 정보가 없습니다.");
+            return;
+        }
+
+        const planId = dataDiv.getAttribute("data-id");
+        if (!planId) {
+            alert("플랜 ID가 없습니다.");
+            return;
+        }
+
+        const title = document.getElementById("editTitle").value;
+        const startDate = document.getElementById("editStartDate").value;
+        const endDate = document.getElementById("editEndDate").value;
+
+        if (!title || !startDate || !endDate) {
+            alert("모든 값을 입력해주세요.");
+            return;
+        }
+
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute("content");
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute("content");
+
+        const payload = {
+            title: title,
+            startDate: startDate,
+            endDate: endDate
+        };
+
+        fetch(`/api/travel/plan/${planId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                [csrfHeader]: csrfToken
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => {
+            if (!response.ok) return;
+            closeModal("editModal");
+            window.location.reload();
+        })
+        .catch(error => {
+            // 콘솔 로깅만 하고 사용자에게는 알리지 않음
+            console.error("수정 중 오류 발생:", error.message);
+        });
+    };
+
     window.closeEditModal = () => closeModal("editModal");
 
     window.openParticipantModal = () => openModal("participantModal");
