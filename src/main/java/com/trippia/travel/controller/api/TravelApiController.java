@@ -3,6 +3,7 @@ package com.trippia.travel.controller.api;
 import com.trippia.travel.annotation.CurrentUser;
 import com.trippia.travel.controller.dto.memo.requset.MemoSaveRequest;
 import com.trippia.travel.controller.dto.memo.requset.MemoUpdateRequest;
+import com.trippia.travel.controller.dto.plan.request.PlanUpdateRequest;
 import com.trippia.travel.controller.dto.scheduleitem.requset.ScheduleItemMetaRequest;
 import com.trippia.travel.controller.dto.scheduleitem.requset.ScheduleItemOrderRequest;
 import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemIdResponse;
@@ -76,6 +77,13 @@ public class TravelApiController {
     @DeleteMapping("/plan/{planId}")
     public ResponseEntity<Void> deletePlan(@CurrentUser String email, @PathVariable Long planId) {
         planService.deletePlan(email, planId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/plan/{planId}")
+    public ResponseEntity<Void> editPlan(@CurrentUser String email, @PathVariable Long planId,
+                                         @RequestBody PlanUpdateRequest request){
+        planService.updatePlan(email, planId, request);
         return ResponseEntity.ok().build();
     }
 

@@ -1,6 +1,7 @@
 package com.trippia.travel.domain.travel.plan;
 
 import com.trippia.travel.controller.dto.plan.request.PlanCreateRequest;
+import com.trippia.travel.controller.dto.plan.request.PlanUpdateRequest;
 import com.trippia.travel.controller.dto.plan.response.PlanDetailsResponse;
 import com.trippia.travel.controller.dto.plan.response.PlanSummaryResponse;
 import com.trippia.travel.controller.dto.planparticipant.PlanParticipantResponse;
@@ -180,6 +181,13 @@ public class PlanService {
             throw new IllegalArgumentException("이미 처리된 초대입니다.");
         }
         participant.acceptInvitation();
+    }
+
+    @Transactional
+    public void updatePlan(String email, Long planId, PlanUpdateRequest request) {
+        Plan plan = getPlan(planId);
+        plan.validateOwnerOf(email);
+        plan.updatePlan(request.getTitle(), request.getStartDate(), request.getEndDate());
     }
 
     private Plan getPlan(Long planId) {

@@ -1,6 +1,7 @@
 package com.trippia.travel.domain.travel.plan;
 
 import com.trippia.travel.controller.dto.plan.request.PlanCreateRequest;
+import com.trippia.travel.controller.dto.plan.request.PlanUpdateRequest;
 import com.trippia.travel.controller.dto.plan.response.PlanDetailsResponse;
 import com.trippia.travel.controller.dto.plan.response.PlanSummaryResponse;
 import com.trippia.travel.controller.dto.planparticipant.PlanParticipantResponse;
@@ -338,7 +339,7 @@ class PlanServiceTest {
         // then
         List<PlanParticipant> result = planParticipantRepository.findAll();
         assertThat(result).hasSize(2)
-                .extracting("user","role", "status")
+                .extracting("user", "role", "status")
                 .containsExactlyInAnyOrder(
                         tuple(owner, OWNER, ACCEPTED),
                         tuple(user, PARTICIPANT, PENDING)
@@ -357,7 +358,7 @@ class PlanServiceTest {
         addPlanParticipant(owner, plan, OWNER);
 
         // when & then
-        assertThatThrownBy(()-> planService.invitePlan(owner.getEmail(), plan.getId(), "notExists"))
+        assertThatThrownBy(() -> planService.invitePlan(owner.getEmail(), plan.getId(), "notExists"))
                 .isInstanceOf(UserException.class)
                 .hasMessage("사용자를 찾을 수 없습니다.");
 
@@ -431,6 +432,33 @@ class PlanServiceTest {
                 .hasMessage("이미 처리된 초대입니다.");
     }
 
+
+    @DisplayName("여행계획을 수정한다.")
+    @Test
+    void updatePlan() {
+        // given
+        User owner = createUser("email1");
+        Plan plan = createPlan(owner.getEmail(), "여행", LocalDate.now(), LocalDate.now().plusDays(1));
+        addPlanParticipant(owner, plan, OWNER);
+
+        LocalDate updateStartDate = LocalDate.of(2050, 1, 1);
+        LocalDate updateEndDate = LocalDate.of(2050, 2, 1);
+
+        PlanUpdateRequest request = PlanUpdateRequest.builder()
+                .title("수정한 제목")
+                .startDate(updateStartDate)
+                .endDate(updateEndDate)
+                .build();
+
+        // when
+        planService.updatePlan(owner.getEmail(), plan.getId(), request);
+
+        // then
+        Plan updatedPlan = planRepository.findById(plan.getId()).get();
+        assertThat(updatedPlan.getTitle()).isEqualTo("수정한 제목");
+        assertThat(updatedPlan.getStartDate()).isEqualTo(updateStartDate);
+        assertThat(updatedPlan.getEndDate()).isEqualTo(updateEndDate);
+    }
 
     private User createUser(String email) {
         User user = User.builder()

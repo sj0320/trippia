@@ -55,6 +55,12 @@ public class Plan {
                 .build();
     }
 
+    public void updatePlan(String title, LocalDate startDate, LocalDate endDate){
+        this.title = title;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
     public void addPlanCity(PlanCity planCity) {
         this.planCities.add(planCity);
         planCity.setPlan(this);
