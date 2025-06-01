@@ -22,5 +22,4 @@ public class MyPageController {
         model.addAttribute("myPage", myPage);
         return "user/mypage";
     }
-
 }

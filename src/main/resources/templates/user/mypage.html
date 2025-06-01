@@ -214,24 +214,185 @@
             font-size: 0.85rem;
             color: #666;
         }
+/* 모달 배경 */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+/* 모달 숨김 처리 */
+.hidden {
+    display: none;
+}
+
+/* 모달 콘텐츠 박스 */
+.modal-content {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 2rem 2.5rem;
+    width: 360px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    font-family: 'Segoe UI', sans-serif;
+    color: #222;
+    box-sizing: border-box;
+}
+
+/* 모달 제목 */
+.modal-content h3 {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    color: #000;
+}
+
+/* 라벨 스타일 */
+.modal-content label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    color: #111;
+}
+
+/* 입력창 스타일 */
+.modal-content input[type="text"],
+.modal-content textarea {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    font-family: inherit;
+    color: #222;
+    box-sizing: border-box;
+    resize: vertical;
+}
+
+/* 텍스트 영역 높이 지정 */
+.modal-content textarea {
+    min-height: 80px;
+}
+
+/* 모달 버튼 컨테이너 */
+.modal-actions {
+    margin-top: 1.8rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* 모달 버튼 스타일 */
+.modal-actions button {
+    padding: 8px 18px;
+    font-size: 0.95rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-weight: 600;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* 저장 버튼 (주 버튼) */
+.modal-actions button:first-child {
+    background-color: #000;
+    color: #fff;
+}
+
+.modal-actions button:first-child:hover {
+    background-color: #444;
+}
+
+/* 취소 버튼 */
+.modal-actions button:last-child {
+    background-color: #eee;
+    color: #444;
+}
+
+.modal-actions button:last-child:hover {
+    background-color: #ddd;
+}
     </style>
 </head>
 
 <body>
 <div layout:fragment="content">
 
+    <div id="profileData"
+         th:attr="data-nickname=${myPage.myPageUserInfo.nickname},
+              data-bio=${myPage.myPageUserInfo.bio},
+              data-profile-image-url=${myPage.myPageUserInfo.profileImageUrl}"
+         style="display:none;"></div>
+
+    <!-- 프로필 모달창 -->
+    <div id="editProfileModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>프로필 수정</h3>
+
+            <label>프로필 사진</label>
+            <div style="text-align:center; margin-bottom: 1rem;">
+                <img
+                        id="previewProfileImg"
+                        src=""
+                        alt="프로필 사진"
+                        style="width:100px; height:100px; border-radius:50%; object-fit:cover; border: 2px solid #ccc; cursor:pointer;"
+                        onclick="document.getElementById('editProfileImage').click()" />
+            </div>
+
+            <!-- 파일 input은 화면에 보이지 않게 숨김 -->
+            <input type="file" id="editProfileImage" accept="image/*" style="display:none;">
+
+            <label>닉네임</label>
+            <input type="text" id="editNickname" placeholder="닉네임 입력"><br><br>
+
+            <label>한줄소개</label>
+            <textarea id="editIntro" placeholder="한줄소개 입력"></textarea><br><br>
+
+            <div class="modal-actions">
+                <button onclick="submitProfileEdit()">저장</button>
+                <button onclick="closeProfileEditModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+
     <div class="mypage-wrapper">
         <!-- 프로필 영역 -->
         <div class="profile-section">
             <img th:src="${myPage.myPageUserInfo.profileImageUrl}" alt="프로필 사진">
+
+            <!-- 닉네임 -->
             <div class="profile-nickname" th:text="${myPage.myPageUserInfo.nickname}">닉네임</div>
+
+            <!-- 여행자 등급 -->
+            <div class="profile-grade"
+                 th:text="'여행자 등급: ' + ${myPage.myPageUserInfo.travelerGrade}"
+                 style="margin-top: 0.3rem; font-size: 0.9rem; color: #5c7cfa; font-weight: bold;">
+                여행자 등급: BEGINNER
+            </div>
+
+            <!-- 소개글 -->
+            <div class="profile-bio"
+                 th:text="${myPage.myPageUserInfo.bio}"
+                 style="margin-top: 0.5rem; font-size: 0.9rem; color: #333; font-style: italic; white-space: pre-line;">
+                간단한 소개글이 여기에 나옵니다.
+            </div>
 
             <!-- 활동 통계 -->
             <div class="profile-stats" style="margin-top: 1rem; font-size: 0.9rem; color: #444;">
                 <div><strong th:text="${#lists.size(myPage.myDiaries)}">0</strong> 개의 일지 작성</div>
                 <div><strong th:text="${#lists.size(myPage.upcomingPlans) + #lists.size(myPage.pastPlans)}">0</strong> 개의 여행 계획</div>
             </div>
-            <button class="profile-edit-btn">프로필 수정</button>
+
+            <button class="profile-edit-btn" onclick="openProfileEditModal()">프로필 수정</button>
         </div>
 
         <!-- 활동 영역 -->
@@ -336,7 +497,10 @@
                 <button class="slider-btn next" onclick="scrollPastPlanSlider(1)" id="pastPlanNextBtn" style="display: none;">&#10095;</button>
             </div>
         </div>
+
+
     </div>
 </div>
+
 </body>
 </html>
