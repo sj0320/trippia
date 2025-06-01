@@ -94,7 +94,7 @@ public class DiaryController {
     @GetMapping("/list")
     public String getDiaryList(
             @ModelAttribute DiarySearchCondition searchCondition,
-            @PageableDefault(size = 3) Pageable pageable,
+            @PageableDefault(size = 6) Pageable pageable,
             Model model
     ) {
         log.info("category={}, {} ,{}", searchCondition.getKeyword(), searchCondition.getCountryName(), searchCondition.getThemeName());

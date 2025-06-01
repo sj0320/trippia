@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import static com.trippia.travel.domain.user.TravelerGrade.BEGINNER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -132,13 +133,15 @@ class UserServiceTest {
 
     }
 
-    private static User createUser() {
+
+    private User createUser() {
         return User.builder()
                 .email("email")
                 .password("pwd")
                 .role(Role.ROLE_USER)
                 .loginType(LoginType.LOCAL)
                 .nickname("nick")
+                .grade(BEGINNER)
                 .profileImageUrl("profileImageUrl")
                 .build();
     }

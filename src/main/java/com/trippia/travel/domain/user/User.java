@@ -12,6 +12,8 @@ import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
 
+import static com.trippia.travel.domain.user.TravelerGrade.*;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -39,16 +41,27 @@ public class User {
 
     private String profileImageUrl;
 
+    @Enumerated(EnumType.STRING)
+    private TravelerGrade grade = BEGINNER;
+
+    private int exp = 0;
+
+    private String bio;
+
     private LocalDateTime createdAt;
 
     @Builder
-    private User(String email, String password, String nickname, LoginType loginType, Role role, String profileImageUrl) {
+    private User(String email, String password, String nickname, LoginType loginType, Role role,
+                 String profileImageUrl, TravelerGrade grade, int exp, String bio) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
         this.loginType = loginType;
         this.role = (role != null) ? role : Role.ROLE_USER;
         this.profileImageUrl = profileImageUrl;
+        this.grade = grade;
+        this.exp = exp;
+        this.bio = bio;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -68,12 +81,18 @@ public class User {
         if (this.role == Role.ROLE_GUEST) {
             this.role = Role.ROLE_USER;
         }
+        this.grade = BEGINNER;
     }
 
     public void validateAuthorOf(Diary diary) {
-        if(!this.equals(diary.getUser())){
+        if (!this.equals(diary.getUser())) {
             throw new AccessDeniedException("접근 권한이 없습니다.");
         }
     }
 
+    public void updateProfileInfo(String nickname, String bio, String profileImageUrl) {
+        this.nickname = nickname;
+        this.bio = bio;
+        this.profileImageUrl = profileImageUrl;
+    }
 }

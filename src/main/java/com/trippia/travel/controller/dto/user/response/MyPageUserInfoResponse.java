@@ -12,10 +12,17 @@ public class MyPageUserInfoResponse {
 
     private String profileImageUrl;
 
+    private String bio;
+
+    private String travelerGrade;
+
     @Builder
-    private MyPageUserInfoResponse(Long userId, String nickname, String profileImageUrl) {
+    private MyPageUserInfoResponse(Long userId, String nickname, String profileImageUrl, String bio,
+                                   String travelerGrade) {
         this.userId = userId;
         this.nickname = nickname;
         this.profileImageUrl = profileImageUrl;
+        this.bio = bio;
+        this.travelerGrade = travelerGrade;
     }
 }
