@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <meta charset="UTF-8">
+    <title>알림함</title>
+    <style>
+        .notifications-container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .notification-card {
+            display: flex;
+            flex-direction: column;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .notification-card.unread {
+            background-color: #fff8f0;
+            border-left: 5px solid #ff6b6b;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 6px;
+        }
+
+        .notification-type {
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            color: #555;
+            background-color: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .notification-content {
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .notification-content a {
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        .notification-content a:hover {
+            text-decoration: underline;
+        }
+
+        .badge-unread {
+            background-color: #dc3545;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 8px;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #777;
+            font-size: 1rem;
+            margin-top: 50px;
+        }
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 6px;
+        }
+
+        .left-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .time-ago {
+            font-size: 0.8rem;
+            color: #999;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="notifications-container">
+        <h2>알림함</h2>
+
+        <div th:if="${#lists.isEmpty(notifications)}" class="empty-message">
+            <p>새로운 알림이 없습니다.</p>
+        </div>
+
+        <div th:if="${!#lists.isEmpty(notifications)}">
+            <div th:each="notification : ${notifications}"
+                 th:class="'notification-card' + (!notification.isRead ? ' unread' : '')">
+
+                <div class="notification-header">
+                    <div class="left-info">
+                        <span class="notification-type" th:text="${notification.type}">알림유형</span>
+                    </div>
+                    <div class="time-ago" th:text="${notification.timeAgo}">5분 전</div>
+                </div>
+
+                <div class="notification-content">
+                    <a th:href="@{${notification.relatedUrl}}"
+                       th:text="${notification.content}">알림 내용</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

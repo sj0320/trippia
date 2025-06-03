@@ -14,10 +14,9 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
     @EntityGraph(attributePaths = {"planCities", "schedules"})
     Optional<Plan> findById(Long planId);
 
-
-    @Query("select p.plan from PlanParticipant p where p.user.id = :userId and p.plan.startDate < :now")
+    @Query("select p.plan from PlanParticipant p where p.user.id = :userId and p.status = ACCEPTED and p.plan.startDate < :now")
     List<Plan> findPastPlansByUser(@Param("userId") Long userId, @Param("now") LocalDate now);
 
-    @Query("select p.plan from PlanParticipant p where p.user.id = :userId and p.plan.startDate > :now")
+    @Query("select p.plan from PlanParticipant p where p.user.id = :userId and p.status = ACCEPTED and p.plan.startDate > :now")
     List<Plan> findUpcomingPlansByUser(@Param("userId") Long userId, @Param("now") LocalDate now);
 }

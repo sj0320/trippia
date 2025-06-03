@@ -22,7 +22,7 @@ public class CommentController {
             @CurrentUser String email,
             @PathVariable Long diaryId,
             @RequestBody CommentSaveRequest request) {
-        if(email==null || email.isEmpty()){
+        if (email == null || email.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "로그인이 필요한 기능입니다."));
         }

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+
+<head>
+  <title>여행 계획 요청</title>
+  <style>
+    .btn-group {
+      margin-bottom: 20px;
+    }
+
+    .btn-group button {
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      background-color: #f0f0f0;
+      font-weight: bold;
+      border-radius: 4px 4px 0 0;
+    }
+
+    .btn-group button.active {
+      background-color: #5c7cfa;
+      color: white;
+    }
+
+    .request-item {
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-top: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .request-item img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+
+    .request-item .info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .request-item button {
+      margin-right: 8px;
+      padding: 6px 12px;
+      background-color: #5c7cfa;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .request-item button:hover {
+      background-color: #4263eb;
+    }
+
+    .request-item .actions {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+<div layout:fragment="content">
+
+  <h2>여행 계획 요청</h2>
+
+  <div class="btn-group">
+    <button id="receiveBtn" class="active">받은 요청</button>
+    <button id="sentBtn">보낸 요청</button>
+  </div>
+
+  <div id="requestList">
+    <!-- 요청 목록이 여기에 표시됩니다 -->
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      // ✅ CSRF 토큰 설정
+      const csrfToken = $('meta[name="_csrf"]').attr('content');
+      const csrfHeader = $('meta[name="_csrf_header"]').attr('content');
+
+      $.ajaxSetup({
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader(csrfHeader, csrfToken);
+        }
+      });
+
+      let currentMode = 'receive'; // 초기 모드
+
+      function loadRequests(url) {
+        $.ajax({
+          url: url,
+          type: 'GET',
+          success: function (data) {
+            renderRequests(data);
+          },
+          error: function () {
+            $('#requestList').html('<p>요청을 불러오는 데 실패했습니다.</p>');
+          }
+        });
+      }
+
+      function renderRequests(data) {
+        let html = '';
+
+        if (data.length === 0) {
+          html = '<p>요청이 없습니다.</p>';
+        } else {
+          const isReceiveMode = currentMode === 'receive';
+
+          data.forEach(function (item) {
+            html += `
+              <div class="request-item">
+                <div class="info">
+                  <img src="${item.profileImageUrl}" alt="프로필">
+                  <div>
+                    <p><strong>${item.nickname}</strong></p>
+                    <p>여행 제목: ${item.planTitle}</p>
+                  </div>
+                </div>
+                <div class="actions">
+                  ${isReceiveMode
+                    ? `<button onclick="acceptRequest(${item.planId})">수락</button>
+                       <button onclick="rejectRequest(${item.planId})">거절</button>`
+                    : `<button onclick="cancelRequest(${item.planId}, '${item.nickname}')">요청 취소</button>`
+                  }
+                </div>
+              </div>
+            `;
+          });
+        }
+
+        $('#requestList').html(html);
+      }
+
+      $('#receiveBtn').click(function () {
+        currentMode = 'receive';
+        $(this).addClass('active');
+        $('#sentBtn').removeClass('active');
+        loadRequests('/api/plan-participant/receive');
+      });
+
+      $('#sentBtn').click(function () {
+        currentMode = 'sent';
+        $(this).addClass('active');
+        $('#receiveBtn').removeClass('active');
+        loadRequests('/api/plan-participant/request');
+      });
+
+      loadRequests('/api/plan-participant/receive'); // 초기 로딩
+    });
+
+    function acceptRequest(planId) {
+      $.ajax({
+        url: `/api/plan-participant/${planId}/accept`,
+        type: 'PATCH',
+        success: function () {
+          alert('요청을 수락했습니다.');
+          $('#receiveBtn').click();
+        }
+      });
+    }
+
+    function rejectRequest(planId) {
+      $.ajax({
+        url: `/api/plan-participant/${planId}/reject`,
+        type: 'DELETE',
+        success: function () {
+          alert('요청을 거절했습니다.');
+          $('#receiveBtn').click();
+        }
+      });
+    }
+
+    function cancelRequest(planId, nickname) {
+      $.ajax({
+        url: `/api/plan-participant/${planId}/cancel?nickname=${encodeURIComponent(nickname)}`,
+        type: 'DELETE',
+        success: function () {
+          alert('요청을 취소했습니다.');
+          $('#sentBtn').click();
+        }
+      });
+    }
+  </script>
+</div>
+</body>
+</html>

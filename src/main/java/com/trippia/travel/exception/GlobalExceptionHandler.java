@@ -1,5 +1,6 @@
 package com.trippia.travel.exception;
 
+import com.trippia.travel.exception.plan.PlanException;
 import com.trippia.travel.exception.user.UserException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
@@ -43,6 +44,12 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public ResponseEntity<String> handleUserException(UserException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
+
+    @ExceptionHandler(PlanException.class)
+    @ResponseBody
+    public ResponseEntity<String> handlePlanException(PlanException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
 

@@ -1,6 +1,6 @@
 package com.trippia.travel.controller.dto.plan.response;
 
-import com.trippia.travel.controller.dto.planparticipant.PlanParticipantResponse;
+import com.trippia.travel.controller.dto.planparticipant.response.PlanParticipantResponse;
 import com.trippia.travel.controller.dto.schedule.response.ScheduleDetailsResponse;
 import com.trippia.travel.domain.travel.plan.Plan;
 import com.trippia.travel.domain.travel.plancity.PlanCity;
