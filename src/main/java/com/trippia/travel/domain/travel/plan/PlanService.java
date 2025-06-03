@@ -4,11 +4,16 @@ import com.trippia.travel.controller.dto.plan.request.PlanCreateRequest;
 import com.trippia.travel.controller.dto.plan.request.PlanUpdateRequest;
 import com.trippia.travel.controller.dto.plan.response.PlanDetailsResponse;
 import com.trippia.travel.controller.dto.plan.response.PlanSummaryResponse;
-import com.trippia.travel.controller.dto.planparticipant.PlanParticipantResponse;
+import com.trippia.travel.controller.dto.planparticipant.response.PlanParticipantResponse;
+import com.trippia.travel.controller.dto.planparticipant.response.ReceivedPlanParticipantResponse;
+import com.trippia.travel.controller.dto.planparticipant.response.RequestPlanParticipantResponse;
 import com.trippia.travel.controller.dto.schedule.response.ScheduleDetailsResponse;
 import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemResponse;
 import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.location.city.CityRepository;
+import com.trippia.travel.domain.notification.NotificationService;
+import com.trippia.travel.domain.notification.dto.ParticipantAcceptedNotificationDto;
+import com.trippia.travel.domain.notification.dto.ParticipantInvitedNotificationDto;
 import com.trippia.travel.domain.travel.plancity.PlanCity;
 import com.trippia.travel.domain.travel.planparticipant.PlanParticipant;
 import com.trippia.travel.domain.travel.planparticipant.PlanParticipantRepository;
@@ -49,6 +54,7 @@ public class PlanService {
     private final CityRepository cityRepository;
     private final UserRepository userRepository;
     private final ScheduleItemRepository scheduleItemRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public Long createPlan(String email, PlanCreateRequest request) {
@@ -155,32 +161,46 @@ public class PlanService {
     public void invitePlan(String email, Long planId, String nickname) {
         Plan plan = getPlan(planId);
         plan.validateOwnerOf(email);
-
-
-        User user = userRepository.findByNickname(nickname)
+        User inviterUser = getUser(email);
+        User invitedUser = userRepository.findByNickname(nickname)
                 .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
 
-        validateInviteCondition(user.getId(), planId);
+        validateInviteCondition(invitedUser.getId(), planId);
 
         // 저장
         PlanParticipant participant = PlanParticipant.builder()
-                .user(user)
+                .user(invitedUser)
                 .plan(plan)
                 .role(PARTICIPANT)
                 .status(PENDING)
                 .build();
+
         planParticipantRepository.save(participant);
+
+        ParticipantInvitedNotificationDto notification = ParticipantInvitedNotificationDto.builder()
+                .user(invitedUser)
+                .inviterNickname(inviterUser.getNickname())
+                .planId(planId)
+                .build();
+        notificationService.sendNotification(notification);
     }
 
     @Transactional
-    public void acceptInvite(String email, Long planId) {
+    public void acceptPlanInvite(String email, Long planId) {
         User user = getUser(email);
         PlanParticipant participant = planParticipantRepository.findByUserIdAndPlanId(user.getId(), planId)
                 .orElseThrow(() -> new IllegalArgumentException("초대 내역이 존재하지 않습니다."));
-        if(!participant.getStatus().equals(PENDING)){
+        if (!participant.getStatus().equals(PENDING)) {
             throw new IllegalArgumentException("이미 처리된 초대입니다.");
         }
         participant.acceptInvitation();
+
+        ParticipantAcceptedNotificationDto notification = ParticipantAcceptedNotificationDto.builder()
+                .user(user)
+                .accepterNickname(user.getNickname())
+                .planId(planId)
+                .build();
+        notificationService.sendNotification(notification);
     }
 
     @Transactional
@@ -188,6 +208,32 @@ public class PlanService {
         Plan plan = getPlan(planId);
         plan.validateOwnerOf(email);
         plan.updatePlan(request.getTitle(), request.getStartDate(), request.getEndDate());
+    }
+
+    public List<ReceivedPlanParticipantResponse> getReceivedParticipantRequests(String email) {
+        User user = getUser(email);
+        return planParticipantRepository.findReceivedRequests(user.getId());
+    }
+
+    public List<RequestPlanParticipantResponse> getSentParticipantRequests(String email) {
+        User user = getUser(email);
+        return planParticipantRepository.findSentRequests(user.getId());
+    }
+
+    @Transactional
+    public void rejectPlanInvite(String email, Long planId) {
+        User user = getUser(email);
+        planParticipantRepository.deleteByUserIdAndPlanId(user.getId(), planId);
+    }
+
+    @Transactional
+    public void cancelPlanInvite(String email, Long planId, String nickname) {
+        Plan plan = getPlan(planId);
+        plan.validateOwnerOf(email);
+
+        User targetUser = userRepository.findByNickname(nickname)
+                .orElseThrow(() -> new UserException("존재하지 않는 사용자 입니다."));
+        planParticipantRepository.deleteByUserIdAndPlanId(targetUser.getId(), planId);
     }
 
     private Plan getPlan(Long planId) {
@@ -235,5 +281,6 @@ public class PlanService {
             throw new PlanException("이미 초대되었거나 참여중인 사용자입니다.");
         }
     }
+
 
 }

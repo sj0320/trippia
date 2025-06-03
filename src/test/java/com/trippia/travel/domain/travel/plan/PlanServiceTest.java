@@ -4,7 +4,9 @@ import com.trippia.travel.controller.dto.plan.request.PlanCreateRequest;
 import com.trippia.travel.controller.dto.plan.request.PlanUpdateRequest;
 import com.trippia.travel.controller.dto.plan.response.PlanDetailsResponse;
 import com.trippia.travel.controller.dto.plan.response.PlanSummaryResponse;
-import com.trippia.travel.controller.dto.planparticipant.PlanParticipantResponse;
+import com.trippia.travel.controller.dto.planparticipant.response.PlanParticipantResponse;
+import com.trippia.travel.controller.dto.planparticipant.response.ReceivedPlanParticipantResponse;
+import com.trippia.travel.controller.dto.planparticipant.response.RequestPlanParticipantResponse;
 import com.trippia.travel.controller.dto.schedule.response.ScheduleDetailsResponse;
 import com.trippia.travel.controller.dto.scheduleitem.response.ScheduleItemResponse;
 import com.trippia.travel.domain.common.CityType;
@@ -17,6 +19,7 @@ import com.trippia.travel.domain.location.country.Country;
 import com.trippia.travel.domain.location.country.CountryRepository;
 import com.trippia.travel.domain.travel.plancity.PlanCity;
 import com.trippia.travel.domain.travel.plancity.PlanCityRepository;
+import com.trippia.travel.domain.travel.planparticipant.InvitationStatus;
 import com.trippia.travel.domain.travel.planparticipant.PlanParticipant;
 import com.trippia.travel.domain.travel.planparticipant.PlanParticipantRepository;
 import com.trippia.travel.domain.travel.planparticipant.PlanRole;
@@ -138,9 +141,9 @@ class PlanServiceTest {
         Schedule schedule2 = new Schedule(plan, LocalDate.now().plusDays(1));
         plan.addSchedule(schedule2);
         Plan savePlan = planRepository.save(plan);
-        addPlanParticipant(user1, savePlan, OWNER);
-        addPlanParticipant(user2, savePlan, PARTICIPANT);
-        addPlanParticipant(user3, savePlan, PARTICIPANT);
+        addPlanParticipant(user1, savePlan, OWNER, ACCEPTED);
+        addPlanParticipant(user2, savePlan, PARTICIPANT, ACCEPTED);
+        addPlanParticipant(user3, savePlan, PARTICIPANT, ACCEPTED);
 
         // ScheduleItem 생성
         Memo item1 = Memo.builder().schedule(schedule1).content("content1").sequence(1).build();
@@ -212,7 +215,7 @@ class PlanServiceTest {
         Schedule schedule2 = new Schedule(plan, LocalDate.now().plusDays(1));
         plan.addSchedule(schedule2);
         Plan savePlan = planRepository.save(plan);
-        addPlanParticipant(user1, savePlan, OWNER);
+        addPlanParticipant(user1, savePlan, OWNER, ACCEPTED);
 
         // when & then
         assertThatThrownBy(() -> planService.findPlan(user2.getEmail(), savePlan.getId()))
@@ -232,9 +235,9 @@ class PlanServiceTest {
         Plan plan2 = createPlan(user.getEmail(), "title2", now.plusDays(2), now.plusDays(3));
         Plan plan3 = createPlan(user.getEmail(), "title3", now.minusDays(2), now.minusDays(1));
 
-        addPlanParticipant(user, plan1, PARTICIPANT);
-        addPlanParticipant(user, plan2, PARTICIPANT);
-        addPlanParticipant(user, plan3, OWNER);
+        addPlanParticipant(user, plan1, PARTICIPANT, ACCEPTED);
+        addPlanParticipant(user, plan2, PARTICIPANT, ACCEPTED);
+        addPlanParticipant(user, plan3, OWNER, ACCEPTED);
 
         Country japan = createCountry("일본");
         Country korea = createCountry("한국");
@@ -273,9 +276,9 @@ class PlanServiceTest {
         Plan plan2 = createPlan(user.getEmail(), "title2", now.minusDays(5), now.minusDays(4));
         Plan plan3 = createPlan(user.getEmail(), "title3", now.minusDays(2), now.minusDays(1));
 
-        addPlanParticipant(user, plan1, OWNER);
-        addPlanParticipant(user, plan2, OWNER);
-        addPlanParticipant(user, plan3, OWNER);
+        addPlanParticipant(user, plan1, OWNER, ACCEPTED);
+        addPlanParticipant(user, plan2, OWNER, ACCEPTED);
+        addPlanParticipant(user, plan3, OWNER, ACCEPTED);
 
         Country japan = createCountry("일본");
         Country korea = createCountry("한국");
@@ -311,7 +314,7 @@ class PlanServiceTest {
 
         LocalDate now = LocalDate.now();
         Plan plan = createPlan(user.getEmail(), "title1", now.plusDays(1), now.plusDays(2));
-        addPlanParticipant(user, plan, OWNER);
+        addPlanParticipant(user, plan, OWNER, ACCEPTED);
 
         // when
         planService.deletePlan(user.getEmail(), plan.getId());
@@ -329,7 +332,7 @@ class PlanServiceTest {
 
         LocalDate now = LocalDate.now();
         Plan plan = createPlan(owner.getEmail(), "title", now.plusDays(1), now.plusDays(2));
-        addPlanParticipant(owner, plan, OWNER);
+        addPlanParticipant(owner, plan, OWNER, ACCEPTED);
 
         User user = createUser("email2");
 
@@ -355,24 +358,42 @@ class PlanServiceTest {
 
         LocalDate now = LocalDate.now();
         Plan plan = createPlan(owner.getEmail(), "title", now.plusDays(1), now.plusDays(2));
-        addPlanParticipant(owner, plan, OWNER);
+        addPlanParticipant(owner, plan, OWNER, ACCEPTED);
 
         // when & then
         assertThatThrownBy(() -> planService.invitePlan(owner.getEmail(), plan.getId(), "notExists"))
                 .isInstanceOf(UserException.class)
                 .hasMessage("사용자를 찾을 수 없습니다.");
+    }
 
+    @DisplayName("이미 초대한 사용자를 다시 초대하면 예외가 발생한다.")
+    @Test
+    void invitePlan_alreadyPending() {
+        // given
+        User owner = createUser("email");
+        User user = createUser("email2");
+
+        LocalDate now = LocalDate.now();
+        Plan plan = createPlan(owner.getEmail(), "title", now.plusDays(1), now.plusDays(2));
+        addPlanParticipant(owner, plan, OWNER, ACCEPTED);
+
+        planService.invitePlan(owner.getEmail(), plan.getId(), user.getNickname());
+
+        // when & then
+        assertThatThrownBy(() -> planService.invitePlan(owner.getEmail(), plan.getId(), user.getNickname()))
+                .isInstanceOf(PlanException.class)
+                .hasMessage("이미 초대되었거나 참여중인 사용자입니다.");
     }
 
     @DisplayName("여행 계획 초대를 수락한다.")
     @Test
-    void acceptInvite() {
+    void acceptPlanInvite() {
         // given
         User owner = createUser("email");
 
         LocalDate now = LocalDate.now();
         Plan plan = createPlan(owner.getEmail(), "title", now.plusDays(1), now.plusDays(2));
-        addPlanParticipant(owner, plan, OWNER);
+        addPlanParticipant(owner, plan, OWNER, ACCEPTED);
 
         User user = createUser("email2");
         PlanParticipant participant = PlanParticipant.builder()
@@ -384,7 +405,7 @@ class PlanServiceTest {
         planParticipantRepository.save(participant);
 
         // when
-        planService.acceptInvite(user.getEmail(), plan.getId());
+        planService.acceptPlanInvite(user.getEmail(), plan.getId());
 
         // then
         boolean result = planParticipantRepository.existsByUserIdAndPlanIdAndStatus(user.getId(), plan.getId(), ACCEPTED);
@@ -393,27 +414,27 @@ class PlanServiceTest {
 
     @DisplayName("초대받지 않은 사용자가 초대를 수락하면 예외가 발생한다.")
     @Test
-    void acceptInvite_fail_noInvitation() {
+    void acceptPlanInvite_fail_noInvitation() {
         // given
         User owner = createUser("email1");
         Plan plan = createPlan(owner.getEmail(), "여행", LocalDate.now(), LocalDate.now().plusDays(1));
-        addPlanParticipant(owner, plan, OWNER);
+        addPlanParticipant(owner, plan, OWNER, ACCEPTED);
 
         User stranger = createUser("email2");
 
         // when & then
-        assertThatThrownBy(() -> planService.acceptInvite(stranger.getEmail(), plan.getId()))
+        assertThatThrownBy(() -> planService.acceptPlanInvite(stranger.getEmail(), plan.getId()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("초대 내역이 존재하지 않습니다.");
     }
 
     @DisplayName("이미 수락한 사용자가 초대를 다시 수락하면 예외가 발생한다.")
     @Test
-    void acceptInvite_fail_alreadyAccepted() {
+    void acceptPlanInvite_fail_alreadyAccepted() {
         // given
         User owner = createUser("email1");
         Plan plan = createPlan(owner.getEmail(), "여행", LocalDate.now(), LocalDate.now().plusDays(1));
-        addPlanParticipant(owner, plan, OWNER);
+        addPlanParticipant(owner, plan, OWNER, ACCEPTED);
 
         User participantUser = createUser("email2");
 
@@ -427,7 +448,7 @@ class PlanServiceTest {
         planParticipantRepository.save(participant);
 
         // when & then
-        assertThatThrownBy(() -> planService.acceptInvite(participantUser.getEmail(), plan.getId()))
+        assertThatThrownBy(() -> planService.acceptPlanInvite(participantUser.getEmail(), plan.getId()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("이미 처리된 초대입니다.");
     }
@@ -439,7 +460,7 @@ class PlanServiceTest {
         // given
         User owner = createUser("email1");
         Plan plan = createPlan(owner.getEmail(), "여행", LocalDate.now(), LocalDate.now().plusDays(1));
-        addPlanParticipant(owner, plan, OWNER);
+        addPlanParticipant(owner, plan, OWNER, ACCEPTED);
 
         LocalDate updateStartDate = LocalDate.of(2050, 1, 1);
         LocalDate updateEndDate = LocalDate.of(2050, 2, 1);
@@ -458,6 +479,81 @@ class PlanServiceTest {
         assertThat(updatedPlan.getTitle()).isEqualTo("수정한 제목");
         assertThat(updatedPlan.getStartDate()).isEqualTo(updateStartDate);
         assertThat(updatedPlan.getEndDate()).isEqualTo(updateEndDate);
+    }
+
+    @DisplayName("여행 계획 초대 요청 목록을 조회한다.")
+    @Test
+    void getReceivedParticipantRequests() {
+        // given
+        User owner = createUser("email1");
+        User user = createUser("email2");
+        Plan plan = createPlan(owner.getEmail(), "여행", LocalDate.now(), LocalDate.now().plusDays(1));
+        addPlanParticipant(user, plan, OWNER, PENDING);
+
+        // when
+        ReceivedPlanParticipantResponse result = planService.getReceivedParticipantRequests(user.getEmail()).get(0);
+
+        // then
+        assertThat(result.getNickname()).isEqualTo(owner.getNickname());
+        assertThat(result.getProfileImageUrl()).isEqualTo(owner.getProfileImageUrl());
+        assertThat(result.getPlanId()).isEqualTo(plan.getId());
+    }
+
+    @DisplayName("사용자가 초대한 여행 계획 목록을 조회한다.")
+    @Test
+    void getSentParticipantRequests() {
+        // given
+        User user = createUser("email2"); // 로그인 사용자 = 요청자
+        User invitedUser = createUser("email1"); // 초대받은 사용자
+
+        Plan plan = createPlan(user.getEmail(), "여행", LocalDate.now(), LocalDate.now().plusDays(1));
+        addPlanParticipant(user, plan, OWNER, ACCEPTED);
+        addPlanParticipant(invitedUser, plan, PARTICIPANT, PENDING); // user가 invitedUser를 초대
+
+        // when
+        RequestPlanParticipantResponse result = planService.getSentParticipantRequests(user.getEmail()).get(0);
+
+        // then
+        assertThat(result.getNickname()).isEqualTo(invitedUser.getNickname());
+        assertThat(result.getProfileImageUrl()).isEqualTo(invitedUser.getProfileImageUrl());
+        assertThat(result.getPlanId()).isEqualTo(plan.getId());
+        assertThat(result.getPlanTitle()).isEqualTo(plan.getTitle());
+    }
+
+    @DisplayName("여행 계획 초대 신청을 거절한다.")
+    @Test
+    void rejectPlanInvite() {
+        // given
+        User owner = createUser("email1");
+        User user = createUser("email2");
+        Plan plan = createPlan(owner.getEmail(), "여행", LocalDate.now(), LocalDate.now().plusDays(1));
+        addPlanParticipant(owner, plan, OWNER, ACCEPTED);
+        addPlanParticipant(user, plan, PARTICIPANT, PENDING);
+
+        // when
+        planService.rejectPlanInvite(user.getEmail(), plan.getId());
+
+        // then
+        List<PlanParticipant> result = planParticipantRepository.findAll();
+        assertThat(result).hasSize(1);
+    }
+
+    @DisplayName("여행 초대 요청을 취소한다.")
+    @Test
+    void cancelPlanInvite() {
+        // given
+        User owner = createUser("email1");
+        User user = createUser("email2");
+        Plan plan = createPlan(owner.getEmail(), "여행", LocalDate.now(), LocalDate.now().plusDays(1));
+        addPlanParticipant(owner, plan, OWNER, ACCEPTED);
+        addPlanParticipant(user, plan, PARTICIPANT, PENDING);
+
+        // when
+        planService.cancelPlanInvite(owner.getEmail(), plan.getId(), user.getNickname());
+
+        // then
+        List<PlanParticipant> result = planParticipantRepository.findAll();
+        assertThat(result).hasSize(1);
     }
 
     private User createUser(String email) {
@@ -502,12 +598,12 @@ class PlanServiceTest {
         return planCityRepository.save(planCity);
     }
 
-    private void addPlanParticipant(User user, Plan plan, PlanRole role) {
+    private void addPlanParticipant(User user, Plan plan, PlanRole role, InvitationStatus status) {
         PlanParticipant participant = PlanParticipant.builder()
                 .user(user)
                 .plan(plan)
                 .role(role)
-                .status(ACCEPTED)
+                .status(status)
                 .build();
         planParticipantRepository.save(participant);
     }

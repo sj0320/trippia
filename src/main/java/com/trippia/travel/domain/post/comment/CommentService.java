@@ -2,6 +2,8 @@ package com.trippia.travel.domain.post.comment;
 
 import com.trippia.travel.controller.dto.comment.requset.CommentSaveRequest;
 import com.trippia.travel.controller.dto.comment.response.CommentResponse;
+import com.trippia.travel.domain.notification.NotificationService;
+import com.trippia.travel.domain.notification.dto.CommentNotificationDto;
 import com.trippia.travel.domain.post.diary.Diary;
 import com.trippia.travel.domain.post.diary.DiaryRepository;
 import com.trippia.travel.domain.user.User;
@@ -20,6 +22,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final DiaryRepository diaryRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     public CommentResponse saveDiaryComment(String email, Long diaryId, CommentSaveRequest request) {
         Diary diary = getDiary(diaryId);
@@ -29,6 +32,16 @@ public class CommentService {
 
         diary.addComment(comment);
         commentRepository.save(comment);
+        if (!user.equals(diary.getUser())) {
+            CommentNotificationDto notification = CommentNotificationDto.builder()
+                    .user(diary.getUser())
+                    .commenterNickname(user.getNickname())
+                    .diaryId(diaryId)
+                    .build();
+            notificationService.sendNotification(notification);
+        }
+
+
         return CommentResponse.from(comment);
     }
 

@@ -17,7 +17,7 @@ window.inviteParticipant = function () {
     const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute("content");
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute("content");
 
-    fetch(`/api/travel/plan/${planId}/invite?nickname=${encodeURIComponent(nickname)}`, {
+    fetch(`/api/plan-participant/${planId}/invite?nickname=${encodeURIComponent(nickname)}`, {
         method: "POST",
         headers: {
             [csrfHeader]: csrfToken
@@ -29,7 +29,11 @@ window.inviteParticipant = function () {
             location.reload();
         } else {
             response.text().then(text => {
-                alert("초대 실패: " + text);
+                if (text.includes("이미 초대되었거나 참여중인 사용자입니다.")) {
+                    alert("이미 초대했거나 참여 중인 사용자입니다.");
+                } else {
+                    alert("초대 실패: " + text);
+                }
             });
         }
     })

@@ -1,6 +1,8 @@
 package com.trippia.travel.domain.post.likes;
 
 import com.trippia.travel.controller.dto.diary.response.LikedDiarySummaryResponse;
+import com.trippia.travel.domain.notification.NotificationService;
+import com.trippia.travel.domain.notification.dto.LikeNotificationDto;
 import com.trippia.travel.domain.post.diary.Diary;
 import com.trippia.travel.domain.post.diary.DiaryRepository;
 import com.trippia.travel.domain.user.User;
@@ -19,6 +21,7 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final UserRepository userRepository;
     private final DiaryRepository diaryRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public int likeDiary(String email, Long diaryId) {
@@ -27,8 +30,17 @@ public class LikeService {
         if (!likeRepository.existsByUserAndDiary(user, diary)) {
             Likes likes = getDiaryUserLikes(diary, user);
             likeRepository.save(likes);
+            if(!user.equals(diary.getUser())) {
+                LikeNotificationDto notification = LikeNotificationDto.builder()
+                        .user(diary.getUser())
+                        .likerNickname(user.getNickname())
+                        .diaryId(diaryId)
+                        .build();
+                notificationService.sendNotification(notification);
+            }
             return diary.addLike();
         }
+
         return diary.getLikeCount();
     }
 

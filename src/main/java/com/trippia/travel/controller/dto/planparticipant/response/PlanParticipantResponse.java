@@ -1,4 +1,4 @@
-package com.trippia.travel.controller.dto.planparticipant;
+package com.trippia.travel.controller.dto.planparticipant.response;
 
 import lombok.Builder;
 import lombok.Getter;
