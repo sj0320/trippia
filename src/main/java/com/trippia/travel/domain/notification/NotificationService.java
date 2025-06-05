@@ -29,14 +29,13 @@ public class NotificationService {
     @Transactional
     public void sendNotification(NotificationDto notificationDto){
         Notification notification = notificationDto.toEntity();
-        log.info("isRead={}", notification.isRead());
         notificationRepository.save(notification);
     }
 
     @Transactional
     public List<NotificationResponse> getAllNotifications(String email) {
         User user = getUser(email);
-        List<Notification> notifications = notificationRepository.findAllByUserId(user.getId());
+        List<Notification> notifications = notificationRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId());
         notifications.forEach(Notification::markAsRead);
 
         return notifications.stream()

@@ -219,6 +219,21 @@
           justify-content: flex-end;
           gap: 0.5rem;
         }
+
+        .modal-kick-button {
+          padding: 0.25rem 0.75rem;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-weight: bold;
+          font-size: 0.775rem;
+          background-color: #f44336;
+          color: #fff;
+        }
+
+        .modal-kick-button:hover {
+          background-color: #d32f2f;
+        }
         .modal-actions button {
           padding: 0.5rem 1rem;
           border: none;
@@ -563,24 +578,33 @@
                 <button onclick="inviteParticipant()" style="padding: 0.5rem 1rem;">초대</button>
             </div>
 
-            <!-- 참여자 목록 -->
-            <ul style="margin-top: 1rem;">
-                <li th:each="p : ${plan.participants}" style="display: flex; align-items: center; margin: 5px 0;">
+            <ul style="margin-top: 1rem; padding: 0;">
+                <li th:each="p : ${plan.participants}"
+                    style="display: flex; align-items: center; margin: 5px 0; list-style: none;">
 
-                    <!-- ✅ 프로필 이미지 -->
-                    <img th:src="${p.profileImageUrl}" alt="프로필"
-                         style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; margin-right: 10px;" />
+                    <!-- 왼쪽: 프로필 이미지 + 닉네임 + 왕관 -->
+                    <div style="display: flex; align-items: center;">
+                        <img th:src="${p.profileImageUrl}" alt="프로필"
+                             style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; margin-right: 10px;" />
 
-                    <!-- 닉네임 -->
-                    <span th:text="${p.nickname}"></span>
+                        <!-- 리더인 경우 -->
+                        <div th:if="${p.role == 'OWNER'}" style="display: flex; align-items: center;">
+                            <span th:text="${p.nickname}"></span>
+                            <img src="/images/leader.png" alt="리더"
+                                 style="width: 16px; height: 16px; margin-left: 6px;" />
+                            <span style="color: gray; margin-left: 6px;"></span>
+                        </div>
 
-                    <!-- 추방 버튼 -->
-                    <span th:if="${p.role != 'OWNER'}">
-                    <button onclick="kick([[${p.userId}]])" style="margin-left: 10px;">추방</button>
-                </span>
+                        <!-- 일반 참여자 -->
+                        <span th:if="${p.role != 'OWNER'}" th:text="${p.nickname}"></span>
+                    </div>
 
-                    <!-- 생성자 표시 -->
-                    <span th:if="${p.role == 'OWNER'}" style="color: gray; margin-left: 10px;">(계획 생성자)</span>
+                    <!-- 오른쪽: 내보내기 버튼 -->
+                    <div th:if="${p.role != 'OWNER'}" style="margin-left: auto;">
+                        <button onclick="kick([[${p.userId}]])" class="modal-kick-button">
+                            내보내기
+                        </button>
+                    </div>
                 </li>
             </ul>
 

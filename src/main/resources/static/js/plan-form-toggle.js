@@ -25,7 +25,7 @@ window.inviteParticipant = function () {
     })
     .then(response => {
         if (response.ok) {
-            alert("초대 성공!");
+            alert(`'${nickname}' 님을 초대했습니다.`);
             location.reload();
         } else {
             response.text().then(text => {
