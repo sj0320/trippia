@@ -193,14 +193,9 @@ public class PlanService {
         if (!participant.getStatus().equals(PENDING)) {
             throw new IllegalArgumentException("이미 처리된 초대입니다.");
         }
+        notifyOtherParticipantsOfAcceptance(user, planId);
         participant.acceptInvitation();
 
-        ParticipantAcceptedNotificationDto notification = ParticipantAcceptedNotificationDto.builder()
-                .user(user)
-                .accepterNickname(user.getNickname())
-                .planId(planId)
-                .build();
-        notificationService.sendNotification(notification);
     }
 
     @Transactional
@@ -282,5 +277,21 @@ public class PlanService {
         }
     }
 
+    private void notifyOtherParticipantsOfAcceptance(User user, Long planId) {
+        List<PlanParticipant> recipients = planParticipantRepository.findByPlanIdAndStatus(planId, ACCEPTED)
+                .stream()
+                .filter(p -> !p.getUser().getId().equals(user.getId()))
+                .toList();
+
+        for (PlanParticipant other : recipients) {
+            ParticipantAcceptedNotificationDto notification = ParticipantAcceptedNotificationDto.builder()
+                    .user(other.getUser())
+                    .accepterNickname(user.getNickname())
+                    .planId(planId)
+                    .build();
+
+            notificationService.sendNotification(notification);
+        }
+    }
 
 }

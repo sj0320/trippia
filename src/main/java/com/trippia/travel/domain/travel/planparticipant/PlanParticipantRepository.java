@@ -16,4 +16,5 @@ public interface PlanParticipantRepository extends JpaRepository<PlanParticipant
 
     void deleteByUserIdAndPlanId(Long userId, Long planId);
 
+    List<PlanParticipant> findAllByPlanIdAndStatus(Long planId, InvitationStatus invitationStatus);
 }

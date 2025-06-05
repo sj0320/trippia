@@ -4,71 +4,113 @@
       layout:decorate="~{layout/default}">
 
 <head>
-  <title>여행 계획 요청</title>
+  <title>여행 초대함</title>
+  <link rel="stylesheet" href="/css/style.css">
   <style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        color: #222;
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 1.8rem;
+      color: #2f2f2f;
+    }
+
     .btn-group {
-      margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
+      margin: 30px 0 20px;
+      border-bottom: 2px solid #e0e0e0;
     }
 
     .btn-group button {
-      padding: 10px 20px;
+      padding: 12px 24px;
+      background: none;
       border: none;
       cursor: pointer;
-      background-color: #f0f0f0;
       font-weight: bold;
-      border-radius: 4px 4px 0 0;
+      font-size: 1rem;
+      color: #666;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s ease;
     }
 
     .btn-group button.active {
-      background-color: #5c7cfa;
-      color: white;
+      color: #5c7cfa;
+      border-bottom: 3px solid #5c7cfa;
+    }
+
+    #requestList {
+      max-width: 700px;
+      margin: 0 auto;
     }
 
     .request-item {
-      padding: 15px;
-      border: 1px solid #ccc;
-      border-top: none;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      transition: box-shadow 0.3s ease;
     }
 
-    .request-item img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
+    .request-item:hover {
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
     }
 
     .request-item .info {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 15px;
     }
 
-    .request-item button {
-      margin-right: 8px;
-      padding: 6px 12px;
-      background-color: #5c7cfa;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
+    .request-item img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid #ddd;
     }
 
-    .request-item button:hover {
-      background-color: #4263eb;
+    .request-item .info p {
+      margin: 3px 0;
+      font-size: 0.95rem;
     }
 
     .request-item .actions {
-      margin-top: 10px;
+      margin-top: 15px;
     }
+
+    .request-item button {
+      padding: 8px 14px;
+      background-color: #5c7cfa;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-right: 8px;
+      transition: background-color 0.2s ease;
+    }
+
+    .request-item button:hover {
+      background-color: #4c6ef5;
+    }
+
+    .request-item button:last-child {
+      margin-right: 0;
+    }
+
   </style>
 </head>
 
 <body>
 <div layout:fragment="content">
 
-  <h2>여행 계획 요청</h2>
+  <h2>여행 초대함</h2>
 
   <div class="btn-group">
     <button id="receiveBtn" class="active">받은 요청</button>
@@ -82,7 +124,6 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
     $(document).ready(function () {
-      // ✅ CSRF 토큰 설정
       const csrfToken = $('meta[name="_csrf"]').attr('content');
       const csrfHeader = $('meta[name="_csrf_header"]').attr('content');
 
@@ -92,7 +133,7 @@
         }
       });
 
-      let currentMode = 'receive'; // 초기 모드
+      let currentMode = 'receive';
 
       function loadRequests(url) {
         $.ajax({
@@ -111,21 +152,21 @@
         let html = '';
 
         if (data.length === 0) {
-          html = '<p>요청이 없습니다.</p>';
+          html = '<p style="text-align: center; padding: 20px;">요청이 없습니다.</p>';
         } else {
           const isReceiveMode = currentMode === 'receive';
 
           data.forEach(function (item) {
             html += `
-              <div class="request-item">
-                <div class="info">
-                  <img src="${item.profileImageUrl}" alt="프로필">
+              <div class="request-item" style="display: flex; justify-content: space-between; align-items: center; border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+                <div class="info" style="display: flex; align-items: center;">
+                  <img src="${item.profileImageUrl}" alt="프로필" style="width: 50px; height: 50px; border-radius: 50%; margin-right: 15px;">
                   <div>
-                    <p><strong>${item.nickname}</strong></p>
-                    <p>여행 제목: ${item.planTitle}</p>
+                    <p style="margin: 0; font-weight: bold; font-size: 16px;">${item.nickname}</p>
+                    <p style="margin: 4px 0 0 0; color: #555; font-size: 14px;">${item.planTitle}</p>
                   </div>
                 </div>
-                <div class="actions">
+                <div class="actions" style="display: flex; gap: 8px;">
                   ${isReceiveMode
                     ? `<button onclick="acceptRequest(${item.planId})">수락</button>
                        <button onclick="rejectRequest(${item.planId})">거절</button>`
@@ -162,13 +203,15 @@
         url: `/api/plan-participant/${planId}/accept`,
         type: 'PATCH',
         success: function () {
-          alert('요청을 수락했습니다.');
           $('#receiveBtn').click();
         }
       });
     }
 
     function rejectRequest(planId) {
+      const confirmed = confirm('초대 요청을 거절하시겠습니까?');
+      if (!confirmed) return;
+
       $.ajax({
         url: `/api/plan-participant/${planId}/reject`,
         type: 'DELETE',
@@ -184,7 +227,6 @@
         url: `/api/plan-participant/${planId}/cancel?nickname=${encodeURIComponent(nickname)}`,
         type: 'DELETE',
         success: function () {
-          alert('요청을 취소했습니다.');
           $('#sentBtn').click();
         }
       });
