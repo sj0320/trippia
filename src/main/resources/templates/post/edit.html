@@ -1,481 +1,237 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
 <head>
-    <meta charset="UTF-8">
-    <title>게시글 작성</title>
-    <link rel="stylesheet" href="/css/radiobutton.css">
-    <link rel="stylesheet" href="/css/city-modal.css">
-    <link rel="stylesheet" href="/css/theme-modal.css">
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/thumbnail-upload.css">
-    <link rel="stylesheet" href="/css/diary-create.css">
-    <script defer src="/js/city-modal.js"></script>
-    <script defer src="/js/theme-modal.js"></script>
-    <script defer src="/js/editor.js"></script>
+  <meta charset="UTF-8">
+  <title>동행 모집글 수정</title>
+  <link rel="stylesheet" href="/css/city-modal.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/thumbnail-upload.css">
+  <script defer src="/js/city-modal.js"></script>
+  <script defer src="/js/thumbnail.js"></script>
+  <style>
+    .form-container {
+      width: 90%;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 30px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      background-color: #fefefe;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
 
-    <script
-            th:src="'https://cdn.tiny.cloud/1/' + @{${@environment.getProperty('tinymce.api.key')}} + '/tinymce/5/tinymce.min.js'"
-            referrerpolicy="origin">
-    </script>
-    <style>
-        /* 모달 배경 */
-        .modal {
-            display: none; /* JS에서 'flex'로 변경 */
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.4); /* 어두운 배경 */
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
+    .form-container h2 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
 
-        /* 모달 내용 박스 */
-        .modal-content {
-            background-color: white;
-            padding: 20px;
-            border-radius: 12px;
-            width: 500px;
-            max-width: 90vw;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-        }
+    .input-container {
+      margin-bottom: 20px;
+    }
 
-        /* 장소 태그 컨테이너 */
-        .place-tag-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 6px;
-        }
+    .input-container label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
 
-        /* 장소 태그 스타일 */
-        .place-tag {
-            background-color: #e0f7fa;
-            color: #00796b;
-            padding: 6px 10px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+    .input-container input[type="text"],
+    .input-container textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
 
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 200px;
-        }
+    .input-container input[type="number"] {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-sizing: border-box;
+        transition: border-color 0.3s ease;
+    }
 
-        /* 태그 내 삭제 버튼 */
-        .place-tag .remove-btn {
-            background: transparent;
-            border: none;
-            color: #00796b;
-            font-weight: bold;
-            cursor: pointer;
-        }
+    .input-container input[type="number"]:focus {
+        border-color: #4da6ff;
+        outline: none;
+        background-color: #f9fcff;
+    }
 
-        .place-tag .remove-btn:hover {
-            color: #004d40;
-        }
+    textarea {
+      resize: vertical;
+      height: 150px;
+    }
 
-        /* 추천 아이템 박스 */
-        .recommend-item {
-            background-color: #f9f9f9;
-            padding: 12px 16px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            border: 1px solid #ddd;
-            transition: all 0.2s ease;
-        }
+    .error-message {
+      color: red;
+      font-size: 12px;
+      margin-top: 4px;
+    }
 
-        .recommend-item:hover {
-            background-color: #e0f7fa;
-            border-color: #00bcd4;
-        }
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+      margin-top: 10px;
+    }
 
-        /* 추천 아이템 내용 */
-        .recommend-content {
-            display: flex;
-            flex-direction: column;
-        }
+    .submit-btn:hover {
+      background-color: #45a049;
+    }
+    .date-range-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 
-        .recommend-title {
-            font-weight: bold;
-            font-size: 1rem;
-            color: #00796b;
-            margin-bottom: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+    .date-field input[type="date"] {
+        padding: 10px 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 14px;
+        background-color: #fff;
+        color: #333;
+        outline: none;
+        transition: all 0.2s ease-in-out;
+    }
 
-        .recommend-address {
-            font-size: 0.9rem;
-            color: #666;
-        }
-    </style>
-
+    .date-field input[type="date"]:hover,
+    .date-field input[type="date"]:focus {
+        border-color: #5a67d8;
+        box-shadow: 0 0 0 2px rgba(90, 103, 216, 0.2);
+    }
+  </style>
 </head>
-
 <body>
-<div id='wrapper'>
-    <div th:replace="~{fragments/header::header}"></div>
+<div layout:fragment="content">
+  <form th:action="@{|/companion-post/${post.id}/edit|}" class="form-container" method="post" enctype="multipart/form-data" th:object="${post}">
+    <input type="hidden" name="_method" value="put"/>
+    <h2>모집글을 수정해보세요!</h2>
+    <!-- 도시 선택 -->
+    <div class="input-container">
+      <label for="cityId">계획 중인 도시를 알려주세요!</label>
+      <div style="display: flex; gap: 20px;">
+        <input type="text" id="cityName" th:field="*{cityName}" readonly />
+        <button type="button" id="openCityModal" style="min-width: 70px;">도시 선택</button>
+      </div>
+      <input type="hidden" id="cityId" th:field="*{cityId}" required />
+      <p class="error-message" th:if="${#fields.hasErrors('cityId')}" th:errors="*{cityId}"></p>
+    </div>
 
-    <form th:action="@{|/diary/${diary.diaryId}|}" method="post" th:object="${diary}" novalidate
-          enctype="multipart/form-data">
-        <input type="hidden" name="_method" value="put"/>
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-
-        <div class="input-section basic-info">
-            <h3 class="section-title">필수 입력 정보</h3>
-
-            <div class="input-container">
-                <label for="cityId">여행지 이름을 알려주세요!</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="cityName" th:field="*{cityName}" placeholder="어디로 여행을 다녀오셨나요?" readonly/>
-                    <button type="button" id="openCityModal">도시 선택</button>
-                </div>
-                <input type="hidden" id="cityId" th:field="*{cityId}" required/>
-                <p class="error-message" th:if="${#fields.hasErrors('cityId')}" th:errors="*{cityId}"></p>
-            </div>
-
-
-            <!-- 장소 검색 버튼 -->
-            <div class="input-container" style="margin-top: 20px;">
-                <label>다녀온 장소를 선택해주세요!</label>
-                <button type="button" onclick="openPlaceModal()">장소 검색하기</button>
-            </div>
-
-            <!-- 선택한 장소 ID 저장용 히든 -->
-            <div id="hiddenPlaceInputs"></div>
-
-            <!-- 선택한 장소 이름 보여주기 (읽기전용) -->
-            <div class="input-container">
-                <label>선택된 장소</label>
-                <div id="selectedPlaceNames" class="place-tag-container"></div>
-            </div>
-            <div id="placeModal" class="modal" style="display:none;">
-                <div class="modal-content">
-                    <h3>장소 검색</h3>
-                    <input id="placeQuery" type="text" placeholder="맛집, 관광, 카페 등 키워드를 입력하세요" autocomplete="off" style="width:100%; margin-bottom:10px; padding:8px; font-size:1rem;"/>
-                    <div id="recommendationList" style="max-height:300px; overflow-y:auto; border:1px solid #ddd; border-radius:6px; padding:10px;"></div>
-                    <div style="margin-top: 10px; text-align: right;">
-                        <button type="button" onclick="closePlaceModal()">취소</button>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- 도시 선택 모달 -->
-            <div id="cityModal" class="modal">
-                <div class="modal-content">
-                    <span class="close" onclick="closeModal()">&times;</span>
-                    <h3>도시 선택</h3>
-                    <div class="city-list">
-                        <div th:each="entry : ${cities.groupedCities}">
-                            <h4 th:text="${entry.key}">도시 유형</h4>
-                            <ul>
-                                <li th:each="city : ${entry.value}">
-                                    <button type="button" th:text="${city.name}"
-                                            th:attr="data-city=${city.name}, data-id=${city.id}"
-                                            onclick="selectCity(this)">
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 여행 기간 -->
-            <label style="flex-shrink: 0;">여행 기간은 언제부터 언제까지였나요?</label>
-            <div class="input-container">
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <input type="date" th:field="*{startDate}" required/>
-                    <span>~</span>
-                    <input type="date" th:field="*{endDate}" required/>
-                </div>
-                <p class="error-message" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></p>
-            </div>
-
-            <!-- 여행 유형 입력 -->
-            <div class="input-container">
-                <label for="themeInput">여행 유형을 선택해주세요!</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="themeInput" th:field="*{themeNames}" readonly required/>
-                    <input type="hidden" name="themeIds" id="themeIdsInput" th:field="*{themeIds}"/>
-                    <button type="button" id="openThemeModal">여행 유형 선택</button>
-                </div>
-                <p class="error-message" th:if="${#fields.hasErrors('themeNames')}" th:errors="*{themeNames}"></p>
-            </div>
-
-            <!-- 여행 유형 선택 모달 -->
-            <div id="newThemeModal" class="modal">
-                <div class="modal-content">
-                    <span class="close" onclick="closeModal()">&times;</span>
-                    <h3>여행 유형 선택</h3>
-                    <div class="theme-list">
-                        <div th:each="theme : ${themes}">
-                            <button type="button" th:text="${theme.name}"
-                                    th:attr="data-theme-id=${theme.id}, data-theme=${theme.name}"
-                                    onclick="selectTheme(this)"></button>
-                        </div>
-                    </div>
-                    <button type="button" onclick="submitSelectedThemes()">확인</button>
-                </div>
-            </div>
-
-            <!-- 여행 만족도 -->
-            <div class="input-container">
-                <label>여행은 얼마나 즐거우셨나요?</label>
-                <div class="radio-group">
-                    <label>
-                        <input type="radio" th:field="*{rating}" value="1" required>
-                        <span class="custom-radio"></span> ⭐
-                    </label>
-                    <label>
-                        <input type="radio" th:field="*{rating}" value="2">
-                        <span class="custom-radio"></span> ⭐⭐
-                    </label>
-                    <label>
-                        <input type="radio" th:field="*{rating}" value="3">
-                        <span class="custom-radio"></span> ⭐⭐⭐
-                    </label>
-                    <label>
-                        <input type="radio" th:field="*{rating}" value="4">
-                        <span class="custom-radio"></span> ⭐⭐⭐⭐
-                    </label>
-                    <label>
-                        <input type="radio" th:field="*{rating}" value="5">
-                        <span class="custom-radio"></span> ⭐⭐⭐⭐⭐
-                    </label>
-                </div>
-                <!-- 에러 메시지 표시 -->
-                <div class="error-message" th:if="${#fields.hasErrors('rating')}" th:errors="*{rating}"
-                     style="color: red;"></div>
-            </div>
-
-            <!-- 여행 동반자 -->
-            <div class="input-container">
-                <label>누구와 함께 여행을 떠나셨나요?</label>
-                <div class="radio-group">
-                    <label>
-                        <input type="radio" th:field="*{companion}" value="혼자" required>
-                        <span class="custom-radio"></span> 혼자
-                    </label>
-                    <label>
-                        <input type="radio" th:field="*{companion}" value="친구">
-                        <span class="custom-radio"></span> 친구
-                    </label>
-                    <label>
-                        <input type="radio" th:field="*{companion}" value="가족">
-                        <span class="custom-radio"></span> 가족
-                    </label>
-                    <label>
-                        <input type="radio" th:field="*{companion}" value="연인">
-                        <span class="custom-radio"></span> 연인
-                    </label>
-                    <label>
-                        <input type="radio" th:field="*{companion}" value="아이">
-                        <span class="custom-radio"></span> 아이
-                    </label>
-                    <label>
-                        <input type="radio" th:field="*{companion}" value="기타">
-                        <span class="custom-radio"></span> 기타
-                    </label>
-                </div>
-                <!-- 에러 메시지 표시 -->
-                <div class="error-message" th:if="${#fields.hasErrors('companion')}" th:errors="*{companion}"
-                     style="color: red;"></div>
-            </div>
-
-            <!-- 경비 -->
-            <div class="input-container">
-                <label for="totalBudget">경비는 얼마나 들었나요?</label>
-                <input type="number" th:field="*{totalBudget}" min="0" step="100000"/>
-                <p class="error-message" th:if="${#fields.hasErrors('totalBudget')}" th:errors="*{totalBudget}"></p>
-            </div>
+    <div id="cityModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h3>도시 선택</h3>
+        <div class="city-list">
+          <div th:each="entry : ${cities.groupedCities}">
+            <h4 th:text="${entry.key}">도시 유형</h4>
+            <ul>
+              <li th:each="city : ${entry.value}">
+                <button type="button" th:text="${city.name}"
+                        th:attr="data-city=${city.name}, data-id=${city.id}"
+                        onclick="selectCity(this)">
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
+      </div>
+    </div>
 
-        <!-- 게시물 작성 부분 -->
-        <div class="input-section post-section-wide">
-            <!-- 게시글 제목 -->
-            <div class="input-container">
-                <input type="text" th:field="*{title}" placeholder="게시글 제목을 입력해주세요!" required />
-                <p class="error-message" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></p>
-            </div>
+    <!-- 제목 -->
+    <div class="input-container">
+      <label for="title">제목</label>
+      <input type="text" id="title" th:field="*{title}" required />
+      <p class="error-message" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></p>
+    </div>
 
-            <!-- 썸네일 업로드 -->
-            <div class="input-container">
-                <label for="thumbnail" class="thumbnail-label">썸네일 이미지</label>
-
-                <div class="thumbnail-wrapper">
-                    <!-- 썸네일 미리보기 -->
-                    <img id="thumbnail-preview"
-                         th:if="${thumbnailUrl != null}"
-                         th:src="@{${thumbnailUrl}}"
-                         alt="썸네일 미리보기" />
-
-                    <img id="thumbnail-preview-js"
-                         th:if="${thumbnailUrl == null}"
-                         src=""
-                         alt="썸네일 미리보기"
-                         style="display: none;" />
-
-                    <!-- 파일 선택 버튼 -->
-                    <label for="thumbnail" class="upload-button">파일 선택</label>
-                    <input type="file" id="thumbnail" name="thumbnail" accept="image/*"
-                           onchange="previewThumbnail(event)" style="display: none;" />
-                </div>
-            </div>
-
-            <!-- 구분선 또는 여백 -->
-            <hr class="divider" />
-
-            <!-- 게시글 내용 (에디터) -->
-            <div class="input-container">
-                <label for="editor" class="editor-label">게시글 내용</label>
-                <textarea id="editor" name="content" th:field="*{content}" required></textarea>
-                <p class="error-message" th:if="${#fields.hasErrors('content')}" th:errors="*{content}"></p>
-            </div>
+    <!-- 여행 기간 -->
+    <div class="input-container">
+      <label>여행 기간</label>
+      <div class="date-range-wrapper">
+        <div class="date-field">
+          <input type="date" id="startDate" th:field="*{startDate}" required />
         </div>
+        <span>~</span>
+        <div class="date-field">
+          <input type="date" id="endDate" th:field="*{endDate}" required />
+        </div>
+      </div>
+      <div class="error-message-wrapper">
+        <p class="error-message" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></p>
+        <p class="error-message" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></p>
+      </div>
+    </div>
 
-            <!-- 제출 버튼 -->
-            <div class="button-container">
-                <button type="submit">여행 후기 작성</button>
-            </div>
+    <!-- 성별 제한 -->
+    <div class="input-container">
+      <label>성별 제한</label>
+      <div style="display: flex; gap: 15px;">
+        <label>
+          <input type="radio" name="genderRestriction" value="ALL" th:field="*{genderRestriction}" /> 누구나
+        </label>
+        <label>
+          <input type="radio" name="genderRestriction" value="MALE" th:field="*{genderRestriction}" /> 남성만
+        </label>
+        <label>
+          <input type="radio" name="genderRestriction" value="FEMALE" th:field="*{genderRestriction}" /> 여성만
+        </label>
+      </div>
+      <p class="error-message" th:if="${#fields.hasErrors('genderRestriction')}" th:errors="*{genderRestriction}"></p>
+    </div>
+
+    <!-- 모집 인원 -->
+    <div class="input-container">
+      <label for="recruitmentCount">모집 인원</label>
+      <input type="number" id="recruitmentCount" th:field="*{recruitmentCount}" min="1" required />
+      <p class="error-message" th:if="${#fields.hasErrors('recruitmentCount')}" th:errors="*{recruitmentCount}"></p>
+    </div>
+
+    <!-- 내용 -->
+    <div class="input-container">
+      <label for="content">내용</label>
+      <textarea id="content" th:field="*{content}" required></textarea>
+      <p class="error-message" th:if="${#fields.hasErrors('content')}" th:errors="*{content}"></p>
+    </div>
+
+    <!-- 썸네일 업로드 -->
+    <div class="input-container">
+      <label for="thumbnail" class="thumbnail-label">썸네일 이미지</label>
+
+      <div class="thumbnail-wrapper">
+        <!-- 기존 썸네일이 있는 경우 -->
+        <img id="thumbnail-preview"
+             th:if="${post.thumbnailUrl != null and post.thumbnailUrl != ''}"
+             th:src="@{${post.thumbnailUrl}}"
+             alt="썸네일 미리보기" />
+
+        <img id="thumbnail-preview-js"
+             th:if="${post.thumbnailUrl != null and post.thumbnailUrl != ''}"
+             th:src="@{${post.thumbnailUrl}}"
+             alt="썸네일 미리보기"
+             style="display: none;" />
+
+        <label for="thumbnail" class="upload-button">파일 선택</label>
+        <input type="file" id="thumbnail" name="thumbnail" accept="image/*"
+               onchange="previewThumbnail(event)" style="display: none;" />
+      </div>
+    </div>
+
+    <!-- 제출 버튼 -->
+    <button type="submit" class="submit-btn">수정하기</button>
+  </form>
 </div>
 
-    </form>
-</div>
 <div th:replace="~{fragments/footer::footer}"></div>
-<script>
-    function previewThumbnail(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const preview = document.getElementById('thumbnail-preview');
-          const previewJs = document.getElementById('thumbnail-preview-js');
-
-          // 기존 이미지 태그 제거
-          if (preview) preview.src = e.target.result;
-          if (previewJs) {
-            previewJs.src = e.target.result;
-            previewJs.style.display = 'block';
-          }
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-</script>
-<script>
-    let selectedPlaces = []; // { placeId, placeName }
-    let cityIds = []; // 도시 ID는 필요 시 동적으로 채워넣으세요
-
-    function openPlaceModal() {
-      document.getElementById('placeModal').style.display = 'flex';
-      document.getElementById('placeQuery').value = '';
-      document.getElementById('recommendationList').innerHTML = '<p>추천 장소를 불러오는 중...</p>';
-      loadRecommendations(cityIds, '');
-    }
-
-    function closePlaceModal() {
-      document.getElementById('placeModal').style.display = 'none';
-    }
-
-    function loadRecommendations(cityIds, query = '') {
-      const queryParam =
-        cityIds.map(id => `cityIds=${id}`).join('&') +
-        (query ? `&query=${encodeURIComponent(query)}` : '');
-
-      fetch(`/api/places/recommend?${queryParam}`)
-        .then(res => res.json())
-        .then(places => {
-          const list = document.getElementById('recommendationList');
-          list.innerHTML = '';
-
-          if (!places || places.length === 0) {
-            list.innerHTML = '<p>추천 장소가 없습니다.</p>';
-            return;
-          }
-
-          places.forEach(place => {
-              const div = document.createElement('div');
-              div.className = 'recommend-item';
-              div.onclick = () => selectPlace(place);
-
-              div.innerHTML = `
-                <div class="recommend-content">
-                  <div class="recommend-title">${place.placeName}</div>
-                  <div class="recommend-address">${place.address}</div>
-                </div>
-              `;
-              list.appendChild(div);
-            });
-        });
-    }
-
-    function selectPlace(place) {
-      if (selectedPlaces.find(p => p.placeId === place.placeId)) {
-        alert('이미 선택된 장소입니다.');
-        return;
-      }
-      selectedPlaces.push(place);
-      renderSelectedPlaces();
-    }
-
-    function removePlace(placeId) {
-      selectedPlaces = selectedPlaces.filter(p => p.placeId !== placeId);
-      renderSelectedPlaces();
-    }
-
-   function renderSelectedPlaces() {
-  const container = document.getElementById('selectedPlaceNames');
-  container.innerHTML = '';
-
-  const hiddenContainer = document.getElementById('hiddenPlaceInputs');
-  hiddenContainer.innerHTML = ''; // 기존 hidden input 초기화
-
-  selectedPlaces.forEach(place => {
-    // UI 표시용
-    const tag = document.createElement('div');
-    tag.className = 'place-tag';
-    tag.textContent = place.placeName;
-
-    const removeBtn = document.createElement('button');
-    removeBtn.className = 'remove-btn';
-    removeBtn.textContent = '×';
-    removeBtn.onclick = () => removePlace(place.placeId);
-    tag.appendChild(removeBtn);
-    container.appendChild(tag);
-
-    // ✅ 배열 형태로 처리되도록 name을 동일하게 유지
-    const hiddenInput = document.createElement('input');
-    hiddenInput.type = 'hidden';
-    hiddenInput.name = 'placeIds'; // 💡 인덱스 없이!
-    hiddenInput.value = place.placeId;
-    hiddenContainer.appendChild(hiddenInput);
-  });
-}
-
-    // 디바운스 처리
-    let debounceTimer;
-    document.addEventListener('DOMContentLoaded', () => {
-      const input = document.getElementById('placeQuery');
-      if (input) {
-        input.addEventListener('input', () => {
-          clearTimeout(debounceTimer);
-          debounceTimer = setTimeout(() => {
-            loadRecommendations(cityIds, input.value.trim());
-          }, 300);
-        });
-      }
-    });
-</script>
-
 </body>
 </html>

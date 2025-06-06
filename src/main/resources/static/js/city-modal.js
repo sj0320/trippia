@@ -5,7 +5,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const cityIdInput = document.getElementById("cityId");
     const cityNameInput = document.getElementById("cityName");
 
-    // ✅ 서버에서 cityId와 cityName이 이미 넘어온 경우, hidden input에 값 설정 + selected 클래스 부여
     if (cityNameInput && cityIdInput && cityNameInput.value && !cityIdInput.value) {
         const buttons = document.querySelectorAll('[data-id][data-city]');
         buttons.forEach(button => {

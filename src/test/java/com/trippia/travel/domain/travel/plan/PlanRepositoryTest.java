@@ -3,6 +3,7 @@ package com.trippia.travel.domain.travel.plan;
 import com.trippia.travel.TestConfig;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
+import com.trippia.travel.domain.travel.planparticipant.InvitationStatus;
 import com.trippia.travel.domain.travel.planparticipant.PlanParticipant;
 import com.trippia.travel.domain.travel.planparticipant.PlanParticipantRepository;
 import com.trippia.travel.domain.travel.planparticipant.PlanRole;
@@ -19,6 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.time.LocalDate;
 import java.util.List;
 
+import static com.trippia.travel.domain.travel.planparticipant.InvitationStatus.ACCEPTED;
 import static org.assertj.core.groups.Tuple.tuple;
 
 @ActiveProfiles("test")
@@ -46,9 +48,9 @@ class PlanRepositoryTest {
         Plan plan2 = createPlan("title2", now.plusDays(2), now.plusDays(3));
         Plan plan3 = createPlan("title3", now.minusDays(2), now.minusDays(1));
 
-        addParticipant(user, plan1);
-        addParticipant(user, plan2);
-        addParticipant(user, plan3);
+        addParticipant(user, plan1, ACCEPTED);
+        addParticipant(user, plan2, ACCEPTED);
+        addParticipant(user, plan3, ACCEPTED);
 
         // when
         List<Plan> result = planRepository.findUpcomingPlansByUser(user.getId(), now);
@@ -74,9 +76,9 @@ class PlanRepositoryTest {
         Plan plan2 = createPlan("title2", now.plusDays(2), now.plusDays(3));
         Plan plan3 = createPlan("title3", now.minusDays(2), now.minusDays(1));
 
-        addParticipant(user, plan1);
-        addParticipant(user, plan2);
-        addParticipant(user, plan3);
+        addParticipant(user, plan1, ACCEPTED);
+        addParticipant(user, plan2, ACCEPTED);
+        addParticipant(user, plan3, ACCEPTED);
 
         // when
         List<Plan> result = planRepository.findPastPlansByUser(user.getId(), now);
@@ -111,11 +113,12 @@ class PlanRepositoryTest {
         return userRepository.save(user);
     }
 
-    private void addParticipant(User user, Plan plan) {
+    private void addParticipant(User user, Plan plan, InvitationStatus status) {
         PlanParticipant planParticipant = PlanParticipant.builder()
                 .user(user)
                 .plan(plan)
                 .role(PlanRole.OWNER)
+                .status(status)
                 .build();
         planParticipantRepository.save(planParticipant);
     }

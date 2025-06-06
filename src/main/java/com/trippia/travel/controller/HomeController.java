@@ -2,7 +2,7 @@ package com.trippia.travel.controller;
 
 import com.trippia.travel.controller.dto.city.response.CityThumbnailResponse;
 import com.trippia.travel.controller.dto.diary.response.DiaryListResponse;
-import com.trippia.travel.domain.post.diary.DiaryService;
+import com.trippia.travel.domain.diarypost.diary.DiaryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;

@@ -5,8 +5,8 @@ import com.trippia.travel.controller.dto.diary.response.LikedDiarySummaryRespons
 import com.trippia.travel.controller.dto.plan.response.PlanSummaryResponse;
 import com.trippia.travel.controller.dto.user.response.MyPageResponse;
 import com.trippia.travel.controller.dto.user.response.MyPageUserInfoResponse;
-import com.trippia.travel.domain.post.diary.DiaryService;
-import com.trippia.travel.domain.post.likes.LikeService;
+import com.trippia.travel.domain.diarypost.diary.DiaryService;
+import com.trippia.travel.domain.diarypost.likes.LikeService;
 import com.trippia.travel.domain.travel.plan.PlanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

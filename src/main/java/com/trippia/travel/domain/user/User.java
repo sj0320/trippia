@@ -2,7 +2,8 @@ package com.trippia.travel.domain.user;
 
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
-import com.trippia.travel.domain.post.diary.Diary;
+import com.trippia.travel.domain.companionpost.post.CompanionPost;
+import com.trippia.travel.domain.diarypost.diary.Diary;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -86,6 +87,12 @@ public class User {
 
     public void validateAuthorOf(Diary diary) {
         if (!this.equals(diary.getUser())) {
+            throw new AccessDeniedException("접근 권한이 없습니다.");
+        }
+    }
+
+    public void validateAuthorOf(CompanionPost post) {
+        if (!this.equals(post.getUser())) {
             throw new AccessDeniedException("접근 권한이 없습니다.");
         }
     }
