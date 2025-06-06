@@ -1,7 +1,7 @@
 package com.trippia.travel.controller;
 
 import com.trippia.travel.annotation.CurrentUser;
-import com.trippia.travel.controller.dto.CursorData;
+import com.trippia.travel.controller.dto.diary.request.CursorData;
 import com.trippia.travel.controller.dto.diary.request.DiarySaveRequest;
 import com.trippia.travel.controller.dto.diary.request.DiarySearchCondition;
 import com.trippia.travel.controller.dto.diary.request.DiaryUpdateRequest;
@@ -12,8 +12,8 @@ import com.trippia.travel.controller.dto.diary.response.DiaryListViewModel;
 import com.trippia.travel.domain.common.SortOption;
 import com.trippia.travel.domain.location.city.CityService;
 import com.trippia.travel.domain.location.country.CountryRepository;
-import com.trippia.travel.domain.post.diary.DiaryService;
-import com.trippia.travel.domain.post.likes.LikeService;
+import com.trippia.travel.domain.diarypost.diary.DiaryService;
+import com.trippia.travel.domain.diarypost.likes.LikeService;
 import com.trippia.travel.domain.theme.ThemeService;
 import com.trippia.travel.domain.user.UserService;
 import com.trippia.travel.exception.diary.DiaryException;
@@ -61,7 +61,7 @@ public class DiaryController {
     @GetMapping("/new")
     public String createDiaryForm(Model model) {
         model.addAttribute("diary", new DiarySaveRequest());
-        return "post/create";
+        return "diary/create";
     }
 
     @PostMapping("/new")
@@ -76,15 +76,14 @@ public class DiaryController {
         }
 
         if (bindingResult.hasErrors()) {
-            log.error(bindingResult.getAllErrors().toString());
-            return "post/create";
+            return "diary/create";
         }
         try {
             Long diaryId = diaryService.saveDiary(email, request, thumbnail);
             return "redirect:/diary/" + diaryId;
         } catch (DiaryException | FileException e) {
             bindingResult.rejectValue(e.getFieldName(), e.getCode());
-            return "post/create";
+            return "diary/create";
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -94,7 +93,7 @@ public class DiaryController {
     @GetMapping("/list")
     public String getDiaryList(
             @ModelAttribute DiarySearchCondition searchCondition,
-            @PageableDefault(size = 6) Pageable pageable,
+            @PageableDefault(size = 9) Pageable pageable,
             Model model
     ) {
         log.info("category={}, {} ,{}", searchCondition.getKeyword(), searchCondition.getCountryName(), searchCondition.getThemeName());
@@ -115,7 +114,7 @@ public class DiaryController {
             model.addAttribute("cursorData", cursorData);
         }
 
-        return "post/list";
+        return "diary/list";
     }
 
     // API (무한스크롤용)
@@ -124,25 +123,23 @@ public class DiaryController {
     public Slice<DiaryListResponse> getDiaryListData(
             @ModelAttribute DiarySearchCondition searchCondition,
             @ModelAttribute CursorData cursorData,
-            @PageableDefault(size = 3) Pageable pageable
+            @PageableDefault(size = 9) Pageable pageable
     ) {
         Sort sortOption = SortOption.from(searchCondition.getSort()).getSort();
         Pageable sortedpPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortOption);
-        Slice<DiaryListResponse> test = diaryService.searchDiaryList(searchCondition, cursorData, sortedpPageable);
-        log.info("hasNext={}", test.hasNext());
         return diaryService.searchDiaryList(searchCondition, cursorData, sortedpPageable);
     }
 
     @GetMapping("/{id}")
     public String getDiaryDetails(@CurrentUser String email, @PathVariable Long id, Model model,
                                   HttpServletRequest request) {
-        DiaryDetailResponse diaryDetails = diaryService.getDiaryDetail(id);
+        DiaryDetailResponse diaryDetails = diaryService.getDiaryDetails(id);
         diaryService.addViewCount(id, request.getRemoteAddr(), request.getHeader("User-Agent"));
         model.addAttribute("diary", diaryDetails);
         model.addAttribute("isLiked", likeService.isLikedByDiary(email, id));
         model.addAttribute("currentUserProfile", userService.getProfileImageUrl(email));
 
-        return "post/details";
+        return "diary/details";
     }
 
     @DeleteMapping("/{id}")
@@ -155,15 +152,15 @@ public class DiaryController {
     public String editDiaryForm(@CurrentUser String email, @PathVariable Long id, Model model) {
         DiaryEditFormResponse diary = diaryService.getEditForm(email, id);
         model.addAttribute("diary", diary);
-        return "post/edit";
+        return "diary/edit";
     }
 
     @PutMapping("/{id}")
     public String editDiary(@CurrentUser String email, @PathVariable Long id,
-                            @ModelAttribute("diary") DiaryUpdateRequest request,
+                            @Valid @ModelAttribute("diary") DiaryUpdateRequest request,
                             BindingResult bindingResult, @RequestParam("thumbnail") MultipartFile thumbnail) throws IOException {
         if (bindingResult.hasErrors()) {
-            return "/post/edit";
+            return "diary/edit";
         }
         diaryService.editDiary(email, id, request, thumbnail);
         return "redirect:/diary/" + id;

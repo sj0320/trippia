@@ -2,7 +2,7 @@ package com.trippia.travel.controller.dto.diary.request;
 
 import com.trippia.travel.domain.common.TravelCompanion;
 import com.trippia.travel.domain.location.city.City;
-import com.trippia.travel.domain.post.diary.Diary;
+import com.trippia.travel.domain.diarypost.diary.Diary;
 import com.trippia.travel.domain.user.User;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -32,10 +32,10 @@ public class DiarySaveRequest {
     private List<String> placeIds = new ArrayList<>();    // 다녀온 여행지
 
     @NotBlank(message = "제목을 입력해주세요")
-    private String title; // 다이어리 제목
+    private String title;
 
     @NotBlank(message = "내용을 입력해주세요")
-    private String content; // 다이어리 내용
+    private String content;
 
     @NotNull(message = "언제 여행을 다녀오셨나요?")
     @DateTimeFormat(pattern = "yyyy-MM-dd")

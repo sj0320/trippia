@@ -1,5 +1,6 @@
 package com.trippia.travel.exception;
 
+import com.trippia.travel.exception.companionpost.CompanionPostException;
 import com.trippia.travel.exception.plan.PlanException;
 import com.trippia.travel.exception.user.UserException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -52,6 +53,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
+    @ExceptionHandler(CompanionPostException.class)
+    @ResponseBody
+    public ResponseEntity<String> handleCompanionPostException(CompanionPostException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseBody

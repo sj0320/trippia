@@ -1,7 +1,7 @@
 package com.trippia.travel.controller;
 
 import com.trippia.travel.annotation.CurrentUser;
-import com.trippia.travel.domain.post.likes.LikeService;
+import com.trippia.travel.domain.diarypost.likes.LikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

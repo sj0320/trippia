@@ -2,7 +2,7 @@ package com.trippia.travel.domain.user;
 
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
-import com.trippia.travel.domain.post.diary.Diary;
+import com.trippia.travel.domain.diarypost.diary.Diary;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;

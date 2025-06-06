@@ -1,6 +1,6 @@
 package com.trippia.travel.controller.dto.diary.response;
 
-import com.trippia.travel.domain.post.diary.Diary;
+import com.trippia.travel.domain.diarypost.diary.Diary;
 import lombok.Builder;
 import lombok.Getter;
 

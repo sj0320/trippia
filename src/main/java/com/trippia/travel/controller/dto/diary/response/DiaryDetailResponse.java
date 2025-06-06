@@ -1,7 +1,7 @@
 package com.trippia.travel.controller.dto.diary.response;
 
-import com.trippia.travel.controller.dto.comment.response.CommentResponse;
-import com.trippia.travel.domain.post.diary.Diary;
+import com.trippia.travel.controller.dto.diarycomment.response.DiaryCommentResponse;
+import com.trippia.travel.domain.diarypost.diary.Diary;
 import com.trippia.travel.domain.theme.Theme;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,13 +27,13 @@ public class DiaryDetailResponse {
     private List<String> theme;
     private int viewCount;
     private int likeCount;
-    private List<CommentResponse> comments;
+    private List<DiaryCommentResponse> comments;
 
     @Builder
     private DiaryDetailResponse(Long id, String title, String content, String authorEmail,
                                String authorNickname, String authorProfile, String cityName,
                                LocalDate startDate, LocalDate endDate, String companion, Integer rating,
-                               Integer totalBudget, List<String> theme, int viewCount, int likeCount, List<CommentResponse> comments) {
+                               Integer totalBudget, List<String> theme, int viewCount, int likeCount, List<DiaryCommentResponse> comments) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -73,7 +73,7 @@ public class DiaryDetailResponse {
                 .theme(themeNames)
                 .viewCount(diary.getViewCount())
                 .likeCount(diary.getLikeCount())
-                .comments(CommentResponse.fromList(diary.getComments()))
+                .comments(DiaryCommentResponse.fromList(diary.getComments()))
                 .build();
     }
 }
