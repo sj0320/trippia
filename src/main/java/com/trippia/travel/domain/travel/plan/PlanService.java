@@ -23,6 +23,7 @@ import com.trippia.travel.domain.travel.scheduleitem.ScheduleItemConverter;
 import com.trippia.travel.domain.travel.scheduleitem.ScheduleItemRepository;
 import com.trippia.travel.domain.user.User;
 import com.trippia.travel.domain.user.UserRepository;
+import com.trippia.travel.exception.BaseException;
 import com.trippia.travel.exception.plan.PlanException;
 import com.trippia.travel.exception.user.UserException;
 import lombok.RequiredArgsConstructor;
@@ -233,7 +234,7 @@ public class PlanService {
 
     private Plan getPlan(Long planId) {
         return planRepository.findById(planId)
-                .orElseThrow(() -> new PlanException("여행 계획을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BaseException("여행 계획을 찾을 수 없습니다."));
     }
 
     private String getDefaultTitleByCities(List<City> cities) {
@@ -265,7 +266,7 @@ public class PlanService {
     private void validatePlanPermission(User user, Long planId) {
         boolean hasPermission = planParticipantRepository.existsByUserIdAndPlanIdAndStatus(user.getId(), planId, ACCEPTED);
         if (!hasPermission) {
-            throw new PlanException("접근 권한이 없습니다.");
+            throw new BaseException("접근 권한이 없습니다.");
         }
     }
 

@@ -102,8 +102,14 @@
                 <li th:each="comment : ${diary.comments}" class="comment-item">
                     <div class="comment-header">
                         <div class="comment-author-info">
-                            <img class="profile-image" th:src="@{${comment.authorProfile}}" alt="프로필 이미지">
-                            <strong th:text="${comment.authorNickname}">닉네임</strong>
+                            <div class="comment-author-info">
+                                <a th:href="@{'/users/' + ${comment.authorId}}">
+                                    <img class="profile-image" th:src="@{${comment.authorProfile}}" alt="프로필 이미지">
+                                </a>
+                                <a th:href="@{'/users/' + ${comment.authorId}}">
+                                    <strong th:text="${comment.authorNickname}"></strong>
+                                </a>
+                            </div>
                         </div>
                         <span class="comment-date" th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}">2025-04-14 14:30</span>
                     </div>
@@ -111,6 +117,7 @@
                 </li>
             </ul>
         </div>
+
     </div>
 
     <!-- 로그인 모달 -->

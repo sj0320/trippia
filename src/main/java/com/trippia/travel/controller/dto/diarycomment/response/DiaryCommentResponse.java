@@ -10,14 +10,16 @@ import java.util.List;
 @Getter
 public class DiaryCommentResponse {
     private Long id;
+    private Long authorId;
     private String authorNickname;
     private String authorProfile;
     private String content;
     private LocalDateTime createdAt;
 
     @Builder
-    private DiaryCommentResponse(Long id, String authorNickname, String authorProfile, String content, LocalDateTime createdAt) {
+    private DiaryCommentResponse(Long id, Long authorId,String authorNickname, String authorProfile, String content, LocalDateTime createdAt) {
         this.id = id;
+        this.authorId = authorId;
         this.authorNickname = authorNickname;
         this.authorProfile = authorProfile;
         this.content = content;
@@ -27,6 +29,7 @@ public class DiaryCommentResponse {
     public static DiaryCommentResponse from(DiaryComment diaryComment){
         return DiaryCommentResponse.builder()
                 .id(diaryComment.getId())
+                .authorId(diaryComment.getUser().getId())
                 .authorNickname(diaryComment.getUser().getNickname())
                 .authorProfile(diaryComment.getUser().getProfileImageUrl())
                 .content(diaryComment.getContent())
@@ -39,6 +42,7 @@ public class DiaryCommentResponse {
         return diaryComments.stream()
                 .map(comment -> DiaryCommentResponse.builder()
                         .id(comment.getId())
+                        .authorId(comment.getUser().getId())
                         .authorNickname(comment.getUser().getNickname())
                         .authorProfile(comment.getUser().getProfileImageUrl())
                         .content(comment.getContent())

@@ -392,17 +392,19 @@
                 <div><strong th:text="${#lists.size(myPage.upcomingPlans) + #lists.size(myPage.pastPlans)}">0</strong> 개의 여행 계획</div>
             </div>
 
-            <div style="display: flex; flex-direction: column; align-items: center; margin-top: 1rem;">
-                <button class="profile-edit-btn" onclick="openProfileEditModal()" style="margin-bottom: 0.7rem;">
-                    프로필 수정
-                </button>
+            <th:block th:if="${isOwner}">
+                <div style="display: flex; flex-direction: column; align-items: center; margin-top: 1rem;">
+                    <button class="profile-edit-btn" onclick="openProfileEditModal()" style="margin-bottom: 0.7rem;">
+                        프로필 수정
+                    </button>
 
-                <a href="/plan-participant"
-                   class="profile-edit-btn"
-                   style="width: 135px; text-decoration: none; text-align: center;">
-                    여행 초대함
-                </a>
-            </div>
+                    <a href="/plan-participant"
+                       class="profile-edit-btn"
+                       style="width: 135px; text-decoration: none; text-align: center;">
+                        여행 초대함
+                    </a>
+                </div>
+            </th:block>
 
         </div>
 

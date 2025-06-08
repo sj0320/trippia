@@ -10,10 +10,10 @@ import com.trippia.travel.controller.dto.diary.response.DiaryEditFormResponse;
 import com.trippia.travel.controller.dto.diary.response.DiaryListResponse;
 import com.trippia.travel.controller.dto.diary.response.DiaryListViewModel;
 import com.trippia.travel.domain.common.SortOption;
-import com.trippia.travel.domain.location.city.CityService;
-import com.trippia.travel.domain.location.country.CountryRepository;
 import com.trippia.travel.domain.diarypost.diary.DiaryService;
 import com.trippia.travel.domain.diarypost.likes.LikeService;
+import com.trippia.travel.domain.location.city.CityService;
+import com.trippia.travel.domain.location.country.CountryRepository;
 import com.trippia.travel.domain.theme.ThemeService;
 import com.trippia.travel.domain.user.UserService;
 import com.trippia.travel.exception.diary.DiaryException;
@@ -66,8 +66,8 @@ public class DiaryController {
 
     @PostMapping("/new")
     public String saveDiary(@Valid @ModelAttribute("diary") DiarySaveRequest request,
-                              BindingResult bindingResult, @RequestParam("thumbnail") MultipartFile thumbnail,
-                              @CurrentUser String email, Model model) {
+                            BindingResult bindingResult, @RequestParam("thumbnail") MultipartFile thumbnail,
+                            @CurrentUser String email, Model model) {
 
         String thumbnailUrl = null;
         if (!thumbnail.isEmpty()) {
@@ -138,7 +138,6 @@ public class DiaryController {
         model.addAttribute("diary", diaryDetails);
         model.addAttribute("isLiked", likeService.isLikedByDiary(email, id));
         model.addAttribute("currentUserProfile", userService.getProfileImageUrl(email));
-
         return "diary/details";
     }
 

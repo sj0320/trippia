@@ -34,6 +34,4 @@ public class CompanionPostApiController {
         Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortOption);
         return companionPostService.searchPostList(condition, cursorData, sortedPageable);
     }
-
-
 }

@@ -104,6 +104,7 @@ public class UserService {
         user.updateProfileInfo(request.getNickname(), request.getBio(), profileImageUrl);
     }
 
+
     private String generateRandomCode() {
         return String.valueOf(100000 + new Random().nextInt(900000));
     }

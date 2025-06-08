@@ -34,8 +34,12 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/diary/new").authenticated()
+                        .requestMatchers("/", "/login","/images/**", "/css/**", "/js/**").permitAll()
+                        .requestMatchers( "/diary/list","/diary/list/data","/diary/*").permitAll()
+                        .requestMatchers( "/users/*").permitAll()
+                        .requestMatchers( "/travel/places/*").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 );
 
         http
