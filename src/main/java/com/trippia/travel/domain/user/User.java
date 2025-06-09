@@ -102,4 +102,8 @@ public class User {
         this.bio = bio;
         this.profileImageUrl = profileImageUrl;
     }
+
+    public void updatePassword(String password) {
+        this.password = password;
+    }
 }
