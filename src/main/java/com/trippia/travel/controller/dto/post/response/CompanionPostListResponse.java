@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 public class CompanionPostListResponse {
 
     private Long id;
+    private Long authorId;
     private String authorNickname;
     private String authorProfile;
     private String title;
@@ -22,9 +23,10 @@ public class CompanionPostListResponse {
 
 
     @Builder
-    private CompanionPostListResponse(Long id, String authorNickname, String title, String authorProfile,
+    private CompanionPostListResponse(Long id, Long authorId,String authorNickname, String title, String authorProfile,
                                      String thumbnail, int viewCount, int commentCount,LocalDateTime createdAt) {
         this.id = id;
+        this.authorId = authorId;
         this.authorNickname = authorNickname;
         this.title = title;
         this.authorProfile = authorProfile;
@@ -38,6 +40,7 @@ public class CompanionPostListResponse {
         return posts.stream()
                 .map(post -> CompanionPostListResponse.builder()
                         .id(post.getId())
+                        .authorId(post.getUser().getId())
                         .authorNickname(post.getUser().getNickname())
                         .authorProfile(post.getUser().getProfileImageUrl())
                         .title(post.getTitle())

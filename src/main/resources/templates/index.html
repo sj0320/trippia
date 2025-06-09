@@ -7,25 +7,35 @@
     <link href="https://cdn.jsdelivr.net/gh/spoqa/spoqa-han-sans/css/SpoqaHanSansNeo.css" rel="stylesheet" type="text/css">
 
     <style>
-        /* 본문에만 폰트 적용 */
         .local-font {
             font-family: 'Spoqa Han Sans Neo', sans-serif;
         }
 
-        .section-title {
-            text-align: left;
-            font-size: 22px;
-            font-weight: 500;
-            margin: 60px auto 20px;
+        .section-wrapper {
+            background-color: #fefefe;
+            border-radius: 12px;
+            padding: 40px 30px;
+            margin: 40px auto;
             width: 1280px;
-            color: #222;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .section-wrapper:nth-of-type(odd) {
+            background-color: #f9fafc;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #333;
+            border-left: 6px solid #3f51b5;
+            padding-left: 12px;
         }
 
         .slider-container {
             position: relative;
-            width: 1280px;
             overflow: hidden;
-            margin: auto;
         }
 
         .slider-wrapper {
@@ -39,7 +49,7 @@
             height: 319px;
             border-radius: 19px;
             background: #f2f2f2;
-            margin: 0 20px; /* 썸네일 간격 늘림 */
+            margin: 0 20px;
             flex-shrink: 0;
             text-decoration: none;
             background-size: cover;
@@ -60,7 +70,6 @@
             color: #fff;
             font-weight: 400;
             font-size: 16px;
-            font-family: 'Spoqa Han Sans Neo', sans-serif;
             border-radius: 0 0 19px 19px;
             text-align: left;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
@@ -87,57 +96,65 @@
         .next-btn {
             right: 10px;
         }
-    </style>
-</head>
 
-<body>
-<div layout:fragment="content" class="local-font">
+        .companion-card-container {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
 
-    <!-- 📖 인기 여행일지 섹션 -->
-    <h2 class="section-title">사람들이 가장 많이 찾은 여행 이야기</h2>
-    <div class="slider-container">
-        <button class="arrow-btn prev-btn" onclick="moveSlide('slider1', -1)">‹</button>
+        .companion-card {
+            display: flex;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            transition: box-shadow 0.2s;
+            padding: 12px;
+        }
 
-        <div class="slider-wrapper" id="slider1">
-            <a th:each="diary : ${diaries}"
-               th:href="@{/diary/{id}(id=${diary.id})}"
-               th:style="'background-image: url(' + ${diary.thumbnail} + ')'"
-               class="thumbnail">
-                <div class="overlay-text" th:text="${diary.title}"></div>
-            </a>
-        </div>
+        .companion-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
 
-        <button class="arrow-btn next-btn" onclick="moveSlide('slider1', 1)">›</button>
+        .companion-thumbnail {
+            width: 120px;
+            height: 100px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            flex-shrink: 0;
+            margin-right: 16px;
+        }
 
-        <div class="more-button-wrapper" id="more-button-1">
-            <a href="/diary/list" class="more-button">더 많은 여행일지 보기 →</a>
-        </div>
-    </div>
+        .companion-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
 
-    <!-- 🏙️ 가장 많이 작성된 도시들 -->
-    <h2 class="section-title">여행자들이 자주 기록한 도시들</h2>
-    <div class="slider-container">
-        <button class="arrow-btn prev-btn" onclick="moveSlide('slider2', -1)">‹</button>
+        .info-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
 
-        <div class="slider-wrapper" id="slider2">
-            <a th:each="thumb : ${thumbnails}"
-               th:href="${thumb.linkUrl}"
-               th:style="'background-image: url(' + ${thumb.imageUrl} + ')'"
-               class="thumbnail">
-                <div class="overlay-text" th:text="${thumb.cityName}"></div>
-            </a>
-        </div>
+        .companion-date {
+            font-size: 0.85rem;
+            color: #888;
+            white-space: nowrap;
+        }
 
-        <button class="arrow-btn next-btn" onclick="moveSlide('slider2', 1)">›</button>
 
-        <div class="more-button-wrapper" id="more-button-2">
-            <a href="/diary/list" class="more-button">더 많은 여행일지 보기 →</a>
-        </div>
-    </div>
+        .companion-stats {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 6px;
+        }
 
-    <style>
         .more-button-wrapper {
-            display: none;
             text-align: center;
             margin-top: 20px;
         }
@@ -156,52 +173,160 @@
         .more-button:hover {
             background-color: #303f9f;
         }
-    </style>
+        .companion-title-link,
 
-    <script>
-        const state = {
-            slider1: { index: 0, appended: false },
-            slider2: { index: 0, appended: false }
-        };
 
-        function moveSlide(sliderId, direction) {
-            const slider = document.getElementById(sliderId);
-            const current = state[sliderId];
-
-            const thumbnails = slider.querySelectorAll('.thumbnail');
-            if (thumbnails.length === 0) return;
-
-            const thumb = thumbnails[0];
-            const thumbWidth = thumb.offsetWidth;
-            const thumbMargin = parseInt(getComputedStyle(thumb).marginLeft) + parseInt(getComputedStyle(thumb).marginRight);
-            const slideWidth = thumbWidth + thumbMargin;
-            const visibleSlides = Math.floor(slider.parentElement.offsetWidth / slideWidth);
-
-            let totalSlides = thumbnails.length;
-
-            // 마지막 도달 시 "더보기" 썸네일 추가
-            if (!current.appended && current.index + visibleSlides >= totalSlides) {
-                const moreSlide = document.createElement('a');
-                moreSlide.href = "/diary/list";
-                moreSlide.className = "thumbnail";
-                moreSlide.style.backgroundColor = "#e0e0e0";
-                moreSlide.innerHTML = `<div class="overlay-text">더 많은 여행일지 보러가기 →</div>`;
-                slider.appendChild(moreSlide);
-                current.appended = true;
-                totalSlides += 1; // 반드시 반영
-            }
-
-            const maxIndex = Math.max(totalSlides - visibleSlides, 0);
-
-            let nextIndex = current.index + direction;
-            if (nextIndex < 0) nextIndex = 0;
-            if (nextIndex > maxIndex) nextIndex = maxIndex;
-
-            current.index = nextIndex;
-            slider.style.transform = `translateX(${-current.index * slideWidth}px)`;
+        .companion-title-link,
+        .companion-author {
+            cursor: pointer;
+            color: #555; /* 기본 색상 */
+            text-decoration: none;
+            transition: color 0.3s ease;
         }
-    </script>
+
+        .companion-title-link:hover,
+        .companion-author:hover {
+            color: #1a73e8; /* 파란색 */
+        }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content" class="local-font">
+
+    <!--인기 여행일지 섹션 -->
+    <div class="section-wrapper">
+        <h2 class="section-title">사람들이 가장 많이 찾은 여행 이야기</h2>
+        <div class="slider-container">
+            <button class="arrow-btn prev-btn" onclick="moveSlide('slider1', -1)">‹</button>
+            <div class="slider-wrapper" id="slider1">
+                <a th:each="diary : ${diaries}"
+                   th:href="@{/diary/{id}(id=${diary.id})}"
+                   th:style="'background-image: url(' + ${diary.thumbnail} + ')'"
+                   class="thumbnail">
+                    <div class="overlay-text" th:text="${diary.title}"></div>
+                </a>
+            </div>
+            <button class="arrow-btn next-btn" onclick="moveSlide('slider1', 1)">›</button>
+        </div>
+        <div class="more-button-wrapper">
+            <a href="/diary/list" class="more-button">더 많은 여행일지 보기 →</a>
+        </div>
+    </div>
+
+    <!--자주 기록된 도시들 -->
+    <div class="section-wrapper">
+        <h2 class="section-title">여행자들이 자주 기록한 도시들</h2>
+        <div class="slider-container">
+            <button class="arrow-btn prev-btn" onclick="moveSlide('slider2', -1)">‹</button>
+            <div class="slider-wrapper" id="slider2">
+                <a th:each="thumb : ${thumbnails}"
+                   th:href="${thumb.linkUrl}"
+                   th:style="'background-image: url(' + ${thumb.imageUrl} + ')'"
+                   class="thumbnail">
+                    <div class="overlay-text" th:text="${thumb.cityName}"></div>
+                </a>
+            </div>
+            <button class="arrow-btn next-btn" onclick="moveSlide('slider2', 1)">›</button>
+        </div>
+        <div class="more-button-wrapper">
+            <a href="/diary/list" class="more-button">더 많은 여행일지 보기 →</a>
+        </div>
+    </div>
+
+    <!-- ✈️ 여행자 모집 섹션 -->
+    <div class="section-wrapper">
+        <h2 class="section-title">
+            <a th:href="@{/companion-post/list}" style="color: inherit; text-decoration: none;">
+                여행자 모집
+            </a>
+        </h2>
+
+        <div class="companion-card-container">
+            <div th:each="post : ${posts}" class="companion-card">
+
+                <a th:href="@{/companion-post/{id}(id=${post.id})}" class="companion-thumbnail-link" style="flex-shrink: 0;">
+                    <div class="companion-thumbnail"
+                         th:style="'background-image: url(' + ${post.thumbnail} + ')'">
+                    </div>
+                </a>
+
+                <div class="companion-info">
+                    <div class="info-top">
+                        <!-- 제목: 굵고 진하게 -->
+                        <a th:href="@{/companion-post/{id}(id=${post.id})}" class="companion-title-link"
+                           th:text="${post.title}"
+                           style="font-weight: 600; font-size: 1.05rem; color: #222; text-decoration: none;">
+                            제목
+                        </a>
+                        <div class="companion-date"
+                             th:text="${#temporals.format(post.createdAt, 'yyyy.MM.dd')}"
+                             style="font-size: 0.85rem; color: #999;">
+                            2025.06.08
+                        </div>
+                    </div>
+
+                    <!-- 작성자와 통계: 더 작고 연한 폰트 -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                        <a th:href="@{/users/{userId}(userId=${post.authorId})}"
+                           class="companion-author"
+                           th:text="'작성자: ' + ${post.authorNickname}"
+                           style="font-size: 0.85rem; color: #777; text-decoration: none;">
+                            작성자: 닉네임
+                        </a>
+
+                        <div class="companion-stats" style="font-size: 0.85rem; color: #666;">
+                            조회수 <span th:text="${post.viewCount}">0</span>
+                            &nbsp;&nbsp;
+                            댓글 <span th:text="${post.commentCount}">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </div>
+
+<script>
+    const state = {
+        slider1: { index: 0, appended: false },
+        slider2: { index: 0, appended: false }
+    };
+
+    function moveSlide(sliderId, direction) {
+        const slider = document.getElementById(sliderId);
+        const current = state[sliderId];
+        const thumbnails = slider.querySelectorAll('.thumbnail');
+        if (thumbnails.length === 0) return;
+
+        const thumb = thumbnails[0];
+        const thumbWidth = thumb.offsetWidth;
+        const thumbMargin = parseInt(getComputedStyle(thumb).marginLeft) + parseInt(getComputedStyle(thumb).marginRight);
+        const slideWidth = thumbWidth + thumbMargin;
+        const visibleSlides = Math.floor(slider.parentElement.offsetWidth / slideWidth);
+
+        let totalSlides = thumbnails.length;
+
+        if (!current.appended && current.index + visibleSlides >= totalSlides) {
+            const moreSlide = document.createElement('a');
+            moreSlide.href = "/diary/list";
+            moreSlide.className = "thumbnail";
+            moreSlide.style.backgroundColor = "#e0e0e0";
+            moreSlide.innerHTML = `<div class="overlay-text">더 많은 여행일지 보러가기 →</div>`;
+            slider.appendChild(moreSlide);
+            current.appended = true;
+            totalSlides += 1;
+        }
+
+        const maxIndex = Math.max(totalSlides - visibleSlides, 0);
+        let nextIndex = current.index + direction;
+        if (nextIndex < 0) nextIndex = 0;
+        if (nextIndex > maxIndex) nextIndex = maxIndex;
+
+        current.index = nextIndex;
+        slider.style.transform = `translateX(${-current.index * slideWidth}px)`;
+    }
+</script>
 </body>
 </html>
