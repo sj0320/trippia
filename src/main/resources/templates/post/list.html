@@ -212,23 +212,27 @@
         const item = document.createElement("div");
         item.className = "post-item";
         item.innerHTML = `
-          <div class="thumbnail" onclick="location.href='/companion-post/${post.id}'">
-            <img src="${post.thumbnail || 'https://via.placeholder.com/120x80'}" alt="썸네일">
-          </div>
-          <div class="post-content">
-            <div class="post-info">
-              <div>
-                <div class="post-title" onclick="location.href='/companion-post/${post.id}'">${post.title}</div>
-                <div class="post-meta">작성자: ${post.authorNickname}</div>
-              </div>
-              <div class="post-meta">${formatDate(post.createdAt)}</div>
-            </div>
-            <div class="post-footer">
-              <span>조회수 ${post.viewCount}</span>
-              <span>댓글 ${post.commentCount}</span>
-            </div>
-          </div>
-        `;
+  <div class="thumbnail" onclick="location.href='/companion-post/${post.id}'" style="cursor: pointer;">
+    <img src="${post.thumbnail || 'https://via.placeholder.com/120x80'}" alt="썸네일">
+  </div>
+  <div class="post-content">
+    <div class="post-info">
+      <div class="post-title" onclick="location.href='/companion-post/${post.id}'" style="cursor: pointer;">
+        ${post.title}
+      </div>
+      <div class="post-meta">${formatDate(post.createdAt)}</div>
+    </div>
+    <div class="post-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+      <div class="post-author" onclick="location.href='/users/${post.authorId}'"
+           style="cursor: pointer; color: #1a73e8; text-decoration: underline;">
+        작성자: ${post.authorNickname}
+      </div>
+      <div>
+        👁️ ${post.viewCount} &nbsp;&nbsp; 💬 ${post.commentCount}
+      </div>
+    </div>
+  </div>
+`;
         container.appendChild(item);
       });
 

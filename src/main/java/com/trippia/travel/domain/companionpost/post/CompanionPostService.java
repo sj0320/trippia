@@ -13,9 +13,7 @@ import com.trippia.travel.exception.user.UserException;
 import com.trippia.travel.file.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.*;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -104,6 +102,12 @@ public class CompanionPostService {
         companionPostRepository.deleteById(postId);
     }
 
+    public List<CompanionPostListResponse> searchLatestPostList(int size) {
+        Pageable pageable = PageRequest.of(0, size, Sort.Direction.DESC, "createdAt");
+        List<CompanionPost> posts = companionPostRepository.findAll(pageable).getContent();
+        return CompanionPostListResponse.from(posts);
+    }
+
     private UpdatePostDto getUpdatePostDto(CompanionPostUpdateRequest request, String thumbnailUrl, City city) {
         return UpdatePostDto.builder()
                 .title(request.getTitle())
@@ -155,6 +159,5 @@ public class CompanionPostService {
         }
         return existingThumbnail;
     }
-
 
 }
