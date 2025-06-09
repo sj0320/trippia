@@ -38,7 +38,8 @@ public class SecurityConfig {
                         .requestMatchers("/", "/login","/images/**", "/css/**", "/js/**").permitAll()
                         .requestMatchers( "/diary/list","/diary/list/data","/diary/*").permitAll()
                         .requestMatchers( "/companion-post/**","/api/companion-post/list").permitAll()
-                        .requestMatchers( "/users/*").permitAll()
+                        .requestMatchers( "/users/*","/users/password/new","/api/users/check-email",
+                                "/api/email/**", "/api/users/reset-password").permitAll()
                         .requestMatchers( "/travel/places/*").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()

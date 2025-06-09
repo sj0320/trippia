@@ -44,7 +44,7 @@ public class UserService {
 
         User user = User.builder()
                 .email(request.getEmail())
-                .password(bCryptPasswordEncoder.encode(request.getPassword()))
+                .password(bCryptPasswordEncoder.encode(request.getNewPassword()))
                 .nickname(request.getNickname())
                 .loginType(LoginType.LOCAL)
                 .grade(BEGINNER)
@@ -104,6 +104,11 @@ public class UserService {
         user.updateProfileInfo(request.getNickname(), request.getBio(), profileImageUrl);
     }
 
+    @Transactional
+    public void updatePassword(String email, String password) {
+        User user = getUser(email);
+        user.updatePassword(bCryptPasswordEncoder.encode(password));
+    }
 
     private String generateRandomCode() {
         return String.valueOf(100000 + new Random().nextInt(900000));
@@ -119,4 +124,5 @@ public class UserService {
             throw new UserException("중복된 닉네임입니다.");
         }
     }
+
 }

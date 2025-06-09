@@ -1,17 +1,25 @@
 package com.trippia.travel.controller;
 
+import com.trippia.travel.annotation.CurrentUser;
 import com.trippia.travel.controller.dto.user.requset.SocialSaveRequest;
+import com.trippia.travel.controller.dto.user.requset.UpdatePasswordRequest;
 import com.trippia.travel.controller.dto.user.requset.UserSaveRequest;
 import com.trippia.travel.domain.common.EmailAuthPurpose;
+import com.trippia.travel.domain.user.User;
+import com.trippia.travel.domain.user.UserRepository;
 import com.trippia.travel.domain.user.UserService;
+import com.trippia.travel.exception.BaseException;
 import com.trippia.travel.exception.user.UserException;
 import com.trippia.travel.mail.MailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import static com.trippia.travel.exception.ErrorMessageSource.USER_NOT_FOUND_MESSAGE;
 
 @Controller
 @RequiredArgsConstructor
@@ -20,6 +28,8 @@ public class UserController {
 
     private final UserService userService;
     private final MailService mailService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/login")
     public String login(@RequestParam(value = "redirect", required = false) String redirect,
@@ -50,7 +60,7 @@ public class UserController {
     }
 
     @GetMapping("/sns-sign-up")
-    public String snsSignUpForm(@RequestParam("email") String email, @RequestParam("socialType")String socialType,
+    public String snsSignUpForm(@RequestParam("email") String email, @RequestParam("socialType") String socialType,
                                 Model model) {
         SocialSaveRequest request = new SocialSaveRequest();
         request.setEmail(email);
@@ -79,7 +89,35 @@ public class UserController {
         return "user/select-login-method";
     }
 
+    @GetMapping("/password/new")
+    public String getNewPasswordForm() {
+        return "user/new-password";
+    }
 
+    @GetMapping("/password/update")
+    public String getPasswordUpdateForm(Model model) {
+        model.addAttribute("updatePasswordRequest", new UpdatePasswordRequest());
+        return "user/update-password";
+    }
 
+    @PatchMapping("/password/update")
+    public String updatePassword(@CurrentUser String email,
+                                 @Valid @ModelAttribute("updatePasswordRequest") UpdatePasswordRequest request,
+                                 BindingResult bindingResult,
+                                 Model model) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BaseException(USER_NOT_FOUND_MESSAGE));
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            bindingResult.rejectValue("currentPassword", "invalid.password");
+            return "user/update-password";
+        }
+
+        if (bindingResult.hasErrors()) {
+            return "user/update-password";
+        }
+
+        userService.updatePassword(email, request.getNewPassword());
+        return "redirect:/users/" + user.getId();
+    }
 
 }

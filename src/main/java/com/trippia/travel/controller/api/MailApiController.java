@@ -2,14 +2,19 @@ package com.trippia.travel.controller.api;
 
 import com.trippia.travel.domain.user.UserService;
 import com.trippia.travel.exception.user.UserException;
-import com.trippia.travel.mail.MailDto;
 import com.trippia.travel.mail.MailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.trippia.travel.mail.MailDto.MailRequest;
+import static com.trippia.travel.mail.MailDto.MailVerificationRequest;
 
 @RestController
 @RequestMapping("/api/email")
@@ -20,7 +25,7 @@ public class MailApiController {
     private final UserService userService;
 
     @PostMapping("/send-code")
-    public ResponseEntity<Map<String, String>> sendEmailCode(@ModelAttribute MailDto.MailRequest mailRequest) {
+    public ResponseEntity<Map<String, String>> sendEmailCode(@ModelAttribute MailRequest mailRequest) {
         userService.sendCodeToEmail(mailRequest.getEmail(), mailRequest.getPurpose());
 
         Map<String, String> response = new HashMap<>();
@@ -30,7 +35,7 @@ public class MailApiController {
     }
 
     @PostMapping("/verify-code")
-    public ResponseEntity<Map<String, Object>> verifyEmailCode(@ModelAttribute MailDto.MailVerificationRequest verificationRequest) {
+    public ResponseEntity<Map<String, Object>> verifyEmailCode(@ModelAttribute MailVerificationRequest verificationRequest) {
         Map<String, Object> response = new HashMap<>();
         try {
             mailService.verifyEmailCode(

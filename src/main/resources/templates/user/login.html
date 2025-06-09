@@ -31,14 +31,22 @@
             <div th:if="${session.loginError}" style="color: red; font-size: 14px;">
                 <p th:text="${session.loginError}"></p>
             </div>
+
             <button type="submit">로그인</button>
+
+            <div style="margin-top: 12px; font-size: 14px; display: flex; justify-content: center; gap: 24px;">
+                <a href="/users/password/new" style="color: #007bff; text-decoration: none;">비밀번호 찾기</a>
+                <a href="/users/sign-up" style="color: #007bff; text-decoration: none;">회원가입</a>
+            </div>
         </form>
 
-        <p style="margin-top: 15px; font-size: 14px; color: #666; text-align: center;">
+        <!-- 🔻 소셜 로그인 안내 -->
+        <p style="margin-top: 30px; font-size: 14px; color: #666; text-align: center;">
             소셜 계정으로도 로그인할 수 있어요.
         </p>
+
         <!-- 소셜 로그인 버튼 -->
-        <div class="social-login-buttons">
+        <div class="social-login-buttons" style="text-align: center; margin-top: 10px;">
             <a id="kakao-login" href="/oauth2/authorization/kakao" class="kakao-login-button">
                 <img th:src="@{/images/kakao-icon.png}" alt="카카오 로그인">
             </a>
@@ -50,7 +58,6 @@
             </a>
         </div>
     </div>
-
 </div>
 </body>
 </html>

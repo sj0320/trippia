@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", function () {
             formData.append("profileImage", profileImageFile);
         }
 
-        fetch('/users/edit', {
+        fetch('/api/users/edit', {
             method: 'PATCH',
             headers: {
                 [csrfHeader]: csrfToken

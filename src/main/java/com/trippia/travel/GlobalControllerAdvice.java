@@ -19,7 +19,6 @@ public class GlobalControllerAdvice {
     @ModelAttribute("loginUserId")
     public Long getLoginUserId(@CurrentUser String email) {
         if (email != null) {
-            log.info("email={}", email);
             User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
             return user.getId();
