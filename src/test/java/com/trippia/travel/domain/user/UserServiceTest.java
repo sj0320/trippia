@@ -150,7 +150,7 @@ class UserServiceTest {
     private UserSaveRequest createUserSaveRequest(String email, String password, String nickname) {
         UserSaveRequest request = new UserSaveRequest();
         request.setEmail(email);
-        request.setPassword(password);
+        request.setNewPassword(password);
         request.setNickname(nickname);
         return request;
     }

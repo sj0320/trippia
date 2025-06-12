@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import static com.trippia.travel.exception.ErrorMessageSource.USER_NOT_FOUND_MESSAGE;
+
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/users")
@@ -28,7 +30,7 @@ public class MyPageController {
         boolean isOwner = false;
         if (email != null) {
             User currentUser = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
+                    .orElseThrow(() -> new UserException(USER_NOT_FOUND_MESSAGE));
             isOwner = userId.equals(currentUser.getId());
         }
 

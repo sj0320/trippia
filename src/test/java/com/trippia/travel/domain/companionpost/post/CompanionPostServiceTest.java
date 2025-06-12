@@ -2,6 +2,8 @@ package com.trippia.travel.domain.companionpost.post;
 
 import com.trippia.travel.controller.dto.post.request.CompanionPostSaveRequest;
 import com.trippia.travel.controller.dto.post.request.CompanionPostUpdateRequest;
+import com.trippia.travel.controller.dto.post.response.CompanionPostListResponse;
+import com.trippia.travel.controller.dto.post.response.CompanionPostSummaryResponse;
 import com.trippia.travel.domain.common.CityType;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
@@ -29,6 +31,7 @@ import java.util.List;
 import static com.trippia.travel.domain.common.CityType.JAPAN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.groups.Tuple.tuple;
 
 @SpringBootTest
 @Transactional
@@ -136,6 +139,58 @@ class CompanionPostServiceTest {
         assertThat(result).hasSize(0);
     }
 
+    @DisplayName("원하는 크기만큼 최신순으로 여행모집 게시글을 조회한다.")
+    @Test
+    void searchLatestPostList() {
+        // given
+        User user1 = createUser("email1");
+        User user2 = createUser("email2");
+
+        Country japan = createCountry("일본");
+        City tokyo = createCity("도쿄", japan, JAPAN);
+        City osaka = createCity("오사카", japan, JAPAN);
+
+        CompanionPost post1 = createPost(user1, "title1", tokyo);
+
+        CompanionPost post2 = createPost(user2, "title2", osaka);
+
+        // when
+        List<CompanionPostListResponse> responses = companionPostService.searchLatestPostList(5);
+
+        // then
+        assertThat(responses).hasSize(2)
+                .extracting("authorId", "title", "authorNickname", "authorProfile")
+                .containsExactlyInAnyOrder(
+                        tuple(user1.getId(), post1.getTitle(), user1.getNickname(), user1.getProfileImageUrl()),
+                        tuple(user2.getId(), post2.getTitle(), user2.getNickname(), user2.getProfileImageUrl())
+                );
+
+    }
+
+    @DisplayName("사용자의 여행모집 게시글을 조회한다.")
+    @Test
+    void getPostSummaryByUser() {
+        // given
+        User user = createUser("email");
+        Country japan = createCountry("일본");
+        City tokyo = createCity("도쿄", japan, JAPAN);
+        City osaka = createCity("오사카", japan, JAPAN);
+
+        CompanionPost post1 = createPost(user, "title1", tokyo);
+        CompanionPost post2 = createPost(user, "title2", osaka);
+
+        // when
+        List<CompanionPostSummaryResponse> response = companionPostService.getPostSummaryByUser(user.getEmail());
+
+        // then
+        assertThat(response).hasSize(2)
+                .extracting("postId", "title", "thumbnail", "viewCount", "commentCount")
+                .containsExactlyInAnyOrder(
+                        tuple(post1.getId(), post1.getTitle(), post1.getThumbnailUrl(), post1.getViewCount(), post1.getComments().size()),
+                        tuple(post2.getId(), post2.getTitle(), post2.getThumbnailUrl(), post2.getViewCount(), post2.getComments().size())
+                );
+    }
+
     private CompanionPost createPost(User user, String title, City city) {
         CompanionPost post = CompanionPost.builder()
                 .user(user)
@@ -145,6 +200,7 @@ class CompanionPostServiceTest {
                 .genderRestriction(Gender.ALL)
                 .startDate(LocalDate.now().plusDays(10))
                 .endDate(LocalDate.now().plusDays(20))
+                .comments(List.of())
                 .build();
         return companionPostRepository.save(post);
     }
