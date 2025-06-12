@@ -626,43 +626,70 @@
     </div>
 
 
-    <div class="total-cost">
-        총 예상 지출: <span id="totalCost">₩0</span>
-    </div>
+    <div style="max-width: 1000px; margin: 40px auto; display: flex; flex-direction: column; gap: 30px; font-family: 'Spoqa Han Sans Neo', sans-serif;">
 
-    <div class="activity-card liked-diaries" style="margin: 30px auto; max-width: 900px;">
-        <div class="activity-title" style="text-align: center;">참여자</div>
 
-        <!-- 박스 전체 감싸기 -->
-        <div style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 15px;">
-            <!-- 헤더 -->
-            <div style="display: flex; font-weight: bold; padding: 0.7rem 0; border-bottom: 1px solid #ccc;">
-                <div style="flex: 1; text-align: center;">닉네임</div>
-                <div style="flex: 2; text-align: center;">이메일</div>
-                <div style="flex: 1; text-align: center;">상태</div>
+        <!-- 총 예상 지출 카드 (오른쪽 정렬, 작고 얇게 수정) -->
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+            <div class="total-cost-card" style="
+            width: 220px;
+            background: linear-gradient(135deg, #f0f4ff, #d6e0ff);
+            border: 1px solid #c3d0ff;
+            border-radius: 12px;
+            padding: 3.4px 7px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+            text-align: center;">
+                <div style="font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 5px;">
+                    총 예상 지출
+                </div>
+                <div id="totalCost" style="font-size: 1.2rem; color: #5c7cfa; font-weight: bold;">
+                    ₩0
+                </div>
+            </div>
+        </div>
+
+        <!-- 참여자 목록 카드 -->
+        <div class="participants-card" style="
+        background: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+
+            <div class="activity-title" style="
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;">
+                참여자 목록
             </div>
 
-            <!-- 리스트 -->
-            <ul class="activity-list" style="margin: 0; padding: 0;">
-                <li class="activity-item" style="display: flex; align-items: center; padding: 0.7rem 0; border-bottom: 1px solid #eee;">
-                    <div style="flex: 1; text-align: center;">홍길동</div>
-                    <div style="flex: 2; text-align: center;">hong@example.com</div>
-                    <div style="flex: 1; text-align: center;">참여중</div>
-                </li>
-                <li class="activity-item" style="display: flex; align-items: center; padding: 0.7rem 0; border-bottom: 1px solid #eee;">
-                    <div style="flex: 1; text-align: center;">김영희</div>
-                    <div style="flex: 2; text-align: center;">kim@example.com</div>
-                    <div style="flex: 1; text-align: center;">참여중</div>
-                </li>
-                <li class="activity-item" style="display: flex; align-items: center; padding: 0.7rem 0;">
-                    <div style="flex: 1; text-align: center;">이철수</div>
-                    <div style="flex: 2; text-align: center;">lee@example.com</div>
-                    <div style="flex: 1; text-align: center;">초대됨</div>
+            <ul class="activity-list" style="list-style: none; padding: 0; margin: 0;">
+                <li class="activity-item" th:each="participant : ${plan.participants}"
+                    style="display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee;">
+
+                    <!-- 프로필 이미지 -->
+                    <div style="flex: 0 0 60px; position: relative; text-align: center;">
+                        <a th:href="@{/users/{userId}(userId=${participant.userId})}">
+                            <img th:src="${participant.profileImageUrl}" alt="프로필 이미지"
+                                 style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 1px solid #ccc;">
+                        </a>
+                        <img th:if="${participant.role == 'OWNER'}" src="/images/crown.png" alt="왕관"
+                             style="position: absolute; top: -8px; right: -8px; width: 22px; height: 22px;">
+                    </div>
+
+                    <!-- 닉네임 -->
+                    <div style="flex: 1; padding-left: 15px; font-size: 1.1rem; font-weight: 500;">
+                        <a th:href="@{/users/{userId}(userId=${participant.userId})}"
+                           style="color: #333; text-decoration: none;"
+                           th:text="${participant.nickname}">닉네임</a>
+                    </div>
                 </li>
             </ul>
         </div>
-    </div>
 
+    </div>
     <script>
         let currentEntryList = null;
         let cityIds = /*[[${plan.cityIds}]]*/ [1, 2, 3];
