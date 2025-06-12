@@ -4,6 +4,7 @@ import com.trippia.travel.controller.dto.post.request.*;
 import com.trippia.travel.controller.dto.post.response.CompanionPostDetailsResponse;
 import com.trippia.travel.controller.dto.post.response.CompanionPostEditFormResponse;
 import com.trippia.travel.controller.dto.post.response.CompanionPostListResponse;
+import com.trippia.travel.controller.dto.post.response.CompanionPostSummaryResponse;
 import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.location.city.CityRepository;
 import com.trippia.travel.domain.user.User;
@@ -104,8 +105,17 @@ public class CompanionPostService {
 
     public List<CompanionPostListResponse> searchLatestPostList(int size) {
         Pageable pageable = PageRequest.of(0, size, Sort.Direction.DESC, "createdAt");
-        List<CompanionPost> posts = companionPostRepository.findAll(pageable).getContent();
+        List<CompanionPost> posts = companionPostRepository.findAllWithComments(pageable);
         return CompanionPostListResponse.from(posts);
+    }
+
+
+    public List<CompanionPostSummaryResponse> getPostSummaryByUser(String email) {
+        User user = getUser(email);
+        List<CompanionPost> posts = companionPostRepository.findAllWithCommentsByUserId(user.getId());
+        return posts.stream()
+                .map(CompanionPostSummaryResponse::from)
+                .toList();
     }
 
     private UpdatePostDto getUpdatePostDto(CompanionPostUpdateRequest request, String thumbnailUrl, City city) {

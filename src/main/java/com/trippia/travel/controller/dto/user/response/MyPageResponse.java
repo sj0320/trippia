@@ -3,6 +3,7 @@ package com.trippia.travel.controller.dto.user.response;
 import com.trippia.travel.controller.dto.diary.response.DiarySummaryResponse;
 import com.trippia.travel.controller.dto.diary.response.LikedDiarySummaryResponse;
 import com.trippia.travel.controller.dto.plan.response.PlanSummaryResponse;
+import com.trippia.travel.controller.dto.post.response.CompanionPostSummaryResponse;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -26,5 +27,7 @@ public class MyPageResponse {
 
     // 사용자가 좋아요 눌렀던 여행일지들 (썸네일, 제목, 좋아요, 조회수)
     private List<LikedDiarySummaryResponse> likedDiaries;
+
+    private List<CompanionPostSummaryResponse> posts;
 
 }

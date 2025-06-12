@@ -630,6 +630,39 @@
         총 예상 지출: <span id="totalCost">₩0</span>
     </div>
 
+    <div class="activity-card liked-diaries" style="margin: 30px auto; max-width: 900px;">
+        <div class="activity-title" style="text-align: center;">참여자</div>
+
+        <!-- 박스 전체 감싸기 -->
+        <div style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 15px;">
+            <!-- 헤더 -->
+            <div style="display: flex; font-weight: bold; padding: 0.7rem 0; border-bottom: 1px solid #ccc;">
+                <div style="flex: 1; text-align: center;">닉네임</div>
+                <div style="flex: 2; text-align: center;">이메일</div>
+                <div style="flex: 1; text-align: center;">상태</div>
+            </div>
+
+            <!-- 리스트 -->
+            <ul class="activity-list" style="margin: 0; padding: 0;">
+                <li class="activity-item" style="display: flex; align-items: center; padding: 0.7rem 0; border-bottom: 1px solid #eee;">
+                    <div style="flex: 1; text-align: center;">홍길동</div>
+                    <div style="flex: 2; text-align: center;">hong@example.com</div>
+                    <div style="flex: 1; text-align: center;">참여중</div>
+                </li>
+                <li class="activity-item" style="display: flex; align-items: center; padding: 0.7rem 0; border-bottom: 1px solid #eee;">
+                    <div style="flex: 1; text-align: center;">김영희</div>
+                    <div style="flex: 2; text-align: center;">kim@example.com</div>
+                    <div style="flex: 1; text-align: center;">참여중</div>
+                </li>
+                <li class="activity-item" style="display: flex; align-items: center; padding: 0.7rem 0;">
+                    <div style="flex: 1; text-align: center;">이철수</div>
+                    <div style="flex: 2; text-align: center;">lee@example.com</div>
+                    <div style="flex: 1; text-align: center;">초대됨</div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
     <script>
         let currentEntryList = null;
         let cityIds = /*[[${plan.cityIds}]]*/ [1, 2, 3];
@@ -727,7 +760,6 @@
             }
           });
 
-          console.log(`💰 총 계산된 비용: ₩${total.toLocaleString()}`);
           document.getElementById("totalCost").textContent = `₩${total.toLocaleString()}`;
         }
 

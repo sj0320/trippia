@@ -466,6 +466,30 @@
             </div>
         </div>
 
+        <div class="activity-card liked-diaries">
+            <div class="activity-title">작성한 여행 모집 글</div>
+
+            <!-- 헤더 -->
+            <div style="display: flex; font-weight: bold; padding: 0.5rem 0; border-bottom: 1px solid #ddd;">
+                <div style="flex: 2;">제목</div>
+                <div style="flex: 1; text-align: right;">댓글수</div>
+                <div style="flex: 1; text-align: right;">조회수</div>
+            </div>
+
+            <!-- 내용 -->
+            <ul class="activity-list">
+                <li class="activity-item" th:each="post : ${myPage.posts}"
+                    style="display: flex; align-items: center; padding: 0.5rem 0;">
+                    <div style="flex: 2;">
+                        <a th:href="@{/companion-post/{id}(id=${post.postId})}"
+                           th:text="${post.title}" style="color: inherit; text-decoration: none;">제목</a>
+                    </div>
+                    <div style="flex: 1; text-align: right;" th:text="${post.commentCount}">0</div>
+                    <div style="flex: 1; text-align: right;" th:text="${post.viewCount}">0</div>
+                </li>
+            </ul>
+        </div>
+
         <!-- ❤️ 좋아요한 여행일지 -->
         <div class="activity-card liked-diaries">
             <div class="activity-title">❤️ 좋아요한 여행일지</div>
@@ -473,9 +497,9 @@
             <!-- 헤더 -->
             <div style="display: flex; font-weight: bold; padding: 0.5rem 0; border-bottom: 1px solid #ddd;">
                 <div style="flex: 2;">제목</div>
-                <div style="flex: 1;">글쓴이</div>
-                <div style="flex: 1;">좋아요</div>
-                <div style="flex: 1;">조회수</div>
+                <div style="flex: 1; text-align: right;">작성자</div>
+                <div style="flex: 1; text-align: right;">좋아요</div>
+                <div style="flex: 1; text-align: right;">조회수</div>
             </div>
 
             <!-- 내용 -->
@@ -486,9 +510,9 @@
                         <a th:href="@{/diary/{id}(id=${diary.diaryId})}"
                            th:text="${diary.title}" style="color: inherit; text-decoration: none;">제목</a>
                     </div>
-                    <div style="flex: 1;" th:text="${diary.authorNickname}">글쓴이</div>
-                    <div style="flex: 1;" th:text="${diary.likeCount}">0</div>
-                    <div style="flex: 1;" th:text="${diary.viewCount}">0</div>
+                    <div style="flex: 1; text-align: right;" th:text="${diary.authorNickname}">글쓴이</div>
+                    <div style="flex: 1; text-align: right;" th:text="${diary.likeCount}">0</div>
+                    <div style="flex: 1; text-align: right;" th:text="${diary.viewCount}">0</div>
                 </li>
             </ul>
         </div>

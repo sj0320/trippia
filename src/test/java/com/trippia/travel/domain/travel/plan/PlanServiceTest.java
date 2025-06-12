@@ -30,6 +30,7 @@ import com.trippia.travel.domain.travel.scheduleitem.memo.Memo;
 import com.trippia.travel.domain.travel.scheduleitem.scheduleplace.SchedulePlace;
 import com.trippia.travel.domain.user.User;
 import com.trippia.travel.domain.user.UserRepository;
+import com.trippia.travel.exception.BaseException;
 import com.trippia.travel.exception.plan.PlanException;
 import com.trippia.travel.exception.user.UserException;
 import org.junit.jupiter.api.DisplayName;
@@ -219,7 +220,7 @@ class PlanServiceTest {
 
         // when & then
         assertThatThrownBy(() -> planService.findPlan(user2.getEmail(), savePlan.getId()))
-                .isInstanceOf(PlanException.class)
+                .isInstanceOf(BaseException.class)
                 .hasMessage("접근 권한이 없습니다.");
 
     }
