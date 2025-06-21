@@ -1,0 +1,91 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/trippia-app:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/trippia-app:latest
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Deploy on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.AWS_EC2_IP }} << 'EOF'
+
+          set -e
+          echo "접속 성공. 프로젝트 디렉토리로 이동..."
+          cd /home/ubuntu/projects/trippia-backend
+
+          echo ".env 초기화..."
+          cat > .env <<ENV
+          # Database
+          SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+
+          REDIS_HOST=${{ secrets.REDIS_HOST }}
+          REDIS_PORT=${{ secrets.REDIS_PORT }}
+
+          DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}
+          DB_NAME=${{ secrets.DB_NAME }}
+
+          # AWS
+          AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
+          AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }}
+          AWS_S3_URL=${{ secrets.AWS_S3_URL }}
+
+          # Google OAuth
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+
+          # Naver OAuth
+          NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}
+
+          # Kakao OAuth
+          KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
+
+          # Mail
+          MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+
+          # TinyMCE
+          TINYMCE_API_KEY=${{ secrets.TINYMCE_API_KEY }}
+
+          # Google Maps
+          GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}
+          ENV
+
+          echo "Docker 이미지 최신화..."
+          docker pull ${{ secrets.DOCKER_USERNAME }}/trippia-app:latest
+          
+          echo "이전 컨테이너 정리..."
+          docker compose -f docker-compose.prod.yml down
+          
+          echo "새 컨테이너 실행..."
+          docker compose -f docker-compose.prod.yml up -d
+          
+          echo "배포 완료"
+          EOF
