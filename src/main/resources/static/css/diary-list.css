@@ -1,0 +1,137 @@
+.diary-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 20px;
+}
+
+.diary-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    justify-content: center;
+    padding: 20px;
+}
+
+.diary-item {
+    width: 360px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.diary-item:hover {
+    transform: scale(1.05);
+}
+
+.thumbnail {
+    width: 100%;
+    height: 195px;
+    object-fit: cover;
+    display: block;
+}
+
+.diary-info {
+    padding: 10px;
+    text-align: center;
+}
+
+.author-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    justify-content: center;
+}
+
+.author-profile {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.nickname {
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.stats {
+    font-size: 12px;
+    color: #555;
+}
+
+
+/* 검색창 전체를 relative로 감싸기 위해 */
+.search-form {
+    position: relative;
+    margin-top: 10px;
+}
+
+/* 입력창 기본 스타일 */
+.search-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+/* 버튼을 오른쪽에 띄우고 이미지 가운데 정렬 */
+.search-button {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    width: 24px;
+    padding: 0;
+}
+
+/* 이미지 크기 */
+.search-icon {
+    width: 22px;
+    height: 22px;
+    margin-top: -3px;
+}
+
+
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    border-top: 1px solid #dee2e6;     /* 추가 */
+    border-bottom: 1px solid #dee2e6;  /* 기존 */
+    margin-bottom: 30px;
+    background-color: #e9ecef; /* 옅은 회색 배경 */
+}
+
+.toolbar-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+        /* 검색창 높이 맞춤 */
+.toolbar form input[type="text"] {
+    height: 38px;
+    padding: 6px 34px 7px 12px;
+    font-size: 14px;
+    border: 2px solid #ccc;
+    border-radius: 20px;
+}
+
+.toolbar form button {
+    top: 50%;
+}

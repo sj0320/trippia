@@ -1,30 +1,65 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <div th:fragment="header">
     <header>
-        <div style="width: 1920px; height: 120px; border-width: 1px; border-color: #f2f2f2;">
+        <div style="width: 100%; height: 120px; border-bottom: 1px solid #e0e0e0; box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05); position: relative;">
             <p style="position: absolute; left: 75px; top: 20px; font-size: 24px; font-weight: 700; text-align: left; color: #000;">
-                <a href="#" style="color: #000; text-decoration: none;" onclick="window.location.reload();">TRIPPIA</a>
+                <a href="/" style="color: #000; text-decoration: none;" onclick="window.location.reload();">TRIPPIA</a>
             </p>
-            <!-- 여행 일지 링크 -->
-            <a href="/diary" style="position: absolute; left: 225px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">여행 일지</a>
 
-            <!-- 여행 일정 링크 -->
-            <a href="/schedule" style="position: absolute; left: 360px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">여행 일정</a>
+            <!-- 여행 관련 링크 -->
+            <a href="/diary/list" style="position: absolute; left: 225px; top: 45px; font-size: 15px; color: #000; text-decoration: none;">여행 일지</a>
+            <a href="/travel/question/city" style="position: absolute; left: 360px; top: 45px; font-size: 15px; color: #000; text-decoration: none;">여행 일정</a>
+            <a href="/companion-post/list" style="position: absolute; left: 495px; top: 45px; font-size: 15px; color: #000; text-decoration: none;">여행 모집 게시판</a>
+            <a href="/course" style="position: absolute; left: 644px; top: 45px; font-size: 15px; color: #000; text-decoration: none;">여행 코스 추천</a>
 
-            <!-- 여행지 추천 링크 -->
-            <a href="/destination" style="position: absolute; left: 495px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">여행지 추천</a>
+            <!-- 로그인 관련 영역 -->
+            <div style="position: absolute; right: 75px; top: 45px; display: flex; gap: 20px;">
+                <!-- 비로그인 -->
+                <div sec:authorize="isAnonymous() or hasRole('ROLE_GUEST')" style="display: flex; gap: 20px;">
+                    <a href="/users/login" style="font-size: 15px; color: #000; text-decoration: none;">로그인</a>
+                    <a href="/users/sign-up" style="font-size: 15px; color: #000; text-decoration: none;">회원가입</a>
+                </div>
 
-            <!-- 여행 코스 추천 링크 -->
-            <a href="/course" style="position: absolute; left: 644px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">여행 코스 추천</a>
+                <!-- 로그인 -->
+                <div sec:authorize="hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')" style="display: flex; gap: 20px;">
+                    <!-- 알림 버튼 -->
+                    <div style="position: relative; top: -7px;">
+                        <a href="/notifications">
+                            <img id="notification-bell" src="/images/notification-bell.png" alt="알림"
+                                 style="width: 38px; height: 38px; cursor: pointer;">
+                        </a>
+                    </div>
 
-            <!-- 로그인 링크 -->
-            <a href="/login" style="position: absolute; left: 1183px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">로그인</a>
+                    <a th:href="@{'/users/' + ${loginUserId}}" style="font-size: 15px; color: #000; text-decoration: none;">
+                        마이페이지
+                    </a>
 
-            <!-- 마이페이지 링크 -->
-            <a href="/mypage" style="position: absolute; left: 1246px; top: 45px; font-size: 15px; text-align: left; color: #000; text-decoration: none;">마이페이지</a>
+                    <form id="logout-form" th:action="@{/users/logout}" method="post" style="display: none;">
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                    </form>
 
+                    <a href="#" onclick="document.getElementById('logout-form').submit(); return false;"
+                       style="font-size: 15px; color: #000; text-decoration: none;">로그아웃</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 알림 체크 스크립트 (로그인한 사용자만 실행) -->
+        <div sec:authorize="hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')">
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    fetch("/api/notifications/has-new")
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data) {
+                                const bell = document.getElementById("notification-bell");
+                                if (bell) bell.src = "/images/notification-bell-active.png";
+                            }
+                        })
+                        .catch(error => console.error("알림 상태 확인 실패:", error));
+                });
+            </script>
         </div>
     </header>
 </div>

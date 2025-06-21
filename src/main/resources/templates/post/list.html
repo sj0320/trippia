@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+  <meta charset="UTF-8">
+  <title>여행 모집 게시판</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      color: #222;
+    }
+
+    .board-container {
+      width: 80%;
+      max-width: 900px;
+      margin: 40px auto;
+    }
+
+    .board-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+
+    .board-header-left {
+      display: flex;
+      gap: 10px;
+      flex-grow: 1;
+    }
+
+    .board-header input[type="text"],
+    .board-header select {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .write-button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      font-size: 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .write-button:hover {
+      background-color: #45a049;
+    }
+
+    .post-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: stretch;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      transition: transform 0.2s ease;
+    }
+
+    .post-item:hover {
+      transform: scale(1.01);
+      background-color: #f9f9f9;
+    }
+
+    .thumbnail {
+      flex: 0 0 120px;
+      height: 80px;
+      overflow: hidden;
+      border-radius: 8px;
+      margin-right: 20px;
+      cursor: pointer;
+    }
+
+    .thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .post-content {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .post-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 4px;
+      cursor: pointer;
+    }
+
+    .post-meta {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .post-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .post-footer {
+      display: flex;
+      justify-content: flex-end;
+      font-size: 12px;
+      color: #888;
+      margin-top: 10px;
+    }
+
+    .post-footer span {
+      margin-left: 16px;
+    }
+
+    #spinner {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<div layout:fragment="content">
+  <div class="board-container">
+
+    <form method="get" action="/companion-post/list" class="board-header">
+      <div class="board-header-left">
+
+        <!-- 키워드 검색 -->
+        <input type="text" name="keyword" placeholder="제목 또는 내용 검색"
+               th:value="${condition.keyword}">
+
+        <!-- 국가 선택 -->
+        <select name="countryName" id="countrySelect">
+          <option value="">전체 국가</option>
+          <th:block th:each="country : ${countries}">
+            <option th:value="${country.name}"
+                    th:selected="${condition.countryName} == ${country.name}"
+                    th:text="${country.name}">국가명</option>
+          </th:block>
+        </select>
+
+        <!-- 도시 검색 (select 제거, 입력창으로 변경) -->
+        <input type="text" name="cityName" placeholder="도시명 입력"
+               th:value="${condition.cityName}">
+
+        <!-- 정렬 기준 -->
+        <select name="sort">
+          <option value="createdAt"
+                  th:selected="${condition.sort} == null or condition.sort == 'createdAt'">최신순</option>
+          <option value="viewCount"
+                  th:selected="${condition.sort} == 'viewCount'">조회순</option>
+        </select>
+
+      </div>
+
+      <button type="submit" class="write-button">검색</button>
+      <button type="button" class="write-button" onclick="location.href='/companion-post/new'">작성하기</button>
+    </form>
+
+    <!-- 게시글 목록 -->
+    <div id="post-list"></div>
+    <div id="spinner">로딩 중...</div>
+  </div>
+
+  <!-- 🔽 게시글 동적 로딩 Script -->
+  <script>
+    let isLoading = false;
+    let hasNext = true;
+    let lastCursorId = null;
+    let lastCreatedAt = null;
+
+    async function fetchPosts() {
+      if (isLoading || !hasNext) return;
+      isLoading = true;
+      document.getElementById("spinner").style.display = "block";
+
+      // 🔽 폼 값 가져오기
+      const keyword = document.querySelector('input[name="keyword"]').value;
+      const countryName = document.querySelector('select[name="countryName"]').value;
+      const cityName = document.querySelector('input[name="cityName"]').value;
+      const sort = document.querySelector('select[name="sort"]').value;
+
+      const params = new URLSearchParams({
+        ...(keyword && { keyword }),
+        ...(countryName && { countryName }),
+        ...(cityName && { cityName }),
+        ...(sort && { sort }),
+        ...(lastCursorId && { id: lastCursorId }),
+        ...(lastCreatedAt && { createdAt: lastCreatedAt }),
+        size: 10
+      });
+
+      const response = await fetch(`/api/companion-post/list?${params.toString()}`);
+      const result = await response.json();
+
+      const container = document.getElementById("post-list");
+      result.content.forEach(post => {
+        const item = document.createElement("div");
+        item.className = "post-item";
+        item.innerHTML = `
+  <div class="thumbnail" onclick="location.href='/companion-post/${post.id}'" style="cursor: pointer;">
+    <img src="${post.thumbnail || 'https://via.placeholder.com/120x80'}" alt="썸네일">
+  </div>
+  <div class="post-content">
+    <div class="post-info">
+      <div class="post-title" onclick="location.href='/companion-post/${post.id}'" style="cursor: pointer;">
+        ${post.title}
+      </div>
+      <div class="post-meta">${formatDate(post.createdAt)}</div>
+    </div>
+    <div class="post-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+      <div class="post-author" onclick="location.href='/users/${post.authorId}'"
+           style="cursor: pointer; color: #1a73e8; text-decoration: underline;">
+        작성자: ${post.authorNickname}
+      </div>
+      <div>
+        👁️ ${post.viewCount} &nbsp;&nbsp; 💬 ${post.commentCount}
+      </div>
+    </div>
+  </div>
+`;
+        container.appendChild(item);
+      });
+
+      if (result.content.length > 0) {
+        const last = result.content[result.content.length - 1];
+        lastCursorId = last.id;
+        lastCreatedAt = last.createdAt;
+      }
+
+      hasNext = !result.last;
+      isLoading = false;
+      document.getElementById("spinner").style.display = "none";
+    }
+
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("ko-KR", {
+        year: "numeric", month: "2-digit", day: "2-digit"
+      });
+    }
+
+    fetchPosts();
+
+    window.addEventListener("scroll", () => {
+      if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 200) {
+        fetchPosts();
+      }
+    });
+  </script>
+</div>
+</body>
+</html>

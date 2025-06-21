@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+
+<head>
+    <title>로그인</title>
+    <link rel="stylesheet" href="/css/login.css">
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="container">
+        <h2>로그인</h2>
+        <form th:action="@{/users/login}" method="post">
+            <input type="hidden" name="redirect" th:value="${redirect}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <div id="form-container">
+                <div id="email-container">
+                    <label for="email">이메일</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div id="password-container">
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+            </div>
+
+            <div th:if="${session.loginError}" style="color: red; font-size: 14px;">
+                <p th:text="${session.loginError}"></p>
+            </div>
+
+            <button type="submit">로그인</button>
+
+            <div style="margin-top: 12px; font-size: 14px; display: flex; justify-content: center; gap: 24px;">
+                <a href="/users/password/new" style="color: #007bff; text-decoration: none;">비밀번호 찾기</a>
+                <a href="/users/sign-up" style="color: #007bff; text-decoration: none;">회원가입</a>
+            </div>
+        </form>
+
+        <!-- 🔻 소셜 로그인 안내 -->
+        <p style="margin-top: 30px; font-size: 14px; color: #666; text-align: center;">
+            소셜 계정으로도 로그인할 수 있어요.
+        </p>
+
+        <!-- 소셜 로그인 버튼 -->
+        <div class="social-login-buttons" style="text-align: center; margin-top: 10px;">
+            <a id="kakao-login" href="/oauth2/authorization/kakao" class="kakao-login-button">
+                <img th:src="@{/images/kakao-icon.png}" alt="카카오 로그인">
+            </a>
+            <a id="google-login" href="/oauth2/authorization/google">
+                <img src="/images/google-icon.png" alt="구글 로그인"/>
+            </a>
+            <a id="naver-login" href="/oauth2/authorization/naver">
+                <img src="/images/naver-icon.png" alt="네이버 로그인"/>
+            </a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

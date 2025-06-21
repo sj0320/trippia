@@ -1,0 +1,15 @@
+package com.trippia.travel.exception;
+
+public class ErrorMessageSource {
+    public static final String DUPLICATE_NICKNAME = "duplicate.nickname";
+    public static final String DUPLICATE_EMAIL = "duplicate.email";
+    public static final String DIARY_START_DATE_AFTER_END_DATE = "diary.date.invalidRange";
+    public static final String DIARY_START_DATE_AFTER_TODAY = "diary.date.futureStart";
+    public static final String START_DATE_AFTER_END_DATE = "date.invalidRange";
+    public static final String START_DATE_BEFORE_TODAY = "date.pastStart";
+
+
+    public static final String USER_NOT_FOUND_MESSAGE = "사용자를 찾을 수 없습니다.";
+
+
+}

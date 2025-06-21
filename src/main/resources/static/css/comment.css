@@ -1,0 +1,132 @@
+.comment-section {
+    margin-top: 3rem;
+    padding: 2rem;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.comment-section h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    width: 100%; /* 댓글창의 너비를 100%로 설정 */
+}
+
+.comment-form-header {
+    display: flex;
+    align-items: flex-start;
+    width: 100%; /* 부모 요소의 너비에 맞게 설정 */
+}
+
+#comment-content {
+    resize: none;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-family: inherit;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    width: 100%; /* 가로로 늘려서 더 넓게 만들기 */
+    max-width: 100%; /* 최대 너비 100%로 설정 */
+}
+
+#comment-content:focus {
+    outline: none;
+    border-color: #228be6;
+    box-shadow: 0 0 0 3px rgba(34, 139, 230, 0.2);
+}
+
+#submit-comment {
+    align-self: flex-end;
+    background-color: black; /* 댓글 작성 버튼을 검정색으로 설정 */
+    color: white;
+    font-size: 1rem;
+    padding: 0.5rem 1.25rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#submit-comment:hover {
+    background-color: #333; /* 버튼 hover 시 색상 변경 */
+}
+
+.comment-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.comment-item {
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.2s ease;
+}
+
+.comment-item p {
+    margin: 0;
+    color: #495057;
+    font-size: 1rem;
+    white-space: pre-wrap;
+    padding-left: 3.8rem; /* 여기 추가! */
+}
+
+.comment-item:hover {
+    background-color: #f1f5ff;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.comment-header strong {
+    color: #343a40;
+    font-weight: 600;
+}
+
+.comment-date {
+    color: #868e96;
+    font-size: 0.875rem;
+}
+
+.comment-item p {
+    margin: 0;
+    color: #495057;
+    font-size: 1rem;
+    white-space: pre-wrap;
+}
+
+#no-comment-message {
+    text-align: center;
+    color: #868e96;
+    margin-bottom: 1rem;
+}
+
+.profile-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 0.75rem;
+}
+
+.comment-author-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}

@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:inline="javascript"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <meta charset="UTF-8">
+    <title>여행 일정표</title>
+    <script defer src="/js/place-recommend.js"></script>
+    <script defer src="/js/place-handler.js"></script>
+    <script defer src="/js/refresh-daycards.js"></script>
+    <script defer src="/js/cost-time-edit-modal.js"></script>
+    <script defer src="/js/memo-edit-modal.js"></script>
+    <script defer src="/js/plan-form-toggle.js"></script>
+    <style>
+        .item-cost {
+          display: none;
+        }
+
+        .itinerary-container {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          max-width: 1000px;
+          margin: 0 auto;
+        }
+
+        .day-card {
+          background-color: #ffffff;
+          padding: 30px;
+          border-radius: 15px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .day-title {
+          font-size: 1.2rem;
+          margin-bottom: 15px;
+          color: #333;
+          display: flex;
+          align-items: baseline;
+          gap: 10px;
+        }
+        .day-title strong {
+          font-weight: bold;
+        }
+        .day-date {
+          font-size: 0.95rem;
+          color: #777;
+        }
+
+        .entry-list {
+          position: relative;
+          margin-left: 20px;
+          padding-left: 40px;
+        }
+        .entry-list::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 56px;
+          width: 2px;
+          background-color: #ccc;
+          z-index: 0;
+        }
+
+        .entry-row {
+          position: relative;
+          display: flex;
+          align-items: flex-start;
+          margin-bottom: 20px;
+        }
+
+        .circle-number,
+        .circle-memo {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          text-align: center;
+          font-weight: bold;
+          z-index: 1;
+          margin-right: 10px;
+          flex-shrink: 0;
+        }
+        .circle-number {
+          background-color: #4e79a7;
+          color: white;
+          line-height: 32px;
+        }
+        .circle-memo {
+          color: black;
+          line-height: 54px;
+        }
+
+        .entry-item {
+          background-color: #f8f9fa;
+          padding: 12px;
+          border-radius: 8px;
+          font-size: 1rem;
+          flex: 1;
+          margin-bottom: 10px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .distance-item {
+          margin-left: 42px;
+          margin-bottom: 5px;
+          font-size: 0.9em;
+          color: gray;
+        }
+
+        .edit-area {
+          margin-left: auto;
+          text-align: right;
+          position: relative;
+          font-family: 'Segoe UI', sans-serif;
+        }
+
+        .edit-toggle {
+          cursor: pointer;
+          background-color: #000;
+          color: #fff;
+          padding: 6px 12px;
+          font-size: 14px;
+          border-radius: 4px;
+          display: inline-block;
+          transition: background-color 0.3s;
+        }
+        .edit-toggle:hover {
+          background-color: #333;
+        }
+
+        .edit-buttons {
+          display: flex;
+          flex-direction: column;
+          position: absolute;
+          right: 0;
+          top: 110%;
+          background-color: #fff;
+          border: 1px solid #ccc;
+          padding: 6px;
+          border-radius: 6px;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+          z-index: 999;
+        }
+        .edit-buttons.hidden {
+          display: none;
+        }
+        .edit-buttons button {
+          background-color: #f8f8f8;
+          border: 1px solid #ccc;
+          color: #000;
+          padding: 6px 10px;
+          margin: 4px 0;
+          font-size: 13px;
+          border-radius: 4px;
+          text-align: left;
+          cursor: pointer;
+          transition: all 0.2s ease-in-out;
+          white-space: nowrap;
+        }
+        .edit-buttons button:hover {
+          background-color: #e0e0e0;
+        }
+        .btn-delete {
+          color: #fff;
+          background-color: #d32f2f;
+          border-color: #d32f2f;
+        }
+        .btn-delete:hover {
+          background-color: #b71c1c;
+        }
+
+        /* 모달 공통 */
+        .modal {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background: rgba(0, 0, 0, 0.4);
+          z-index: 999;
+          align-items: center;
+          justify-content: center;
+        }
+        .modal.active {
+          display: flex;
+        }
+        .modal-content {
+          background-color: #ffffff;
+          color: #000000;
+          padding: 2rem;
+          border-radius: 8px;
+          width: 320px;
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+          font-family: 'Segoe UI', sans-serif;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+        .modal-content input,
+        .modal-content textarea {
+          width: 100%;
+          padding: 0.6rem;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          background: #f9f9f9;
+          color: #000;
+          font-size: 0.9rem;
+          resize: vertical;
+        }
+        .modal-content label {
+          font-size: 0.9rem;
+          font-weight: bold;
+          color: #333;
+        }
+        .modal-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 0.5rem;
+        }
+
+        .modal-kick-button {
+          padding: 0.25rem 0.75rem;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-weight: bold;
+          font-size: 0.775rem;
+          background-color: #f44336;
+          color: #fff;
+        }
+
+        .modal-kick-button:hover {
+          background-color: #d32f2f;
+        }
+        .modal-actions button {
+          padding: 0.5rem 1rem;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-weight: bold;
+        }
+        .modal-actions .btn-save {
+          background-color: #000;
+          color: #fff;
+        }
+        .modal-actions .btn-save:hover {
+          background-color: #333;
+        }
+        .modal-actions .btn-cancel {
+          background-color: #e0e0e0;
+          color: #000;
+        }
+        .modal-actions .btn-cancel:hover {
+          background-color: #cfcfcf;
+        }
+
+        #placeModal {
+          display: none;
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          width: 500px;
+          transform: translate(-50%, -50%);
+          background-color: white;
+          padding: 30px;
+          border-radius: 15px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+          z-index: 1000;
+        }
+        #autocomplete {
+          width: 100%;
+          padding: 12px;
+          font-size: 1rem;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          margin-bottom: 10px;
+        }
+        #recommendationList {
+          max-height: 200px;
+          overflow-y: auto;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          padding: 10px;
+          margin-bottom: 10px;
+          background-color: #fafafa;
+        }
+        .recommend-item {
+          padding: 10px;
+          cursor: pointer;
+          border-radius: 8px;
+          transition: background-color 0.3s ease;
+        }
+        .recommend-item:hover {
+          background-color: #e9ecef;
+        }
+        #placeModal button {
+          padding: 8px 14px;
+          background-color: #f44336;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+        }
+        #placeModal button:hover {
+          background-color: #d32f2f;
+        }
+
+        .cost-input {
+          width: 100px;
+          margin-left: 10px;
+          padding: 6px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          font-size: 0.95rem;
+        }
+        .total-cost {
+          font-size: 1.2rem;
+          font-weight: bold;
+          color: #333;
+          text-align: right;
+          margin-top: 30px;
+          padding-right: 20px;
+        }
+
+        .plan-title {
+          margin: 2rem 0 1rem;
+          text-align: center;
+        }
+        .plan-title h2 {
+          font-size: 2rem;
+          font-weight: bold;
+          color: #2c3e50;
+          border-bottom: 2px solid #ddd;
+          padding-bottom: 0.5rem;
+          display: inline-block;
+        }
+
+        .day-actions {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 15px; /* entry-list와의 거리 */
+          margin-top: 10px;    /* 위 요소와의 거리 */
+        }
+
+        .left-buttons {
+          display: flex;
+          gap: 8px;
+        }
+
+        .right-button {
+          margin-left: auto;
+        }
+
+        .btn {
+          padding: 6px 12px;
+          margin-right: 8px;
+          background-color: #f0f0f0;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 14px;
+        }
+        .btn:hover {
+          background-color: #e0e0e0;
+        }
+
+        .hidden {
+          display: none;
+        }
+        .day-card.reordering {
+          background-color: #f1f1f1;
+        }
+        .edit-area {
+          margin-left: 12px;   /* entry-item과의 간격 확보 */
+          margin-top: 8px;     /* entry-list 위와의 간격 확보 */
+          text-align: right;
+          position: relative;
+          font-family: 'Segoe UI', sans-serif;
+        }
+
+
+
+
+            .plan-header {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+    }
+
+    .hamburger-container {
+        position: absolute;
+        top: 0;
+        right: 20px;
+    }
+
+    .hamburger-button {
+        background: none;
+        border: none;
+        font-size: 30px;
+        cursor: pointer;
+    }
+
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        top: 36px;
+        right: 0;
+        background: white;
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        min-width: 160px;
+        text-align: left;
+        white-space: nowrap;
+        z-index: 100;
+        border-radius: 6px;
+    }
+
+    .dropdown-menu div {
+        padding: 10px 15px;
+        cursor: pointer;
+    }
+
+    .dropdown-menu div:hover {
+        background-color: #f5f5f5;
+    }
+
+    .dropdown-menu .danger {
+        color: red;
+    }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- 제목은 가운데 고정, 햄버거는 우측 상단에 위치 -->
+    <div class="plan-title" style="position: relative; padding: 1rem 0;">
+        <h2 th:text="${plan.title}" style="margin: 0;">여행 제목</h2>
+
+        <!-- 햄버거 메뉴는 우측 상단에 고정 -->
+        <div th:if="${plan.ownerEmail == #authentication.principal.email}" style="position: absolute; top: 28px; right: 250px;">
+            <button onclick="toggleMenu()" style="background: none; border: none; font-size: 35px; cursor: pointer;">☰</button>
+            <div id="dropdownMenu" style="display: none; position: absolute; top: 36px; right: 0; background: white; border: 1px solid #ddd; box-shadow: 0 2px 6px rgba(0,0,0,0.1); min-width: 130px;">
+                <div onclick="openEditModal()" style="padding: 10px; cursor: pointer;">계획 수정</div>
+                <div onclick="openParticipantModal()" style="padding: 10px; cursor: pointer;">참여자 관리</div>
+                <div onclick="openDeleteModal()" style="padding: 10px; color: red; cursor: pointer;">여행 계획 삭제</div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="placeModal">
+        <label for="autocomplete" style="font-weight: bold;">장소 검색</label>
+        <input id="autocomplete" type="text" placeholder="맛집, 관광, 카페 등 검색..." autocomplete="off"/>
+        <div id="recommendationList" style="margin-top: 1rem;"></div>
+        <button onclick="closeModal()">❌ 닫기</button>
+    </div>
+
+    <div id="memoEditModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>메모 수정</h3>
+            <textarea id="memoEditTextarea" rows="5" placeholder="수정할 메모를 입력하세요."></textarea>
+            <div class="modal-actions">
+                <button id="memoEditSaveBtn">저장</button>
+                <button id="memoEditCancelBtn">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="costTimeEditModal" class="modal hidden">
+        <div class="modal-content">
+            <label>지출 (원)</label>
+            <input type="text" id="costInput" placeholder="예: 5000" />
+
+            <label>시간 (HH:mm)</label>
+            <input type="time" id="timeInput" />
+
+            <div class="modal-actions">
+                <button id="costTimeSaveBtn">저장</button>
+                <button id="costTimeCancelBtn">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="itinerary-container">
+        <div th:each="schedule, iterStat : ${plan.schedules}" class="day-card"
+             th:attr="data-schedule-id=${schedule.id}">
+
+            <div class="day-title">
+                <strong th:text="${iterStat.index + 1} + '일차'"></strong>
+                <span class="day-date" th:text="${schedule.date}"></span>
+            </div>
+
+            <div class="day-actions">
+                <div class="left-buttons">
+                    <button class="btn btn-location" onclick="openPlaceModal(this)">➕ 장소 추가</button>
+                    <button class="btn btn-memo" onclick="addMemo(this)">📝 메모 추가</button>
+                </div>
+                <div class="right-button">
+                    <button class="btn btn-sequence" onclick="startReorder(this)">🔃 순서 편집</button>
+                </div>
+            </div>
+            <div class="entry-list">
+                <div th:each="item : ${schedule.scheduleItems}">
+                    <div th:switch="${item.type.name()}">
+                        <!-- 장소일 경우 -->
+                        <div th:case="'PLACE'" class="entry-row"
+                             th:attr="data-id=${item.id},
+                          data-execution-time=${#temporals.format(item.executionTime, 'HH:mm')},
+                          data-sequence=${item.sequence}">
+                            <div class="entry-item place-entry"
+                                 th:attr="data-id=${item.id},
+                              data-latitude=${item.latitude},
+                              data-longitude=${item.longitude},
+                              data-sequence=${item.sequence}">
+                                <p>
+                                    <strong th:text="${item.name}">장소 이름</strong>
+                                    <span class="sequence" th:text="'(#' + ${item.sequence} + ')'"></span>
+                                </p>
+                                <p th:text="'주소: ' + ${item.address}"></p>
+                                <p class="item-cost" th:text="${item.expectedCost}">0</p>
+                            </div>
+                        </div>
+
+                        <!-- 메모일 경우 -->
+                        <div th:case="'MEMO'" class="entry-row"
+                             th:attr="data-id=${item.id},
+                          data-execution-time=${#temporals.format(item.executionTime, 'HH:mm')},
+                          data-sequence=${item.sequence}">
+                            <div class="entry-item memo-entry"
+                                 th:attr="data-sequence=${item.sequence}">
+                                <span class="memo-text" th:text="${item.content}">기본 메모</span><br>
+                                <p class="item-cost" th:text="${item.expectedCost}">0</p>
+                            </div>
+                        </div>
+                        <!-- 예외 처리 -->
+                        <div th:case="*">
+                            <p>알 수 없는 일정 항목입니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="planData"
+         th:attr="data-id=${plan.planId}, data-title=${plan.title}, data-start=${plan.startDate}, data-end=${plan.endDate}"
+         style="display:none;"></div>
+
+    <div id="editModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>계획 수정</h3>
+            <label>제목</label>
+            <input type="text" id="editTitle" placeholder="새 제목 입력"><br><br>
+            <label>여행 일정</label><br>
+            시작일: <input type="date" id="editStartDate"><br>
+            종료일: <input type="date" id="editEndDate"><br><br>
+            <div class="modal-actions">
+                <button onclick="submitPlanEdit()">저장</button>
+                <button onclick="closeEditModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="participantModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>참여자 관리</h3>
+
+            <!-- 초대 입력 영역 -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <input type="text"
+                       id="participantNickname"
+                       placeholder="닉네임으로 초대"
+                       style="flex: 1; padding: 0.5rem;" />
+                <button onclick="inviteParticipant()" style="padding: 0.5rem 1rem;">초대</button>
+            </div>
+
+            <ul style="margin-top: 1rem; padding: 0;">
+                <li th:each="p : ${plan.participants}"
+                    style="display: flex; align-items: center; margin: 5px 0; list-style: none;">
+
+                    <!-- 왼쪽: 프로필 이미지 + 닉네임 + 왕관 -->
+                    <div style="display: flex; align-items: center;">
+                        <img th:src="${p.profileImageUrl}" alt="프로필"
+                             style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; margin-right: 10px;" />
+
+                        <!-- 리더인 경우 -->
+                        <div th:if="${p.role == 'OWNER'}" style="display: flex; align-items: center;">
+                            <span th:text="${p.nickname}"></span>
+                            <img src="/images/leader.png" alt="리더"
+                                 style="width: 16px; height: 16px; margin-left: 6px;" />
+                            <span style="color: gray; margin-left: 6px;"></span>
+                        </div>
+
+                        <!-- 일반 참여자 -->
+                        <span th:if="${p.role != 'OWNER'}" th:text="${p.nickname}"></span>
+                    </div>
+
+                    <!-- 오른쪽: 내보내기 버튼 -->
+                    <div th:if="${p.role != 'OWNER'}" style="margin-left: auto;">
+                        <button onclick="kick([[${p.userId}]])" class="modal-kick-button">
+                            내보내기
+                        </button>
+                    </div>
+                </li>
+            </ul>
+
+            <div class="modal-actions" style="margin-top: 1rem;">
+                <button onclick="closeParticipantModal()">닫기</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="deleteModal" class="modal hidden">
+        <div class="modal-content">
+            <p>정말로 삭제하시겠습니까?</p>
+            <div class="modal-actions">
+                <button onclick="closeDeleteModal()">취소</button>
+                <button onclick="confirmDeletePlan()" style="background: red; color: white;">삭제</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div style="max-width: 1000px; margin: 40px auto; display: flex; flex-direction: column; gap: 30px; font-family: 'Spoqa Han Sans Neo', sans-serif;">
+
+
+        <!-- 총 예상 지출 카드 (오른쪽 정렬, 작고 얇게 수정) -->
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+            <div class="total-cost-card" style="
+            width: 220px;
+            background: linear-gradient(135deg, #f0f4ff, #d6e0ff);
+            border: 1px solid #c3d0ff;
+            border-radius: 12px;
+            padding: 3.4px 7px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+            text-align: center;">
+                <div style="font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 5px;">
+                    총 예상 지출
+                </div>
+                <div id="totalCost" style="font-size: 1.2rem; color: #5c7cfa; font-weight: bold;">
+                    ₩0
+                </div>
+            </div>
+        </div>
+
+        <!-- 참여자 목록 카드 -->
+        <div class="participants-card" style="
+        background: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+
+            <div class="activity-title" style="
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;">
+                참여자 목록
+            </div>
+
+            <ul class="activity-list" style="list-style: none; padding: 0; margin: 0;">
+                <li class="activity-item" th:each="participant : ${plan.participants}"
+                    style="display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee;">
+
+                    <!-- 프로필 이미지 -->
+                    <div style="flex: 0 0 60px; position: relative; text-align: center;">
+                        <a th:href="@{/users/{userId}(userId=${participant.userId})}">
+                            <img th:src="${participant.profileImageUrl}" alt="프로필 이미지"
+                                 style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 1px solid #ccc;">
+                        </a>
+                        <img th:if="${participant.role == 'OWNER'}" src="/images/crown.png" alt="왕관"
+                             style="position: absolute; top: -8px; right: -8px; width: 22px; height: 22px;">
+                    </div>
+
+                    <!-- 닉네임 -->
+                    <div style="flex: 1; padding-left: 15px; font-size: 1.1rem; font-weight: 500;">
+                        <a th:href="@{/users/{userId}(userId=${participant.userId})}"
+                           style="color: #333; text-decoration: none;"
+                           th:text="${participant.nickname}">닉네임</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+    <script>
+        let currentEntryList = null;
+        let cityIds = /*[[${plan.cityIds}]]*/ [1, 2, 3];
+        let debounceTimer;
+        const DEBOUNCE_DELAY = 400;
+
+        // 이벤트 리스너 등록
+        document.addEventListener('DOMContentLoaded', () => {
+
+          // 장소 추천 리스너 등록
+          const autocomplete = document.getElementById('autocomplete');
+          if (autocomplete) {
+            autocomplete.addEventListener('input', function () {
+              const query = this.value.trim();
+              const list = document.getElementById('recommendationList');
+              list.style.display = 'block';
+              clearTimeout(debounceTimer);
+              debounceTimer = setTimeout(() => {
+                loadRecommendations(cityIds, query);
+              }, DEBOUNCE_DELAY);
+            });
+          }
+
+          let currentMemoItemId = null;
+          let currentMemoDayCard = null;
+
+
+          // item 삭제 리스너
+          document.addEventListener('click', (event) => {
+              if (event.target.matches('.btn-delete')) {
+                if (confirm('정말 삭제하시겠습니까?')) {
+                  const itemId = event.target.closest('.entry-row')?.dataset?.id;
+                  const dayCard = event.target.closest('.day-card');
+                  const scheduleId = dayCard?.dataset?.scheduleId;
+
+                  const csrfToken  = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+                  const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+                  fetch(`/api/travel/${itemId}`, {
+                    method: 'DELETE',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      [csrfHeader]: csrfToken
+                    }
+                  }).then(res => {
+                    if (res.ok) {
+                      fetch(`/api/travel/schedule-items?scheduleId=${scheduleId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                          refreshDayCards(data, dayCard);
+                          calculateTotalCost();
+                        });
+                    } else {
+                      alert('삭제에 실패했습니다.');
+                    }
+                  });
+                }
+              }
+            });
+
+          // 데이터 초기화 작업
+          const dayCards = document.querySelectorAll('.day-card');
+          dayCards.forEach(dayCard => {
+            const scheduleId = dayCard.dataset.scheduleId;
+            fetch(`/api/travel/schedule-items?scheduleId=${scheduleId}`)
+              .then(res => res.json())
+              .then(data => {
+                refreshDayCards(data, dayCard);
+              });
+          });
+          calculateTotalCost();
+        });
+
+        // 다른 영역 클릭 시 숨김 처리 리스너
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('.edit-area')) {
+            document.querySelectorAll('.edit-buttons').forEach(btn => btn.classList.add('hidden'));
+          }
+        });
+
+        function calculateTotalCost() {
+          let total = 0;
+          const costElements = document.querySelectorAll(".item-cost");
+          console.log(`🔍 .item-cost 요소 개수: ${costElements.length}`);
+
+          costElements.forEach((costEl, idx) => {
+            const costText = costEl.textContent.trim();
+            const numericCost = parseInt(costText.replace(/[^\d]/g, ""), 10);
+
+            console.log(`[${idx}] 원본 텍스트: "${costText}"`);
+            console.log(`[${idx}] 숫자 변환 값: ${numericCost}`);
+
+            if (!isNaN(numericCost)) {
+              total += numericCost;
+            }
+          });
+
+          document.getElementById("totalCost").textContent = `₩${total.toLocaleString()}`;
+        }
+
+        function addMemo(button) {
+          const scheduleId = button.closest('.day-card')?.dataset?.scheduleId;
+          const memo = prompt("메모를 입력하세요:");
+          if (memo === null || memo.trim() === "") return;
+
+          const scheduleItem = { scheduleId, content: memo };
+
+          const csrfToken  = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+          const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+          fetch('/api/travel/memo', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              [csrfHeader]: csrfToken,
+            },
+            body: JSON.stringify(scheduleItem),
+          }).then(res => {
+            if (res.ok) {
+              location.reload();
+            } else {
+              alert("메모 추가에 실패했습니다.");
+            }
+          });
+        }
+
+        function calculateDistance(prevPlace, newPlace, callback) {
+          const R     = 6371;
+          const toRad = deg => deg * Math.PI / 180;
+
+          const dLat = toRad(newPlace.latitude - prevPlace.latitude);
+          const dLon = toRad(newPlace.longitude - prevPlace.longitude);
+          const lat1 = toRad(prevPlace.latitude);
+          const lat2 = toRad(newPlace.latitude);
+
+          const a = Math.sin(dLat / 2) ** 2 +
+                    Math.cos(lat1) * Math.cos(lat2) *
+                    Math.sin(dLon / 2) ** 2;
+
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          const distance = R * c;
+
+          callback(`${distance.toFixed(2)} km`);
+        }
+    </script>
+
+
+    <script>
+        function startReorder(button) {
+          const dayCard = button.closest('.day-card');
+          const entryList = dayCard.querySelector('.entry-list');
+          const scheduleId = dayCard.dataset.scheduleId;
+          let dragged;
+
+          // 배경 회색으로 표시
+          dayCard.classList.add('reordering');
+
+          // 다른 버튼 비활성화
+          document.querySelectorAll('.btn').forEach(btn => {
+            if (!btn.classList.contains('btn-sequence')) {
+              btn.disabled = true;
+            }
+          });
+
+          // 버튼 텍스트 "저장"으로 변경
+          button.innerText = '✅ 저장';
+          button.classList.add('btn-save-mode');
+          button.onclick = () => saveNewOrder(scheduleId, entryList);
+
+          entryList.querySelectorAll('.entry-row').forEach(row => {
+            row.setAttribute('draggable', 'true');
+
+            row.addEventListener('dragstart', (e) => {
+              dragged = row;
+              e.dataTransfer.effectAllowed = 'move';
+            });
+
+            row.addEventListener('dragover', (e) => {
+              e.preventDefault();
+              const bounding = e.currentTarget.getBoundingClientRect();
+              const offset = e.clientY - bounding.top;
+
+              if (offset > bounding.height / 2) {
+                e.currentTarget.style['border-bottom'] = '2px solid #007bff';
+                e.currentTarget.style['border-top'] = '';
+              } else {
+                e.currentTarget.style['border-top'] = '2px solid #007bff';
+                e.currentTarget.style['border-bottom'] = '';
+              }
+            });
+
+            row.addEventListener('dragleave', (e) => {
+              e.currentTarget.style['border-bottom'] = '';
+              e.currentTarget.style['border-top'] = '';
+            });
+
+            row.addEventListener('drop', (e) => {
+              e.preventDefault();
+              const bounding = e.currentTarget.getBoundingClientRect();
+              const offset = e.clientY - bounding.top;
+
+              if (dragged && dragged !== e.currentTarget) {
+                if (offset > bounding.height / 2) {
+                  e.currentTarget.after(dragged);
+                } else {
+                  e.currentTarget.before(dragged);
+                }
+              }
+
+              e.currentTarget.style['border-bottom'] = '';
+              e.currentTarget.style['border-top'] = '';
+            });
+          });
+
+          // drop-zone 추가 (마지막 요소 아래)
+          if (!entryList.querySelector('.drop-zone')) {
+            const dropZone = document.createElement('div');
+            dropZone.className = 'drop-zone';
+            dropZone.style.height = '30px';
+            dropZone.addEventListener('dragover', e => e.preventDefault());
+            dropZone.addEventListener('drop', e => {
+              e.preventDefault();
+              if (dragged) entryList.appendChild(dragged);
+            });
+            entryList.appendChild(dropZone);
+          }
+        }
+
+        function saveNewOrder(scheduleId, entryList) {
+          const orders = Array.from(entryList.querySelectorAll('.entry-row'))
+            .map((row, idx) => ({
+              itemId: row.dataset.id,
+              sequence: idx
+            }));
+
+          const payload = {
+            scheduleId: scheduleId,
+            orders: orders
+          };
+
+          const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+          const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+          fetch('/api/travel/schedule-item/reorder', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(csrfToken && csrfHeader ? { [csrfHeader]: csrfToken } : {})
+            },
+            body: JSON.stringify(payload)
+          }).then(res => {
+            if (res.ok) {
+              location.reload();
+            } else {
+              console.error('순서 저장 실패');
+            }
+          });
+        }
+    </script>
+
+
+    <script th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${@environment.getProperty('google.maps.api-key')} + '&libraries=places,geometry&loading=async'" async></script>
+</div>
+</body>
+</html>

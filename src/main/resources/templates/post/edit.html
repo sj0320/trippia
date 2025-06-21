@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+  <meta charset="UTF-8">
+  <title>동행 모집글 수정</title>
+  <link rel="stylesheet" href="/css/city-modal.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/thumbnail-upload.css">
+  <script defer src="/js/city-modal.js"></script>
+  <script defer src="/js/thumbnail.js"></script>
+  <style>
+    .form-container {
+      width: 90%;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 30px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      background-color: #fefefe;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .form-container h2 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .input-container {
+      margin-bottom: 20px;
+    }
+
+    .input-container label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .input-container input[type="text"],
+    .input-container textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .input-container input[type="number"] {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-sizing: border-box;
+        transition: border-color 0.3s ease;
+    }
+
+    .input-container input[type="number"]:focus {
+        border-color: #4da6ff;
+        outline: none;
+        background-color: #f9fcff;
+    }
+
+    textarea {
+      resize: vertical;
+      height: 150px;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .submit-btn:hover {
+      background-color: #45a049;
+    }
+    .date-range-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .date-field input[type="date"] {
+        padding: 10px 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 14px;
+        background-color: #fff;
+        color: #333;
+        outline: none;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .date-field input[type="date"]:hover,
+    .date-field input[type="date"]:focus {
+        border-color: #5a67d8;
+        box-shadow: 0 0 0 2px rgba(90, 103, 216, 0.2);
+    }
+  </style>
+</head>
+<body>
+<div layout:fragment="content">
+  <form th:action="@{|/companion-post/${post.id}/edit|}" class="form-container" method="post" enctype="multipart/form-data" th:object="${post}">
+    <input type="hidden" name="_method" value="put"/>
+    <h2>모집글을 수정해보세요!</h2>
+    <!-- 도시 선택 -->
+    <div class="input-container">
+      <label for="cityId">계획 중인 도시를 알려주세요!</label>
+      <div style="display: flex; gap: 20px;">
+        <input type="text" id="cityName" th:field="*{cityName}" readonly />
+        <button type="button" id="openCityModal" style="min-width: 70px;">도시 선택</button>
+      </div>
+      <input type="hidden" id="cityId" th:field="*{cityId}" required />
+      <p class="error-message" th:if="${#fields.hasErrors('cityId')}" th:errors="*{cityId}"></p>
+    </div>
+
+    <div id="cityModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h3>도시 선택</h3>
+        <div class="city-list">
+          <div th:each="entry : ${cities.groupedCities}">
+            <h4 th:text="${entry.key}">도시 유형</h4>
+            <ul>
+              <li th:each="city : ${entry.value}">
+                <button type="button" th:text="${city.name}"
+                        th:attr="data-city=${city.name}, data-id=${city.id}"
+                        onclick="selectCity(this)">
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 제목 -->
+    <div class="input-container">
+      <label for="title">제목</label>
+      <input type="text" id="title" th:field="*{title}" required />
+      <p class="error-message" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></p>
+    </div>
+
+    <!-- 여행 기간 -->
+    <div class="input-container">
+      <label>여행 기간</label>
+      <div class="date-range-wrapper">
+        <div class="date-field">
+          <input type="date" id="startDate" th:field="*{startDate}" required />
+        </div>
+        <span>~</span>
+        <div class="date-field">
+          <input type="date" id="endDate" th:field="*{endDate}" required />
+        </div>
+      </div>
+      <div class="error-message-wrapper">
+        <p class="error-message" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></p>
+        <p class="error-message" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></p>
+      </div>
+    </div>
+
+    <!-- 성별 제한 -->
+    <div class="input-container">
+      <label>성별 제한</label>
+      <div style="display: flex; gap: 15px;">
+        <label>
+          <input type="radio" name="genderRestriction" value="ALL" th:field="*{genderRestriction}" /> 누구나
+        </label>
+        <label>
+          <input type="radio" name="genderRestriction" value="MALE" th:field="*{genderRestriction}" /> 남성만
+        </label>
+        <label>
+          <input type="radio" name="genderRestriction" value="FEMALE" th:field="*{genderRestriction}" /> 여성만
+        </label>
+      </div>
+      <p class="error-message" th:if="${#fields.hasErrors('genderRestriction')}" th:errors="*{genderRestriction}"></p>
+    </div>
+
+    <!-- 모집 인원 -->
+    <div class="input-container">
+      <label for="recruitmentCount">모집 인원</label>
+      <input type="number" id="recruitmentCount" th:field="*{recruitmentCount}" min="1" required />
+      <p class="error-message" th:if="${#fields.hasErrors('recruitmentCount')}" th:errors="*{recruitmentCount}"></p>
+    </div>
+
+    <!-- 내용 -->
+    <div class="input-container">
+      <label for="content">내용</label>
+      <textarea id="content" th:field="*{content}" required></textarea>
+      <p class="error-message" th:if="${#fields.hasErrors('content')}" th:errors="*{content}"></p>
+    </div>
+
+    <!-- 썸네일 업로드 -->
+    <div class="input-container">
+      <label for="thumbnail" class="thumbnail-label">썸네일 이미지</label>
+
+      <div class="thumbnail-wrapper">
+        <!-- 기존 썸네일이 있는 경우 -->
+        <img id="thumbnail-preview"
+             th:if="${post.thumbnailUrl != null and post.thumbnailUrl != ''}"
+             th:src="@{${post.thumbnailUrl}}"
+             alt="썸네일 미리보기" />
+
+        <img id="thumbnail-preview-js"
+             th:if="${post.thumbnailUrl != null and post.thumbnailUrl != ''}"
+             th:src="@{${post.thumbnailUrl}}"
+             alt="썸네일 미리보기"
+             style="display: none;" />
+
+        <label for="thumbnail" class="upload-button">파일 선택</label>
+        <input type="file" id="thumbnail" name="thumbnail" accept="image/*"
+               onchange="previewThumbnail(event)" style="display: none;" />
+      </div>
+    </div>
+
+    <!-- 제출 버튼 -->
+    <button type="submit" class="submit-btn">수정하기</button>
+  </form>
+</div>
+
+<div th:replace="~{fragments/footer::footer}"></div>
+</body>
+</html>

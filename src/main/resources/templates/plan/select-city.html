@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+  <link rel="stylesheet" href="/css/select-city.css">
+  <title>여행지 선택</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <div class="container">
+    <h1>떠나고 싶은 도시를 선택해주세요</h1>
+
+    <form id="destinationForm" th:action="@{/travel/question/date}" method="get">
+      <div id="selectedCityContainer"></div>
+
+      <div th:each="entry : ${cities.groupedCities}" class="country-group">
+        <div class="country-name" th:text="${entry.key}">국가명</div>
+        <div class="city-list">
+          <div th:each="city : ${entry.value}"
+               class="city-item"
+               th:text="${city.name}"
+               th:data-city-id="${city.id}"
+               onclick="selectCity(this)">
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="next-button">다음</button>
+    </form>
+  </div>
+
+  <script>
+    function selectCity(el) {
+      const cityId = el.dataset.cityId;
+      const container = document.getElementById('selectedCityContainer');
+
+      // 선택 해제일 경우 삭제
+      if (el.classList.contains('selected')) {
+        el.classList.remove('selected');
+        const inputToRemove = container.querySelector(`input[value="${cityId}"]`);
+        if (inputToRemove) inputToRemove.remove();
+        return;
+      }
+
+      // 선택 추가
+      el.classList.add('selected');
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'cityId'; // ✅ 여기까지 수정 완료
+      input.value = cityId;
+      container.appendChild(input);
+    }
+  </script>
+</div>
+</body>
+</html>

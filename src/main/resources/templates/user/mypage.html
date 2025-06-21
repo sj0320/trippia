@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+
+<head>
+    <title>마이페이지</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script defer src="/js/mypage.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            color: #222;
+        }
+
+        .mypage-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 40px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* 프로필 영역 */
+        .profile-section {
+            width: 280px;
+            text-align: center;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            text-align: center;
+            padding: 2rem 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+
+         /* 좋아요 영역 전체 너비로 */
+        .liked-diaries {
+            grid-column: 1 / -1;
+        }
+
+        .profile-section img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+        }
+
+        .profile-nickname {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 1rem;
+            color: #000;
+        }
+
+        .profile-edit-btn {
+            margin-top: 1rem;
+            padding: 8px 16px;
+            background-color: #000;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+
+        .profile-edit-btn:hover {
+            background-color: #444;
+        }
+
+        .activity-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .activity-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            min-height: 200px;
+        }
+
+        .activity-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #111;
+        }
+
+        .activity-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .activity-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 0.95rem;
+            color: #333;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .slider-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+
+        }
+        .slider-btn {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: #888;
+            cursor: pointer;
+            padding: 0 0.5rem;
+            z-index: 1;
+            transition: color 0.3s;
+        }
+
+        .slider-btn:hover {
+            color: #333;
+        }
+
+        .diary-slider {
+            display: flex;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            gap: 1rem;
+            padding: 0.5rem 0;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+        }
+
+        .diary-slider::-webkit-scrollbar {
+            display: none;
+        }
+
+        .diary-card {
+            min-width: 180px;
+            height: 180px;
+            flex: 0 0 auto;
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 0.75rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            scroll-snap-align: start;
+            text-align: center;
+        }
+
+        .diary-card img {
+            width: 100%;
+            height: 130px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+
+        .diary-title {
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 0.3rem;
+            color: #333;
+        }
+
+        .diary-meta {
+            font-size: 0.85rem;
+            color: #777;
+        }
+
+        .plan-slider {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding-bottom: 1rem;
+        }
+
+        .plan-slider::-webkit-scrollbar {
+            display: none;
+        }
+
+        .plan-card {
+            min-width: 200px;
+            flex: 0 0 auto;
+            text-align: center;
+        }
+
+        .plan-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-title {
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+        }
+
+        .plan-dates {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        /* 모달 배경 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        /* 모달 숨김 처리 */
+        .hidden {
+            display: none;
+        }
+
+        /* 모달 콘텐츠 박스 */
+        .modal-content {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 2rem 2.5rem;
+            width: 360px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            font-family: 'Segoe UI', sans-serif;
+            color: #222;
+            box-sizing: border-box;
+        }
+
+        /* 모달 제목 */
+        .modal-content h3 {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            color: #000;
+        }
+
+        /* 라벨 스타일 */
+        .modal-content label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: #111;
+        }
+
+        /* 입력창 스타일 */
+        .modal-content input[type="text"],
+        .modal-content textarea {
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            font-size: 1rem;
+            font-family: inherit;
+            color: #222;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+
+        /* 텍스트 영역 높이 지정 */
+        .modal-content textarea {
+            min-height: 80px;
+        }
+
+        /* 모달 버튼 컨테이너 */
+        .modal-actions {
+            margin-top: 1.8rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* 모달 버튼 스타일 */
+        .modal-actions button {
+            padding: 8px 18px;
+            font-size: 0.95rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: 600;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* 저장 버튼 (주 버튼) */
+        .modal-actions button:first-child {
+            background-color: #000;
+            color: #fff;
+        }
+
+        .modal-actions button:first-child:hover {
+            background-color: #444;
+        }
+
+        /* 취소 버튼 */
+        .modal-actions button:last-child {
+            background-color: #eee;
+            color: #444;
+        }
+
+        .modal-actions button:last-child:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content">
+
+    <div id="profileData"
+         th:attr="data-nickname=${myPage.myPageUserInfo.nickname},
+              data-bio=${myPage.myPageUserInfo.bio},
+              data-profile-image-url=${myPage.myPageUserInfo.profileImageUrl}"
+         style="display:none;"></div>
+
+    <!-- 프로필 모달창 -->
+    <div id="editProfileModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>프로필 수정</h3>
+
+            <label>프로필 사진</label>
+            <div style="text-align:center; margin-bottom: 1rem;">
+                <img
+                        id="previewProfileImg"
+                        src=""
+                        alt="프로필 사진"
+                        style="width:100px; height:100px; border-radius:50%; object-fit:cover; border: 2px solid #ccc; cursor:pointer;"
+                        onclick="document.getElementById('editProfileImage').click()" />
+            </div>
+
+            <!-- 파일 input은 화면에 보이지 않게 숨김 -->
+            <input type="file" id="editProfileImage" accept="image/*" style="display:none;">
+
+            <label>닉네임</label>
+            <input type="text" id="editNickname" placeholder="닉네임 입력"><br><br>
+
+            <label>한줄소개</label>
+            <textarea id="editIntro" placeholder="한줄소개 입력"></textarea><br><br>
+
+            <div class="modal-actions">
+                <button onclick="submitProfileEdit()">저장</button>
+                <button onclick="closeProfileEditModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="mypage-wrapper">
+        <!-- 프로필 영역 -->
+        <div class="profile-section">
+            <img th:src="${myPage.myPageUserInfo.profileImageUrl}" alt="프로필 사진">
+
+            <!-- 닉네임 -->
+            <div class="profile-nickname" th:text="${myPage.myPageUserInfo.nickname}">닉네임</div>
+
+            <!-- 여행자 등급 -->
+            <div class="profile-grade"
+                 th:text="'여행자 등급: ' + ${myPage.myPageUserInfo.travelerGrade}"
+                 style="margin-top: 0.3rem; font-size: 0.9rem; color: #5c7cfa; font-weight: bold;">
+                여행자 등급: BEGINNER
+            </div>
+
+            <!-- 소개글 -->
+            <div class="profile-bio"
+                 th:text="${myPage.myPageUserInfo.bio}"
+                 style="margin-top: 0.5rem; font-size: 0.9rem; color: #333; font-style: italic; white-space: pre-line;">
+                간단한 소개글이 여기에 나옵니다.
+            </div>
+
+            <!-- 활동 통계 -->
+            <div class="profile-stats" style="margin-top: 1rem; font-size: 0.9rem; color: #444;">
+                <div><strong th:text="${#lists.size(myPage.myDiaries)}">0</strong> 개의 일지 작성</div>
+                <div><strong th:text="${#lists.size(myPage.upcomingPlans) + #lists.size(myPage.pastPlans)}">0</strong> 개의 여행 계획</div>
+            </div>
+
+            <th:block th:if="${isOwner}">
+                <div style="display: flex; flex-direction: column; align-items: center; margin-top: 1rem;">
+                    <button class="profile-edit-btn" onclick="openProfileEditModal()" style="margin-bottom: 0.7rem;">
+                        프로필 수정
+                    </button>
+
+                    <a href="/plan-participant"
+                       class="profile-edit-btn"
+                       style="width: 135px; text-decoration: none; text-align: center; margin-bottom: 0.7rem;">
+                        여행 초대함
+                    </a>
+
+                    <a href="/users/password/update"
+                       class="profile-edit-btn"
+                       style="width: 135px; text-decoration: none; text-align: center;">
+                        비밀번호 변경
+                    </a>
+                </div>
+            </th:block>
+
+        </div>
+
+        <!-- 활동 영역 -->
+        <div class="activity-section">
+
+            <!-- 여행일지 -->
+            <div class="activity-card">
+                <div class="activity-title">작성한 여행일지</div>
+
+                <div class="slider-container">
+                    <button class="slider-btn prev" onclick="scrollSlider(-1)" id="diaryPrevBtn" style="display: none;">&#10094;</button>
+
+                    <div class="diary-slider" id="diarySlider">
+                        <div class="diary-card" th:each="diary : ${myPage.myDiaries}">
+                            <a th:href="@{/diary/{id}(id=${diary.diaryId})}">
+                                <img th:src="${diary.thumbnailImageUrl}" alt="썸네일">
+                            </a>
+                            <div class="diary-title" th:text="${diary.title}">제목</div>
+                            <div class="diary-meta">
+                                ❤️ <span th:text="${diary.likeCount}">0</span>
+                                👁 <span th:text="${diary.viewCount}">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="slider-btn next" onclick="scrollSlider(1)" id="diaryNextBtn" style="display: none;">&#10095;</button>
+                </div>
+            </div>
+
+            <!-- 여행계획 -->
+            <div class="activity-card">
+                <div class="activity-title">다가오는 여행</div>
+
+                <div class="slider-container">
+                    <button class="slider-btn prev" onclick="scrollPlanSlider(-1)" id="planPrevBtn" style="display: none;">&#10094;</button>
+
+                    <div class="plan-slider" id="planSlider">
+                        <div class="plan-card" th:each="plan : ${myPage.upcomingPlans}">
+                            <a th:href="@{/travel/plan/{id}(id=${plan.planId})}">
+                                <img th:src="${plan.cityImage}" alt="도시 이미지">
+                            </a>
+                            <div class="plan-title" th:text="${plan.title}">여행 제목</div>
+                            <div class="plan-dates">
+                                <span th:text="${plan.startDate}">시작일</span> ~
+                                <span th:text="${plan.endDate}">종료일</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="slider-btn next" onclick="scrollPlanSlider(1)" id="planNextBtn" style="display: none;">&#10095;</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="activity-card liked-diaries">
+            <div class="activity-title">작성한 여행 모집 글</div>
+
+            <!-- 헤더 -->
+            <div style="display: flex; font-weight: bold; padding: 0.5rem 0; border-bottom: 1px solid #ddd;">
+                <div style="flex: 2;">제목</div>
+                <div style="flex: 1; text-align: right;">댓글수</div>
+                <div style="flex: 1; text-align: right;">조회수</div>
+            </div>
+
+            <!-- 내용 -->
+            <ul class="activity-list">
+                <li class="activity-item" th:each="post : ${myPage.posts}"
+                    style="display: flex; align-items: center; padding: 0.5rem 0;">
+                    <div style="flex: 2;">
+                        <a th:href="@{/companion-post/{id}(id=${post.postId})}"
+                           th:text="${post.title}" style="color: inherit; text-decoration: none;">제목</a>
+                    </div>
+                    <div style="flex: 1; text-align: right;" th:text="${post.commentCount}">0</div>
+                    <div style="flex: 1; text-align: right;" th:text="${post.viewCount}">0</div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- ❤️ 좋아요한 여행일지 -->
+        <div class="activity-card liked-diaries">
+            <div class="activity-title">❤️ 좋아요한 여행일지</div>
+
+            <!-- 헤더 -->
+            <div style="display: flex; font-weight: bold; padding: 0.5rem 0; border-bottom: 1px solid #ddd;">
+                <div style="flex: 2;">제목</div>
+                <div style="flex: 1; text-align: right;">작성자</div>
+                <div style="flex: 1; text-align: right;">좋아요</div>
+                <div style="flex: 1; text-align: right;">조회수</div>
+            </div>
+
+            <!-- 내용 -->
+            <ul class="activity-list">
+                <li class="activity-item" th:each="diary : ${myPage.likedDiaries}"
+                    style="display: flex; align-items: center; padding: 0.5rem 0;">
+                    <div style="flex: 2;">
+                        <a th:href="@{/diary/{id}(id=${diary.diaryId})}"
+                           th:text="${diary.title}" style="color: inherit; text-decoration: none;">제목</a>
+                    </div>
+                    <div style="flex: 1; text-align: right;" th:text="${diary.authorNickname}">글쓴이</div>
+                    <div style="flex: 1; text-align: right;" th:text="${diary.likeCount}">0</div>
+                    <div style="flex: 1; text-align: right;" th:text="${diary.viewCount}">0</div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 🗓️ 이미 지난 여행 -->
+        <div class="activity-card liked-diaries">
+            <div class="activity-title">🗓️ 이미 지난 여행</div>
+
+            <div class="slider-container">
+                <button class="slider-btn prev" onclick="scrollPastPlanSlider(-1)" id="pastPlanPrevBtn" style="display: none;">&#10094;</button>
+
+                <div class="plan-slider" id="pastPlanSlider">
+                    <div class="plan-card" th:each="plan : ${myPage.pastPlans}">
+                        <a th:href="@{/travel/plan/{id}(id=${plan.planId})}">
+                            <img th:src="${plan.cityImage}" alt="도시 이미지">
+                        </a>
+                        <div class="plan-title" th:text="${plan.title}">여행 제목</div>
+                        <div class="plan-dates">
+                            <span th:text="${plan.startDate}">시작일</span> ~
+                            <span th:text="${plan.endDate}">종료일</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="slider-btn next" onclick="scrollPastPlanSlider(1)" id="pastPlanNextBtn" style="display: none;">&#10095;</button>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+</body>
+</html>

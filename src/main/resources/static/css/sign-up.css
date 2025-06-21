@@ -1,0 +1,84 @@
+/* 인증 버튼 스타일 */
+.auth-button {
+    background-color: #000; /* 검정색 배경 */
+    color: #fff; /* 흰색 글씨 */
+    border: 1px solid #000; /* 검정색 테두리 */
+    cursor: pointer;
+    box-sizing: border-box;
+    margin-top: 15px;
+}
+
+.auth-button:hover {
+    background-color: #fff; /* hover 시 흰색 배경 */
+    color: #000; /* hover 시 검정색 글씨 */
+    border: 1px solid #000; /* hover 시 검정색 테두리 유지 */
+}
+
+/* 비활성화된 버튼 스타일 */
+.auth-button:disabled {
+    background-color: #cccccc; /* 비활성화 버튼 스타일 */
+    cursor: not-allowed;
+}
+
+#auth-code-container {
+    margin-top: 15px;
+}
+
+#email[readonly] {
+    background-color: #f0f0f0;
+    color: #555;
+    cursor: not-allowed;
+    border: 1px solid #ccc;
+}
+
+#authCode[readonly] {
+    background-color: #f0f0f0;
+    color: #555;
+    cursor: not-allowed;
+    border: 1px solid #ccc;
+}
+
+/* 입력란 스타일만 */
+input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+/* 버튼 기본 스타일 */
+button {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #000;  /* 버튼만의 스타일 */
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 14px;
+    margin-bottom: 10px;
+
+    background-color: #000;
+    color: #fff;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #fff; /* hover 시 흰색 배경 */
+    color: #000; /* hover 시 검정색 글씨 */
+    border: 1px solid #000; /* hover 시 검정색 테두리 유지 */
+}
+
+.container {
+    width: 350px;  /* 컨테이너의 너비 */
+    padding: 20px;
+    background-color: transparent;
+    box-shadow: none;
+    text-align: center;
+    border-radius: 10px;
+    margin: auto;
+    display: flex;  /* flexbox 사용 */
+    flex-direction: column;  /* 항목들을 수직으로 정렬 */
+    align-items: center;  /* 항목들을 수평으로 중앙 정렬 */
+}

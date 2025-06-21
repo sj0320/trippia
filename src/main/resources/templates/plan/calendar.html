@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <meta charset="UTF-8">
+    <title>여행 일정</title>
+
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.css" rel="stylesheet">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        .submit-button {
+            margin-top: 2rem;
+            padding: 1rem 2.5rem;
+            background-color: #212529;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .submit-button:hover {
+            background-color: #000;
+        }
+
+        form {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <form th:action="@{/travel/plan/new}" method="post">
+        <div id="calendar"></div>
+
+        <!-- cityIds를 여러 개 전송하는 방식 -->
+        <div th:each="cityId : ${cityIds}">
+            <input type="hidden" name="cityIds" th:value="${cityId}" />
+        </div>
+
+        <input type="hidden" name="startDate" id="startDate">
+        <input type="hidden" name="endDate" id="endDate">
+
+        <button type="submit" class="submit-button">일정 제출</button>
+    </form>
+
+    <!-- FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendarEl = document.getElementById('calendar');
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                selectable: true,
+
+                select: function (info) {
+                    if (calendar.selectedRange) {
+                        calendar.selectedRange.remove();
+                    }
+
+                    if (!calendar.selectedStartDate) {
+                        // 시작 날짜 선택
+                        calendar.selectedStartDate = info.startStr;
+                        startDateInput.value = info.startStr;
+                        endDateInput.value = '';
+                    } else {
+                        if (info.startStr < calendar.selectedStartDate) {
+                            // 시작 날짜보다 앞을 다시 선택한 경우 -> 새로 지정
+                            calendar.selectedStartDate = info.startStr;
+                            startDateInput.value = info.startStr;
+                            endDateInput.value = '';
+                        } else {
+                            // 종료 날짜 선택
+
+                            // 👇 end는 exclusive이므로 하루 빼서 보여줘야 함
+                            const endDate = new Date(info.end);
+                            endDate.setDate(endDate.getDate());
+                            const adjustedEndStr = endDate.toISOString().split('T')[0];
+
+                            calendar.selectedEndDate = adjustedEndStr;
+                            endDateInput.value = adjustedEndStr;
+
+                            // 👇 캘린더 표시에는 info.end 그대로 써야 'inclusive'하게 보임
+                            calendar.selectedRange = calendar.addEvent({
+                                title: '여행 일정',
+                                start: calendar.selectedStartDate,
+                                end: info.endStr, // FullCalendar는 exclusive로 처리
+                                rendering: 'background',
+                                color: '#adb5bd'
+                            });
+
+                            calendar.selectedStartDate = null;
+                            calendar.selectedEndDate = null;
+                        }
+                    }
+                }
+            });
+
+            calendar.render();
+        });
+    </script>
+</div>
+</body>
+</html>

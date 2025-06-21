@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+  <title>페이지를 찾을 수 없습니다</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .error-page {
+        text-align: center;
+        padding: 80px 20px;
+    }
+
+    .error-page h1 {
+        font-size: 30px;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    .error-page p {
+        font-size: 18px;
+        color: #777;
+        margin-bottom: 30px;
+    }
+
+    .error-page a {
+        display: inline-block;
+        padding: 12px 24px;
+        background-color: #000;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 6px;
+        transition: background-color 0.3s;
+    }
+
+    .error-page a:hover {
+        background-color: #333;
+    }
+  </style>
+</head>
+<body>
+<div layout:fragment="content">
+  <div class="error-page">
+    <h1>페이지를 찾을 수 없습니다</h1>
+    <a href="/">🏠 홈으로 돌아가기</a>
+  </div>
+</div>
+</body>
+</html>

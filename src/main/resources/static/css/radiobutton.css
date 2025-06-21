@@ -1,0 +1,62 @@
+/* 라디오 버튼 스타일 */
+.radio-group {
+    display: flex;
+    gap: 15px; /* 항목 간 간격 */
+    flex-wrap: wrap; /* 너무 길어지면 다음 줄로 */
+}
+
+.radio-group label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px; /* 아이콘과 글자 사이 간격 */
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+/* 기본 라디오 버튼 숨기기 */
+.radio-group input[type="radio"] {
+    display: none;
+}
+
+/* 커스텀 라디오 버튼 */
+.custom-radio {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%; /* 라디오 버튼은 원형 */
+    border: 2px solid #ccc;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+/* 라디오 버튼 체크 시 변화 */
+.custom-radio::after {
+    content: "✔";
+    font-size: 14px;
+    color: black;
+    display: none;
+    transition: all 0.2s ease;
+}
+
+.radio-group input[type="radio"]:checked + .custom-radio {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.radio-group input[type="radio"]:checked + .custom-radio::after {
+    display: block;
+}
+
+/* 라디오 버튼 라벨 호버 효과 */
+.radio-group label:hover {
+    color: #007bff;
+}
+
+/* 추가: 라디오 버튼을 클릭할 때 효과 */
+.radio-group input[type="radio"]:focus + .custom-radio {
+    outline: 2px solid #007bff;
+}

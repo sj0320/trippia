@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <meta charset="UTF-8">
+    <title>동행 모집글 상세보기</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/login-modal.css">
+    <link rel="stylesheet" href="/css/comment.css">
+    <script defer src="/js/login-modal.js"></script>
+    <script defer src="/js/post-comment.js"></script>
+    <style>
+        .detail-container {
+          width: 90%;
+          max-width: 1000px;
+          margin: 40px auto;
+          padding: 30px;
+          background-color: #fff;
+          border-radius: 12px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .post-header {
+          position: relative;
+          padding-right: 140px;
+          margin-bottom: 20px;
+        }
+
+        .post-meta {
+          font-size: 14px;
+          color: #666;
+        }
+
+        .post-createdAt {
+          position: absolute;
+          top: 0;
+          right: 0;
+          font-size: 13px;
+          color: #999;
+        }
+
+        .post-body {
+          display: flex;
+          flex-direction: row;
+          gap: 40px;
+        }
+
+        .post-content {
+          flex: 3;
+        }
+
+        .post-text {
+          white-space: pre-wrap;
+          font-size: 16px;
+          line-height: 1.7;
+          color: #333;
+        }
+
+        .post-info {
+          flex: 1;
+          border-left: 1px solid #eee;
+          padding-left: 20px;
+          font-size: 14px;
+          color: #555;
+        }
+
+        .post-info div {
+          margin-bottom: 12px;
+        }
+
+        .comments-section {
+          margin-top: 60px;
+        }
+
+        .comments-section h3 {
+          margin-bottom: 16px;
+          border-bottom: 1px solid #ccc;
+          padding-bottom: 6px;
+        }
+
+        .comment {
+          padding: 12px 0;
+          border-bottom: 1px solid #eee;
+        }
+
+        .comment .author {
+          font-weight: bold;
+        }
+
+        .comment .comment-time {
+          font-size: 12px;
+          color: #999;
+        }
+
+        .comment-form textarea {
+          width: 100%;
+          height: 80px;
+          margin-top: 16px;
+          padding: 10px;
+          font-size: 14px;
+        }
+
+        .post-actions {
+          margin-top: 10px;
+        }
+
+        .post-actions form {
+          display: inline;
+        }
+
+        .post-actions a, .post-actions button {
+          background-color: transparent;
+          border: none;
+          color: #007BFF;
+          text-decoration: underline;
+          cursor: pointer;
+          font-size: 14px;
+          margin-right: 10px;
+        }
+
+        .post-actions button:hover,
+        .post-actions a:hover {
+          color: #0056b3;
+        }
+
+        .btn-edit,
+        .btn-delete {
+            background: #f5f5f5;
+            border: 1px solid #ccc;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            text-decoration: none;
+            color: #333;
+        }
+
+       .btn-edit:hover {
+         background-color: #dff2ff;
+       }
+
+       .btn-delete:hover {
+        background-color: #ffe6e6;
+       }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="detail-container">
+
+        <div class="post-header" style="position: relative; padding-top: 32px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 th:text="${post.title}" style="margin: 0;">게시물 제목</h2>
+
+                <!-- 수정/삭제 버튼 -->
+                <div class="post-actions" th:if="${post.authorEmail == #authentication.name}"
+                     style="display: flex; gap: 8px;">
+                    <a th:href="@{'/companion-post/' + ${post.id} + '/edit'}" class="btn-edit">수정</a>
+
+                    <form th:action="@{'/companion-post/' + ${post.id}}" method="post"
+                          onsubmit="return confirm('정말 삭제하시겠습니까?');" style="display: inline;">
+                        <input type="hidden" name="_method" value="delete"/>
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="btn-delete">삭제</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 작성자 및 작성일 -->
+            <div class="post-meta" style="margin-top: 8px;">
+                <span>작성자: <span th:text="${post.authorNickname}">닉네임</span></span> &nbsp;|&nbsp;
+                <span>작성일: <span th:text="${post.createdAt}">2025-06-06</span></span>
+            </div>
+        </div>
+
+        <div class="post-body">
+            <div class="post-content">
+                <div class="post-text" th:text="${post.content}">
+                    게시물 내용이 여기에 들어갑니다.
+                </div>
+            </div>
+
+            <aside class="post-info">
+                <div><strong>도시:</strong> <span th:text="${post.cityName}">도시 이름</span></div>
+                <div><strong>여행 기간:</strong>
+                    <span th:text="${post.startDate}">시작일</span> ~
+                    <span th:text="${post.endDate}">종료일</span>
+                </div>
+                <div><strong>성별 제한:</strong>
+                    <span th:switch="${post.genderRestriction}">
+                        <span th:case="'MALE'">남성만</span>
+                        <span th:case="'FEMALE'">여성만</span>
+                        <span th:case="*">누구나</span>
+                    </span>
+                </div>
+                <div><strong>모집 인원:</strong> <span th:text="${post.recruitmentCount}">0</span>명</div>
+            </aside>
+        </div>
+
+
+        <!-- 댓글 영역 시작 -->
+        <div class="comment-section" th:attr="data-post-id=${post.id}">
+            <h2>댓글</h2>
+
+            <!-- 댓글 목록 -->
+            <ul class="comment-list">
+                <li th:each="comment : ${post.comments}" class="comment-item">
+                    <div class="comment-header">
+                        <div class="comment-author-info">
+                            <img class="profile-image" th:src="${comment.authorProfile}" alt="프로필 이미지" />
+                            <strong th:text="${comment.authorNickname}">작성자</strong>
+                        </div>
+                        <span class="comment-date" th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}">2025-06-06 12:00</span>
+                    </div>
+                    <p th:text="${comment.content}">댓글 내용</p>
+                </li>
+                <!-- 댓글이 없을 경우 안내 문구 -->
+                <li id="no-comment-message" th:if="${#lists.isEmpty(post.comments)}">댓글이 없습니다.</li>
+            </ul>
+
+            <!-- 댓글 작성 폼 -->
+            <form id="commentForm" class="comment-form" onsubmit="return false;">
+                <textarea id="comment-content" rows="3" placeholder="댓글을 입력하세요"></textarea>
+                <div class="comment-form-header">
+                    <button type="button" id="submit-comment">댓글 작성</button>
+                </div>
+            </form>
+        </div>
+        <!-- 댓글 영역 끝 -->
+
+        <script th:inline="javascript">
+            // Spring Security 인증 여부를 Thymeleaf로 체크
+            const isAuthenticated = [[${#authorization.expression('isAuthenticated()')}]];
+
+            document.getElementById("commentForm").addEventListener("submit", function (e) {
+                if (!isAuthenticated) {
+                    e.preventDefault();
+                    showLoginModal();
+                }
+            });
+        </script>
+
+        <!-- 로그인 모달 -->
+        <div id="login-modal" class="modal">
+            <div class="modal-content">
+                <button class="modal-close" id="cancel-login">&times;</button>
+
+                <p class="modal-message">
+                    로그인이 필요한 기능입니다.<br>로그인하시겠습니까?
+                </p>
+
+                <button id="go-login" class="login-button primary">일반 로그인</button>
+
+                <div class="social-login-buttons">
+                    <p class="social-text">또는 소셜 로그인</p>
+                    <div class="social-icons">
+                        <button id="social-kakao" class="social-btn">
+                            <img src="/images/kakao-icon.png" alt="카카오 로그인"/>
+                        </button>
+                        <button id="social-google" class="social-btn">
+                            <img src="/images/google-icon.png" alt="구글 로그인"/>
+                        </button>
+                        <button id="social-naver" class="social-btn">
+                            <img src="/images/naver-icon.png" alt="네이버 로그인"/>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer::footer}"></div>
+</body>
+</html>
