@@ -1,7 +1,4 @@
 spring:
-  profiles:
-    active: prod
-
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: ${SPRING_DATASOURCE_URL}
