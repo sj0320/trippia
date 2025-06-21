@@ -35,7 +35,7 @@ jobs:
 
           set -e
           echo "접속 성공. 프로젝트 디렉토리로 이동..."
-          cd /home/ubuntu/projects/trippia-backend
+          cd /home/ubuntu/projects
 
           echo ".env 초기화..."
           cat > .env <<ENV
