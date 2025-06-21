@@ -1,26 +1,19 @@
 services:
   app:
-    image: openjdk:17-jdk-slim
-    container_name: trp_app
-    volumes:
-      - .:/app
-      - trp_gradle_cache:/root/.gradle
-    working_dir: /app
-    command: ./gradlew bootRun --no-daemon
+    image: sj0320/trippia-app:latest
+    container_name: trp-app
     ports:
       - "8080:8080"
     depends_on:
       - mariadb
       - redis
-    env_file: .env
     environment:
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       SPRING_DATASOURCE_DRIVER-CLASS-NAME: org.mariadb.jdbc.Driver
       SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.MariaDBDialect
-      SPRING_JPA_HIBERNATE_DDL-AUTO: update
-      SPRING_JPA_SHOW-SQL: true
+      SPRING_JPA_HIBERNATE_DDL-AUTO: none
       SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
       SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
     networks:
@@ -61,4 +54,3 @@ networks:
 volumes:
   trp_mariadb_data:
   trp_redis_data:
-  trp_gradle_cache:
