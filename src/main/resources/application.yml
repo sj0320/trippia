@@ -13,7 +13,7 @@ cloud:
 
 spring:
   profiles:
-    active: prod
+    active: dev
 
   web:
     resource:

@@ -7,13 +7,9 @@ services:
     depends_on:
       - mariadb
       - redis
+    env_file: .env
     environment:
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      SPRING_DATASOURCE_DRIVER-CLASS-NAME: org.mariadb.jdbc.Driver
-      SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.MariaDBDialect
-      SPRING_JPA_HIBERNATE_DDL-AUTO: none
+      SPRING_PROFILES_ACTIVE: prod
       SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
       SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
     networks:
