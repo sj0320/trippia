@@ -27,9 +27,9 @@
                 </div>
 
                 <div id="password-container">
-                    <label for="password">비밀번호</label>
-                    <input type="password" id="password" th:field="*{password}" required>
-                    <p class="error-message" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
+                    <label for="newPassword">비밀번호</label>
+                    <input type="password" id="newPassword" th:field="*{newPassword}" required>
+                    <p class="error-message" th:if="${#fields.hasErrors('newPassword')}" th:errors="*{newPassword }"></p>
 
                     <label for="confirmPassword">비밀번호 확인</label>
                     <input type="password" id="confirmPassword" th:field="*{confirmPassword}" required>
