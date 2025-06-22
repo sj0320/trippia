@@ -9,6 +9,8 @@ services:
       - ./conf:/etc/nginx/conf.d
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
+    networks:
+      - backend_network
     depends_on:
       - certbot
 
@@ -17,4 +19,11 @@ services:
     volumes:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
+    networks:
+      - backend_network
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot certonly; sleep 12h & wait $${!}; done;'"
+
+networks:
+  backend_network:
+    external: true
+    name: projects_backend_network
