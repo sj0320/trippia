@@ -130,6 +130,22 @@ class UserServiceTest {
         assertThat(result)
                 .extracting("userId", "nickname", "profileImageUrl")
                 .containsExactly(savedUser.getId(), savedUser.getNickname(), savedUser.getProfileImageUrl());
+    }
+
+    @DisplayName("회원을 삭제한다.")
+    @Test
+    void deleteUser() {
+        // given
+        User user = createUser();
+        User savedUser = userRepository.save(user);
+
+        // when
+        userService.deleteUser(savedUser.getEmail());
+
+        // then
+        User foundUser = userRepository.findByEmail(savedUser.getEmail())
+                .orElse(null);
+        assertThat(foundUser).isNull();
 
     }
 

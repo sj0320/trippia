@@ -1,3 +1,4 @@
+USE trippia;
 -- 테마 데이터
 INSERT INTO theme (theme_id, name) VALUES (1, '힐링·휴양');
 INSERT INTO theme (theme_id, name) VALUES (2, '액티비티');

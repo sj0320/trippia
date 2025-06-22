@@ -321,6 +321,27 @@
             background-color: #ddd;
         }
     </style>
+    <style>
+        .delete-account-btn {
+            background-color: #ff4d4f;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .delete-account-btn:hover {
+            background-color: #d9363e;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .delete-account-btn:active {
+            background-color: #b92d35;
+        }
+    </style>
 </head>
 
 <body>
@@ -355,6 +376,13 @@
 
             <label>한줄소개</label>
             <textarea id="editIntro" placeholder="한줄소개 입력"></textarea><br><br>
+
+            <!-- 회원 탈퇴 버튼 -->
+            <form method="POST" action="/users/delete" onsubmit="return confirm('정말 탈퇴하시겠습니까?')">
+                <input type="hidden" name="_method" value="DELETE">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button type="submit" class="delete-account-btn">회원 탈퇴하기</button>
+            </form>
 
             <div class="modal-actions">
                 <button onclick="submitProfileEdit()">저장</button>

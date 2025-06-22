@@ -37,3 +37,4 @@ out/
 .vscode/
 
 .env
+/test/resources/application-test.yml
