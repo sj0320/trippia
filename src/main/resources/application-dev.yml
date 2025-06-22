@@ -19,6 +19,17 @@ spring:
     init:
       mode: never
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            redirect-uri: http://localhost:8080/login/oauth2/code/google
+          naver:
+            redirect-uri: http://localhost:8080/login/oauth2/code/naver
+          kakao:
+            redirect-uri: http://localhost:8080/login/oauth2/code/kakao
+
 
 logging.level:
   org.hibernate.orm.jdbc.bind: trace
