@@ -11,8 +11,11 @@ import com.trippia.travel.domain.user.UserService;
 import com.trippia.travel.exception.BaseException;
 import com.trippia.travel.exception.user.UserException;
 import com.trippia.travel.mail.MailService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -74,7 +77,13 @@ public class UserController {
         if (bindingResult.hasErrors()) {
             return "user/social-sign-up";
         }
-        userService.saveSocialUser(request.getEmail(), request.getNickname());
+        try{
+            userService.saveSocialUser(request.getEmail(), request.getNickname());
+        } catch (UserException e){
+            bindingResult.rejectValue(e.getFieldName(), e.getCode());
+            return "user/social-sign-up";
+        }
+
         return "redirect:/oauth2/authorization/" + request.getSocialType();
     }
 
@@ -119,5 +128,18 @@ public class UserController {
         userService.updatePassword(email, request.getNewPassword());
         return "redirect:/users/" + user.getId();
     }
+
+    @DeleteMapping("/delete")
+    public String deleteUser(@CurrentUser String email, HttpServletRequest request) {
+        userService.deleteUser(email);
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+
+        SecurityContextHolder.clearContext();
+        return "redirect:/";
+    }
+
 
 }

@@ -110,6 +110,12 @@ public class UserService {
         user.updatePassword(bCryptPasswordEncoder.encode(password));
     }
 
+    @Transactional
+    public void deleteUser(String email) {
+        User user = getUser(email);
+        userRepository.deleteById(user.getId());
+    }
+
     private String generateRandomCode() {
         return String.valueOf(100000 + new Random().nextInt(900000));
     }

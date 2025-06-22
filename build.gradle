@@ -54,6 +54,7 @@ dependencies {
 	testImplementation "org.testcontainers:mariadb:1.19.7"
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testImplementation 'io.github.cdimascio:dotenv-java:3.0.0'
 }
 
 
