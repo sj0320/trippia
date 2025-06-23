@@ -180,7 +180,6 @@ public class DiaryService {
 
     public List<CityThumbnailResponse> getTopCityThumbnails(Pageable pageable) {
         List<CityCountResponse> cities = diaryClient.findTopDiaryCities(pageable);
-        System.out.println(cities);
 
         return cities.stream()
                 .map(city -> {
