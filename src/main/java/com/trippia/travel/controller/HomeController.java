@@ -30,7 +30,6 @@ public class HomeController {
         List<CityThumbnailResponse> thumbnails = diaryService.getTopCityThumbnails(PageRequest.of(0, 10));
         model.addAttribute("thumbnails", thumbnails);
 
-
         // 최신 여행 모집글
         List<CompanionPostListResponse> posts = companionPostService.searchLatestPostList(10);
         model.addAttribute("posts", posts);
