@@ -23,16 +23,16 @@ public class HomeController {
     @GetMapping
     public String home(Model model) {
         // 인기 여행일지 Top 5
-        List<DiaryListResponse> diaries = diaryService.getTopPopularDiaries(PageRequest.of(0, 5));
+        List<DiaryListResponse> diaries = diaryService.getTopPopularDiaries(PageRequest.of(0, 10));
         model.addAttribute("diaries", diaries);
 
         // 가장 많이 작성된 도시의 여행일지의 썸네일들 ...
-        List<CityThumbnailResponse> thumbnails = diaryService.getTopCityThumbnails(PageRequest.of(0, 5));
+        List<CityThumbnailResponse> thumbnails = diaryService.getTopCityThumbnails(PageRequest.of(0, 10));
         model.addAttribute("thumbnails", thumbnails);
 
 
-        // 최순 여행 모집글
-        List<CompanionPostListResponse> posts = companionPostService.searchLatestPostList(5);
+        // 최신 여행 모집글
+        List<CompanionPostListResponse> posts = companionPostService.searchLatestPostList(10);
         model.addAttribute("posts", posts);
 
         return "index";

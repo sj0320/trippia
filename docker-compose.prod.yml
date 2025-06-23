@@ -31,7 +31,7 @@ services:
       - backend_network
     volumes:
       - trp_mariadb_data:/var/lib/mysql
-
+      - /home/ubuntu/projects/sql:/sql:ro
   redis:
     image: redis:latest
     container_name: trp-redis
