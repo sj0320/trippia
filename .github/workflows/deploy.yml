@@ -86,6 +86,10 @@ jobs:
           
           echo "새 컨테이너 실행..."
           docker compose -f docker-compose.prod.yml up -d
+
+          echo "Nginx 재시작..."
+          docker compose -f docker-compose.nginx.yml down
+          docker compose -f docker-compose.nginx.yml up -d
           
           echo "배포 완료"
           EOF
