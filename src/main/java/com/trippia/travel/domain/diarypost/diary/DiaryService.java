@@ -1,28 +1,25 @@
 package com.trippia.travel.domain.diarypost.diary;
 
-import com.trippia.travel.controller.dto.diary.request.CursorData;
 import com.trippia.travel.controller.dto.city.response.CityCountResponse;
 import com.trippia.travel.controller.dto.city.response.CityThumbnailResponse;
-import com.trippia.travel.controller.dto.diary.request.DiarySaveRequest;
-import com.trippia.travel.controller.dto.diary.request.DiarySearchCondition;
-import com.trippia.travel.controller.dto.diary.request.DiaryUpdateRequest;
-import com.trippia.travel.controller.dto.diary.request.UpdateDiaryDto;
+import com.trippia.travel.controller.dto.diary.request.*;
 import com.trippia.travel.controller.dto.diary.response.DiaryDetailResponse;
 import com.trippia.travel.controller.dto.diary.response.DiaryEditFormResponse;
 import com.trippia.travel.controller.dto.diary.response.DiaryListResponse;
 import com.trippia.travel.controller.dto.diary.response.DiarySummaryResponse;
 import com.trippia.travel.controller.dto.place.response.PlaceSummaryResponse;
 import com.trippia.travel.domain.common.TravelCompanion;
+import com.trippia.travel.domain.diarypost.diaryplace.DiaryPlace;
+import com.trippia.travel.domain.diarypost.diaryplace.DiaryPlaceRepository;
+import com.trippia.travel.domain.diarypost.diarytheme.DiaryTheme;
 import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.location.place.Place;
 import com.trippia.travel.domain.location.place.PlaceRepository;
 import com.trippia.travel.domain.location.place.PlaceService;
-import com.trippia.travel.domain.diarypost.diaryplace.DiaryPlace;
-import com.trippia.travel.domain.diarypost.diaryplace.DiaryPlaceRepository;
-import com.trippia.travel.domain.diarypost.diarytheme.DiaryTheme;
 import com.trippia.travel.domain.theme.Theme;
 import com.trippia.travel.domain.user.User;
 import com.trippia.travel.domain.user.UserRepository;
+import com.trippia.travel.exception.city.CityException;
 import com.trippia.travel.exception.diary.DiaryException;
 import com.trippia.travel.exception.user.UserException;
 import com.trippia.travel.file.FileService;
@@ -178,21 +175,23 @@ public class DiaryService {
         return DiaryListResponse.from(diaries);
     }
 
-    public List<CityThumbnailResponse> getTopCityThumbnails(Pageable pageable) {
-        List<CityCountResponse> cities = diaryClient.findTopDiaryCities(pageable);
 
+    public List<CityThumbnailResponse> getTopCityThumbnails(Pageable pageable) {
+        System.out.println("--------------------");
+        List<CityCountResponse> cities = diaryClient.findTopDiaryCities(pageable);
         return cities.stream()
                 .map(city -> {
-                    Diary topDiary = diaryClient.findTopDiaryByCityIdOrderByLikeCountDesc(city.getCityId())
-                            .orElseThrow(() -> new DiaryException("해당 도시에 대한 여행일지가 없습니다."));
+                    City foundCity = diaryClient.findCityById(city.getCityId())
+                            .orElseThrow(() -> new CityException("해당 도시를 찾을 수 없습니다."));
 
                     return new CityThumbnailResponse(
-                            topDiary.getCity().getName(),     // 도시 이름
-                            topDiary.getThumbnail()               // 썸네일 URL
+                            foundCity.getName(),
+                            foundCity.getImageUrl()
                     );
                 })
                 .toList();
     }
+
 
     public List<DiarySummaryResponse> getDiarySummariesByUser(String email){
         User user = getUser(email);
