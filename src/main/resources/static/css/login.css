@@ -11,6 +11,7 @@
     align-items: center;  /* 항목들을 수평으로 중앙 정렬 */
 }
 
+
 /* 입력란 스타일만 */
 input {
     width: 100%;
@@ -50,4 +51,17 @@ input[type="email"],input[type="password"] {
      font-size: 14px;
      margin-bottom: 16px;
      box-sizing: border-box;
+}
+
+.social-login-buttons {
+    display: flex;
+    justify-content: center;  /* 가운데 정렬 */
+    gap: 20px;  /* 버튼 간 간격 조정 */
+    margin-top: 10px;
+}
+
+/* 소셜 로그인 버튼 내 이미지 크기 일괄 조정 */
+.social-login-buttons img {
+    width: 50px; /* 버튼 크기 동일하게 맞추기 */
+    height: auto;
 }

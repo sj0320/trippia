@@ -10,23 +10,14 @@
     <title>TRIPPIA</title>
 </head>
 <body>
+<div style="display: flex; flex-direction: column; min-height: 100vh;">
+    <div th:replace="~{fragments/header::header}"></div>
 
+    <!-- 메인 콘텐츠가 늘어나도록 설정 -->
+    <main layout:fragment="content" style="flex: 1;"></main>
 
-<div th:replace="~{fragments/header::header}"></div>
-
-<!-- 이 부분은 자식 템플릿이 fragment로 채울 부분 -->
-<div layout:fragment="content"></div>
-
-<div th:replace="~{fragments/footer::footer}"></div>
-
-<!--<div id='wrapper'>-->
-<!--    <div>-->
-<!--        <div th:replace="~{fragments/header::header}"></div>-->
-<!--        <div layout:fragment="content" class="content"></div>-->
-<!--    </div>-->
-<!--</div>-->
-
-<!--<div th:replace="~{fragments/footer::footer}"></div>-->
-
+    <!-- footer는 아래에 -->
+    <div th:replace="~{fragments/footer::footer}"></div>
+</div>
 </body>
 </html>
