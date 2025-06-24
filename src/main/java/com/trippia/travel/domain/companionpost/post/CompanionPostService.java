@@ -105,7 +105,6 @@ public class CompanionPostService {
 
     public List<CompanionPostListResponse> searchLatestPostList(int size) {
         Pageable pageable = PageRequest.of(0, size, Sort.Direction.DESC, "createdAt");
-        // List<CompanionPost> posts = companionPostRepository.findAllWithComments(pageable);
         Page<CompanionPost> posts = companionPostRepository.findAll(pageable);
 
         return CompanionPostListResponse.from(posts.getContent());
