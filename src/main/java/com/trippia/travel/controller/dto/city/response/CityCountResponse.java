@@ -8,7 +8,6 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class CityCountResponse {
-
     private Long cityId;
     private Long count;
 }
