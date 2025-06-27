@@ -1,5 +1,6 @@
 package com.trippia.travel.domain.diarypost.diary;
 
+import com.trippia.travel.controller.dto.city.response.CityCountResponse;
 import com.trippia.travel.controller.dto.city.response.CityThumbnailResponse;
 import com.trippia.travel.controller.dto.diary.request.*;
 import com.trippia.travel.controller.dto.diary.response.*;
@@ -17,6 +18,7 @@ import com.trippia.travel.domain.user.User;
 import com.trippia.travel.domain.user.UserRepository;
 import com.trippia.travel.event.diary.model.DiaryDeletedEvent;
 import com.trippia.travel.event.diary.model.DiaryUpdatedEvent;
+import com.trippia.travel.exception.city.CityException;
 import com.trippia.travel.exception.diary.DiaryException;
 import com.trippia.travel.exception.user.UserException;
 import com.trippia.travel.file.FileService;
@@ -71,10 +73,10 @@ public class DiaryService {
 
         // 저장할 placeId가 Place 테이블에 이미 존재하면 저장하지 않음.
         List<String> placeIds = request.getPlaceIds();
-        for(String placeId : placeIds){
+        for (String placeId : placeIds) {
             PlaceSummaryResponse placeSummary = placeService.getPlaceSummary(placeId);
             Place place = placeSummary.toEntity();
-            if(!placeRepository.existsById(placeId)){
+            if (!placeRepository.existsById(placeId)) {
                 placeRepository.save(place);
             }
             DiaryPlace diaryPlace = DiaryPlace.builder()
@@ -107,10 +109,10 @@ public class DiaryService {
 
         // 저장할 placeId가 Place 테이블에 이미 존재하면 저장하지 않음.
         List<String> placeIds = request.getPlaceIds();
-        for(String placeId : placeIds){
+        for (String placeId : placeIds) {
             PlaceSummaryResponse placeSummary = placeService.getPlaceSummary(placeId);
             Place place = placeSummary.toEntity();
-            if(!placeRepository.existsById(placeId)){
+            if (!placeRepository.existsById(placeId)) {
                 placeRepository.save(place);
             }
             DiaryPlace diaryPlace = DiaryPlace.builder()
@@ -123,7 +125,7 @@ public class DiaryService {
     }
 
     public Slice<DiaryListResponse> searchDiaryList(DiarySearchCondition condition, CursorData cursorData, Pageable pageable) {
-        Slice<Diary> diaries = diaryClient.searchDiariesWithConditions(condition, cursorData ,pageable);
+        Slice<Diary> diaries = diaryClient.searchDiariesWithConditions(condition, cursorData, pageable);
         List<DiaryListResponse> content = DiaryListResponse.from(diaries.getContent());
         return new SliceImpl<>(content, pageable, diaries.hasNext());
     }
@@ -177,12 +179,26 @@ public class DiaryService {
     }
 
 
+    //    public List<CityThumbnailResponse> getTopCityThumbnails(Pageable pageable) {
+//        return diaryClient.findTopCityThumbnails(pageable);
+//    }
     public List<CityThumbnailResponse> getTopCityThumbnails(Pageable pageable) {
-        return diaryClient.findTopCityThumbnails(pageable);
+        List<CityCountResponse> cities = diaryClient.findTopDiaryCities(pageable);
+        return cities.stream()
+                .map(city -> {
+                    City foundCity = diaryClient.findCityById(city.getCityId())
+                            .orElseThrow(() -> new CityException("해당 도시를 찾을 수 없습니다."));
+
+                    return new CityThumbnailResponse(
+                            foundCity.getName(),
+                            foundCity.getImageUrl()
+                    );
+                })
+                .toList();
     }
 
 
-    public List<DiarySummaryResponse> getDiarySummariesByUser(String email){
+    public List<DiarySummaryResponse> getDiarySummariesByUser(String email) {
         User user = getUser(email);
         List<Diary> diaries = diaryClient.findAllDiaryByUserId(user.getId());
 
@@ -190,7 +206,6 @@ public class DiaryService {
                 .map(DiarySummaryResponse::from)
                 .toList();
     }
-
 
 
     private User getUser(String email) {
