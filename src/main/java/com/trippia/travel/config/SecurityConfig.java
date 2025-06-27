@@ -41,6 +41,7 @@ public class SecurityConfig {
                         .requestMatchers( "/users/*","/users/password/new","/api/users/check-email",
                                 "/api/email/**", "/api/users/reset-password").permitAll()
                         .requestMatchers( "/travel/places/*").permitAll()
+                        .requestMatchers("/test/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 );
