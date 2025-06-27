@@ -33,24 +33,47 @@ public class DiaryRankingCacheService {
     private static final int MAX_RANKING_SIZE = 10;
     private static final Duration DIARY_CACHE_TTL = Duration.ofDays(1); // 1일 TTL
 
+    //    public List<DiaryThumbnailResponse> getTopDiaries() {
+//        Set<String> diaryKeys = redisTemplate.opsForZSet().reverseRange(TOP_DIARIES_KEY, 0, -1);
+//        if (diaryKeys == null || diaryKeys.isEmpty()) {
+//            return List.of();
+//        }
+//
+//        List<DiaryThumbnailResponse> result = new ArrayList<>();
+//        for (String diaryKey : diaryKeys) {
+//            String json = redisTemplate.opsForValue().get(diaryKey);
+//            if (json != null) {
+//                try {
+//                    DiaryThumbnailResponse response = objectMapper.readValue(json, DiaryThumbnailResponse.class);
+//                    result.add(response);
+//                } catch (JsonProcessingException e) {
+//                    log.warn("캐시 역직렬화 실패: {}", diaryKey, e);
+//                }
+//            }
+//        }
+//        return result;
+//    }
     public List<DiaryThumbnailResponse> getTopDiaries() {
         Set<String> diaryKeys = redisTemplate.opsForZSet().reverseRange(TOP_DIARIES_KEY, 0, -1);
         if (diaryKeys == null || diaryKeys.isEmpty()) {
             return List.of();
         }
 
+        List<String> jsonList = redisTemplate.opsForValue().multiGet(new ArrayList<>(diaryKeys));
         List<DiaryThumbnailResponse> result = new ArrayList<>();
-        for (String diaryKey : diaryKeys) {
-            String json = redisTemplate.opsForValue().get(diaryKey);
-            if (json != null) {
-                try {
-                    DiaryThumbnailResponse response = objectMapper.readValue(json, DiaryThumbnailResponse.class);
-                    result.add(response);
-                } catch (JsonProcessingException e) {
-                    log.warn("캐시 역직렬화 실패: {}", diaryKey, e);
+
+        if (jsonList != null) {
+            for (String json : jsonList) {
+                if (json != null) {
+                    try {
+                        result.add(objectMapper.readValue(json, DiaryThumbnailResponse.class));
+                    } catch (JsonProcessingException e) {
+                        log.warn("역직렬화 실패", e);
+                    }
                 }
             }
         }
+
         return result;
     }
 
