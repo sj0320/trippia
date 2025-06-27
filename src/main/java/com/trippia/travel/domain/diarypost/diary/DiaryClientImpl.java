@@ -1,6 +1,6 @@
 package com.trippia.travel.domain.diarypost.diary;
 
-import com.trippia.travel.controller.dto.city.response.CityThumbnailResponse;
+import com.trippia.travel.controller.dto.city.response.CityCountResponse;
 import com.trippia.travel.controller.dto.diary.request.CursorData;
 import com.trippia.travel.controller.dto.diary.request.DiarySearchCondition;
 import com.trippia.travel.domain.diarypost.diarytheme.DiaryTheme;
@@ -71,20 +71,20 @@ public class DiaryClientImpl implements DiaryClient {
         return diaryRepository.searchDiariesWithConditions(condition, cursorData, pageable);
     }
 
-//    @Override
-//    public List<CityCountResponse> findTopDiaryCities(Pageable pageable) {
-//        return cityRepository.findTopDiaryCities(pageable);
-//    }
+    @Override
+    public List<CityCountResponse> findTopDiaryCities(Pageable pageable) {
+        return cityRepository.findTopDiaryCities(pageable);
+    }
 
     @Override
     public List<Diary> findTopDiaries(Pageable pageable) {
         return diaryRepository.findTopDiaries(pageable);
     }
 
-    @Override
-    public List<CityThumbnailResponse> findTopCityThumbnails(Pageable pageable){
-        return cityRepository.findTopCityThumbnails(pageable);
-    }
+//    @Override
+//    public List<CityThumbnailResponse> findTopCityThumbnails(Pageable pageable){
+//        return cityRepository.findTopCityThumbnails(pageable);
+//    }
 
     @Override
     public List<Diary> findAllDiaryByUserId(Long userId) {
