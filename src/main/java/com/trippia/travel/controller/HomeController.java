@@ -1,10 +1,11 @@
 package com.trippia.travel.controller;
 
 import com.trippia.travel.controller.dto.city.response.CityThumbnailResponse;
-import com.trippia.travel.controller.dto.diary.response.DiaryListResponse;
+import com.trippia.travel.controller.dto.diary.response.DiaryThumbnailResponse;
 import com.trippia.travel.controller.dto.post.response.CompanionPostListResponse;
 import com.trippia.travel.domain.companionpost.post.CompanionPostService;
 import com.trippia.travel.domain.diarypost.diary.DiaryService;
+import com.trippia.travel.domain.diarypost.diary.cache.DiaryRankingCacheService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
@@ -19,11 +20,13 @@ public class HomeController {
 
     private final DiaryService diaryService;
     private final CompanionPostService companionPostService;
+    private final DiaryRankingCacheService diaryRankingCacheService;
 
     @GetMapping
     public String home(Model model) {
         // 인기 여행일지 Top 5
-        List<DiaryListResponse> diaries = diaryService.getTopPopularDiaries(PageRequest.of(0, 10));
+//        List<DiaryThumbnailResponse> diaries = diaryService.getTopPopularDiaries(PageRequest.of(0, 10));
+        List<DiaryThumbnailResponse> diaries = diaryRankingCacheService.getTopDiaries();
         model.addAttribute("diaries", diaries);
 
         // 가장 많이 작성된 도시의 여행일지의 썸네일들 ...

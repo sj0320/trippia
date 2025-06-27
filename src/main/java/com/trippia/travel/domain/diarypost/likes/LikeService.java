@@ -7,7 +7,9 @@ import com.trippia.travel.domain.diarypost.diary.Diary;
 import com.trippia.travel.domain.diarypost.diary.DiaryRepository;
 import com.trippia.travel.domain.user.User;
 import com.trippia.travel.domain.user.UserRepository;
+import com.trippia.travel.event.diary.model.DiaryLikedEvent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,15 +24,20 @@ public class LikeService {
     private final UserRepository userRepository;
     private final DiaryRepository diaryRepository;
     private final NotificationService notificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public int likeDiary(String email, Long diaryId) {
         User user = getUser(email);
         Diary diary = getDiary(diaryId);
+
         if (!likeRepository.existsByUserAndDiary(user, diary)) {
             Likes likes = getDiaryUserLikes(diary, user);
             likeRepository.save(likes);
-            if(!user.equals(diary.getUser())) {
+
+            int newLikeCount = diary.addLike();
+
+            if (!user.equals(diary.getUser())) {
                 LikeNotificationDto notification = LikeNotificationDto.builder()
                         .user(diary.getUser())
                         .likerNickname(user.getNickname())
@@ -38,7 +45,8 @@ public class LikeService {
                         .build();
                 notificationService.sendNotification(notification);
             }
-            return diary.addLike();
+            eventPublisher.publishEvent(new DiaryLikedEvent(diaryId, newLikeCount));
+            return newLikeCount;
         }
 
         return diary.getLikeCount();
