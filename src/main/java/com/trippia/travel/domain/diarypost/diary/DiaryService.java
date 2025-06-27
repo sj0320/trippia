@@ -3,10 +3,7 @@ package com.trippia.travel.domain.diarypost.diary;
 import com.trippia.travel.controller.dto.city.response.CityCountResponse;
 import com.trippia.travel.controller.dto.city.response.CityThumbnailResponse;
 import com.trippia.travel.controller.dto.diary.request.*;
-import com.trippia.travel.controller.dto.diary.response.DiaryDetailResponse;
-import com.trippia.travel.controller.dto.diary.response.DiaryEditFormResponse;
-import com.trippia.travel.controller.dto.diary.response.DiaryListResponse;
-import com.trippia.travel.controller.dto.diary.response.DiarySummaryResponse;
+import com.trippia.travel.controller.dto.diary.response.*;
 import com.trippia.travel.controller.dto.place.response.PlaceSummaryResponse;
 import com.trippia.travel.domain.common.TravelCompanion;
 import com.trippia.travel.domain.diarypost.diaryplace.DiaryPlace;
@@ -19,12 +16,15 @@ import com.trippia.travel.domain.location.place.PlaceService;
 import com.trippia.travel.domain.theme.Theme;
 import com.trippia.travel.domain.user.User;
 import com.trippia.travel.domain.user.UserRepository;
+import com.trippia.travel.event.diary.model.DiaryDeletedEvent;
+import com.trippia.travel.event.diary.model.DiaryUpdatedEvent;
 import com.trippia.travel.exception.city.CityException;
 import com.trippia.travel.exception.diary.DiaryException;
 import com.trippia.travel.exception.user.UserException;
 import com.trippia.travel.file.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -55,6 +55,7 @@ public class DiaryService {
     private final FileService fileService;
     private final PlaceService placeService;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ApplicationEventPublisher eventPublisher;
 
     private static final String VIEW_DIARY_REDIS_KEY = "view:diary:%s:%s";
 
@@ -120,6 +121,7 @@ public class DiaryService {
                     .build();
             diaryPlaceRepository.save(diaryPlace);
         }
+        eventPublisher.publishEvent(new DiaryUpdatedEvent(diaryId, diary.getTitle(), diary.getThumbnail()));
     }
 
     public Slice<DiaryListResponse> searchDiaryList(DiarySearchCondition condition, CursorData cursorData, Pageable pageable) {
@@ -168,16 +170,17 @@ public class DiaryService {
 
         diaryClient.deleteDiaryThemeByDiaryId(diaryId);
         diaryClient.deleteDiaryById(diaryId);
+        eventPublisher.publishEvent(new DiaryDeletedEvent(diaryId));
     }
 
-    public List<DiaryListResponse> getTopPopularDiaries(Pageable pageable) {
+    public List<DiaryThumbnailResponse> getTopPopularDiaries(Pageable pageable) {
         List<Diary> diaries = diaryClient.findTopDiaries(pageable);
-        return DiaryListResponse.from(diaries);
+        return DiaryThumbnailResponse.from(diaries);
     }
 
 
     public List<CityThumbnailResponse> getTopCityThumbnails(Pageable pageable) {
-        System.out.println("--------------------");
+        System.out.println("---------시작-----------");
         List<CityCountResponse> cities = diaryClient.findTopDiaryCities(pageable);
         return cities.stream()
                 .map(city -> {
