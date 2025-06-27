@@ -45,6 +45,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 );
+        http.csrf(csrf -> csrf.disable());
 
         http
                 .formLogin(auth -> auth
