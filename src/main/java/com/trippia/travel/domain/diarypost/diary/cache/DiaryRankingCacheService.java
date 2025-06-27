@@ -8,17 +8,12 @@ import com.trippia.travel.domain.diarypost.diary.DiaryRepository;
 import com.trippia.travel.exception.diary.DiaryException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.msgpack.core.MessageBufferPacker;
-import org.msgpack.core.MessagePack;
-import org.msgpack.core.MessageUnpacker;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +25,6 @@ import java.util.Set;
 @Slf4j
 public class DiaryRankingCacheService {
 
-    private final RedisTemplate<String, byte[]> byteRedisTemplate;
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
     private final DiaryRepository diaryRepository;
@@ -39,55 +33,21 @@ public class DiaryRankingCacheService {
     private static final int MAX_RANKING_SIZE = 10;
     private static final Duration DIARY_CACHE_TTL = Duration.ofDays(1); // 1일 TTL
 
-//    public List<DiaryThumbnailResponse> getTopDiaries() {
-//        Set<String> diaryKeys = redisTemplate.opsForZSet().reverseRange(TOP_DIARIES_KEY, 0, -1);
-//        if (diaryKeys == null || diaryKeys.isEmpty()) {
-//            return List.of();
-//        }
-//
-//        List<String> jsonList = redisTemplate.opsForValue().multiGet(new ArrayList<>(diaryKeys));
-//        List<DiaryThumbnailResponse> result = new ArrayList<>();
-//
-//        if (jsonList != null) {
-//            for (String json : jsonList) {
-//                if (json != null) {
-//                    try {
-//                        result.add(objectMapper.readValue(json, DiaryThumbnailResponse.class));
-//                    } catch (JsonProcessingException e) {
-//                        log.warn("역직렬화 실패", e);
-//                    }
-//                }
-//            }
-//        }
-//
-//        return result;
-//    }
-
     public List<DiaryThumbnailResponse> getTopDiaries() {
         Set<String> diaryKeys = redisTemplate.opsForZSet().reverseRange(TOP_DIARIES_KEY, 0, -1);
         if (diaryKeys == null || diaryKeys.isEmpty()) {
             return List.of();
         }
 
-        List<byte[]> packedList = byteRedisTemplate.opsForValue().multiGet(new ArrayList<>(diaryKeys));
+        List<String> jsonList = redisTemplate.opsForValue().multiGet(new ArrayList<>(diaryKeys));
         List<DiaryThumbnailResponse> result = new ArrayList<>();
 
-        if (packedList != null) {
-            for (byte[] packed : packedList) {
-                if (packed != null) {
+        if (jsonList != null) {
+            for (String json : jsonList) {
+                if (json != null) {
                     try {
-                        MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(packed);
-                        Long id = unpacker.unpackLong();
-                        String title = unpacker.unpackString();
-                        String thumbnail = unpacker.unpackString();
-                        unpacker.close();
-
-                        result.add(DiaryThumbnailResponse.builder()
-                                .id(id)
-                                .title(title)
-                                .thumbnail(thumbnail)
-                                .build());
-                    } catch (IOException e) {
+                        result.add(objectMapper.readValue(json, DiaryThumbnailResponse.class));
+                    } catch (JsonProcessingException e) {
                         log.warn("역직렬화 실패", e);
                     }
                 }
@@ -96,6 +56,7 @@ public class DiaryRankingCacheService {
 
         return result;
     }
+
 
     public void updateRankingOnLike(Long diaryId, int likeCount) {
         String diaryKey = "diary:" + diaryId;
@@ -157,44 +118,15 @@ public class DiaryRankingCacheService {
         }
     }
 
-//    @Scheduled(cron = "0 0 3 * * *") // 매일 새벽 3시
-//    public void refreshTopDiariesCache() throws JsonProcessingException {
-//        redisTemplate.delete("top_diaries");
-//
-//        List<Diary> topDiaries = diaryRepository.findTopDiaries(PageRequest.of(0, 10));
-//        for (Diary diary : topDiaries) {
-//            String key = "diary:" + diary.getId();
-//            String value = objectMapper.writeValueAsString(DiaryThumbnailResponse.from(diary));
-//            redisTemplate.opsForValue().set(key, value, DIARY_CACHE_TTL);
-//            redisTemplate.opsForZSet().add("top_diaries", key, diary.getLikeCount());
-//        }
-//    }
-
     @Scheduled(cron = "0 0 3 * * *") // 매일 새벽 3시
-    public void refreshTopDiariesCache() throws IOException {
-        // 정렬된 집합 삭제
+    public void refreshTopDiariesCache() throws JsonProcessingException {
         redisTemplate.delete("top_diaries");
 
         List<Diary> topDiaries = diaryRepository.findTopDiaries(PageRequest.of(0, 10));
         for (Diary diary : topDiaries) {
             String key = "diary:" + diary.getId();
-
-            // DiaryThumbnailResponse 객체 생성
-            DiaryThumbnailResponse dto = DiaryThumbnailResponse.from(diary);
-
-            // MessagePack 직렬화
-            MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
-            packer.packLong(dto.getId());
-            packer.packString(dto.getTitle());
-            packer.packString(dto.getThumbnail());
-            packer.close();
-
-            byte[] value = packer.toByteArray();
-
-            // 바이너리 RedisTemplate로 저장
-            byteRedisTemplate.opsForValue().set(key, value, DIARY_CACHE_TTL);
-
-            // 정렬된 집합에는 문자열 키만 저장
+            String value = objectMapper.writeValueAsString(DiaryThumbnailResponse.from(diary));
+            redisTemplate.opsForValue().set(key, value, DIARY_CACHE_TTL);
             redisTemplate.opsForZSet().add("top_diaries", key, diary.getLikeCount());
         }
     }
