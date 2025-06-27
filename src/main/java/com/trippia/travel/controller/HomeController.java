@@ -25,8 +25,8 @@ public class HomeController {
     @GetMapping
     public String home(Model model) {
         // 인기 여행일지 Top 5
-        List<DiaryThumbnailResponse> diaries = diaryService.getTopPopularDiaries(PageRequest.of(0, 10));
-        // List<DiaryThumbnailResponse> diaries = diaryRankingCacheService.getTopDiaries();
+        // List<DiaryThumbnailResponse> diaries = diaryService.getTopPopularDiaries(PageRequest.of(0, 10));
+        List<DiaryThumbnailResponse> diaries = diaryRankingCacheService.getTopDiaries();
         model.addAttribute("diaries", diaries);
 
         // 가장 많이 작성된 도시의 여행일지의 썸네일들 ...
