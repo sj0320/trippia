@@ -49,6 +49,7 @@ public class SecurityConfig {
                 .ignoringRequestMatchers("/test/**")
         );
 
+
         http
                 .formLogin(auth -> auth
                         .loginPage("/users/login")
