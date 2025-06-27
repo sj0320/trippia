@@ -2,21 +2,21 @@ package com.trippia.travel.domain.diarypost.diary;
 
 import com.trippia.travel.controller.dto.city.response.CityThumbnailResponse;
 import com.trippia.travel.controller.dto.diary.request.DiarySaveRequest;
-import com.trippia.travel.controller.dto.diary.response.DiaryListResponse;
 import com.trippia.travel.controller.dto.diary.response.DiarySummaryResponse;
+import com.trippia.travel.controller.dto.diary.response.DiaryThumbnailResponse;
 import com.trippia.travel.domain.common.CityType;
 import com.trippia.travel.domain.common.LoginType;
 import com.trippia.travel.domain.common.Role;
 import com.trippia.travel.domain.common.TravelCompanion;
+import com.trippia.travel.domain.diarypost.diaryplace.DiaryPlace;
+import com.trippia.travel.domain.diarypost.diaryplace.DiaryPlaceRepository;
+import com.trippia.travel.domain.diarypost.diarytheme.DiaryThemeRepository;
 import com.trippia.travel.domain.location.city.City;
 import com.trippia.travel.domain.location.city.CityRepository;
 import com.trippia.travel.domain.location.country.Country;
 import com.trippia.travel.domain.location.country.CountryRepository;
 import com.trippia.travel.domain.location.place.Place;
 import com.trippia.travel.domain.location.place.PlaceRepository;
-import com.trippia.travel.domain.diarypost.diaryplace.DiaryPlace;
-import com.trippia.travel.domain.diarypost.diaryplace.DiaryPlaceRepository;
-import com.trippia.travel.domain.diarypost.diarytheme.DiaryThemeRepository;
 import com.trippia.travel.domain.theme.Theme;
 import com.trippia.travel.domain.theme.ThemeRepository;
 import com.trippia.travel.domain.user.User;
@@ -41,7 +41,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.trippia.travel.domain.common.CityType.*;
-import static com.trippia.travel.domain.common.CityType.JAPAN;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
@@ -243,19 +242,19 @@ class DiaryServiceTest {
         Diary diary3 = createDiary(user, seoul, "title1", 20);
         Diary diary4 = createDiary(user, seoul, "title1", 60);
         // when
-        List<DiaryListResponse> diaries = diaryService.getTopPopularDiaries(PageRequest.of(0, 3));
+        List<DiaryThumbnailResponse> diaries = diaryService.getTopPopularDiaries(PageRequest.of(0, 3));
 
         // then
         assertThat(diaries).hasSize(3)
-                .extracting("id", "title", "likeCount")
+                .extracting("id", "title")
                 .containsExactly(
-                        tuple(diary4.getId(), diary4.getTitle(), 60),
-                        tuple(diary1.getId(), diary1.getTitle(), 50),
-                        tuple(diary3.getId(), diary3.getTitle(), 20)
+                        tuple(diary4.getId(), diary4.getTitle()),
+                        tuple(diary1.getId(), diary1.getTitle()),
+                        tuple(diary3.getId(), diary3.getTitle())
                 );
     }
 
-    @DisplayName("여행일지에서 가장 많이 사용된 도시들 중에서, 각 도시들의 썸네일을 가장 많이 좋아요를 받은 여행일지의 썸네일로 가져온다.")
+    @DisplayName("여행일지에서 가장 많이 사용된 도시를 찾아 썸네일을 반환한다.")
     @Test
     void getTopCityThumbnails() {
         // given
@@ -300,9 +299,9 @@ class DiaryServiceTest {
         assertThat(result).hasSize(3)
                 .extracting("cityName", "imageUrl")
                 .containsExactly(
-                        tuple("오사카", jDiary3.getThumbnail()),
-                        tuple("서울", kDiary2.getThumbnail()),
-                        tuple("베이징", cDiary2.getThumbnail())
+                        tuple("오사카", osaka.getImageUrl()),
+                        tuple("서울", seoul.getImageUrl()),
+                        tuple("베이징", beijing.getImageUrl())
                 );
     }
 
