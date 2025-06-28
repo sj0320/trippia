@@ -2,6 +2,7 @@ package com.trippia.travel.domain.diarypost.diary;
 
 
 import com.trippia.travel.controller.dto.city.response.CityCountResponse;
+import com.trippia.travel.controller.dto.city.response.CityThumbnailResponse;
 import com.trippia.travel.controller.dto.diary.request.CursorData;
 import com.trippia.travel.controller.dto.diary.request.DiarySearchCondition;
 import com.trippia.travel.domain.diarypost.diarytheme.DiaryTheme;
@@ -31,7 +32,7 @@ public interface DiaryClient {
 
     List<CityCountResponse> findTopDiaryCities(Pageable pageable);
 
-//    List<CityThumbnailResponse> findTopCityThumbnails(Pageable pageable);
+    List<CityThumbnailResponse> findTopCityThumbnails(Pageable pageable);
 
     List<Diary> findTopDiaries(Pageable pageable);
 

@@ -1,6 +1,5 @@
 package com.trippia.travel.domain.diarypost.diary;
 
-import com.trippia.travel.controller.dto.city.response.CityCountResponse;
 import com.trippia.travel.controller.dto.city.response.CityThumbnailResponse;
 import com.trippia.travel.controller.dto.diary.request.*;
 import com.trippia.travel.controller.dto.diary.response.*;
@@ -18,7 +17,6 @@ import com.trippia.travel.domain.user.User;
 import com.trippia.travel.domain.user.UserRepository;
 import com.trippia.travel.event.diary.model.DiaryDeletedEvent;
 import com.trippia.travel.event.diary.model.DiaryUpdatedEvent;
-import com.trippia.travel.exception.city.CityException;
 import com.trippia.travel.exception.diary.DiaryException;
 import com.trippia.travel.exception.user.UserException;
 import com.trippia.travel.file.FileService;
@@ -179,23 +177,23 @@ public class DiaryService {
     }
 
 
-    //    public List<CityThumbnailResponse> getTopCityThumbnails(Pageable pageable) {
-//        return diaryClient.findTopCityThumbnails(pageable);
-//    }
     public List<CityThumbnailResponse> getTopCityThumbnails(Pageable pageable) {
-        List<CityCountResponse> cities = diaryClient.findTopDiaryCities(pageable);
-        return cities.stream()
-                .map(city -> {
-                    City foundCity = diaryClient.findCityById(city.getCityId())
-                            .orElseThrow(() -> new CityException("해당 도시를 찾을 수 없습니다."));
-
-                    return new CityThumbnailResponse(
-                            foundCity.getName(),
-                            foundCity.getImageUrl()
-                    );
-                })
-                .toList();
+        return diaryClient.findTopCityThumbnails(pageable);
     }
+//    public List<CityThumbnailResponse> getTopCityThumbnails(Pageable pageable) {
+//        List<CityCountResponse> cities = diaryClient.findTopDiaryCities(pageable);
+//        return cities.stream()
+//                .map(city -> {
+//                    City foundCity = diaryClient.findCityById(city.getCityId())
+//                            .orElseThrow(() -> new CityException("해당 도시를 찾을 수 없습니다."));
+//
+//                    return new CityThumbnailResponse(
+//                            foundCity.getName(),
+//                            foundCity.getImageUrl()
+//                    );
+//                })
+//                .toList();
+//    }
 
 
     public List<DiarySummaryResponse> getDiarySummariesByUser(String email) {
