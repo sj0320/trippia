@@ -32,11 +32,6 @@ public class HomeController {
         List<DiaryThumbnailResponse> diaries = diaryRankingCacheService.getTopDiaries();
         model.addAttribute("diaries", diaries);
         stopWatch.stop();
-      
-//        List<DiaryThumbnailResponse> diaries = diaryService.getTopPopularDiaries(PageRequest.of(0, 10));
-        List<DiaryThumbnailResponse> diaries = diaryRankingCacheService.getTopDiaries();
-        model.addAttribute("diaries", diaries);
-        stopWatch.stop();
 
 //        stopWatch.start("TopCityThumbnails");
 //        List<CityThumbnailResponse> thumbnails = diaryService.getTopCityThumbnails(PageRequest.of(0, 10));
