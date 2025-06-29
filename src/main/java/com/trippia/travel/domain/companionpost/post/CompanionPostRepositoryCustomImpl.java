@@ -45,7 +45,7 @@ public class CompanionPostRepositoryCustomImpl implements CompanionPostRepositor
                 .selectFrom(post)
                 .distinct()
                 .leftJoin(post.city, city).fetchJoin()
-                .leftJoin(post.comments, comment).fetchJoin()
+                .leftJoin(post.comments, comment)
                 .where(
                         containsKeyword(condition.getKeyword(), post),
                         eqCityName(condition.getCityName(), city),
