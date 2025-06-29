@@ -1,21 +1,22 @@
 package com.trippia.travel.controller;
 
-import com.trippia.travel.controller.dto.city.response.CityThumbnailResponse;
 import com.trippia.travel.controller.dto.diary.response.DiaryThumbnailResponse;
 import com.trippia.travel.controller.dto.post.response.CompanionPostListResponse;
 import com.trippia.travel.domain.companionpost.post.CompanionPostService;
 import com.trippia.travel.domain.diarypost.diary.DiaryService;
 import com.trippia.travel.domain.diarypost.diary.cache.DiaryRankingCacheService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class HomeController {
 
     private final DiaryService diaryService;
@@ -24,21 +25,26 @@ public class HomeController {
 
     @GetMapping
     public String home(Model model) {
-        // 인기 여행일지 Top 5
-        List<DiaryThumbnailResponse> diaries = diaryService.getTopPopularDiaries(PageRequest.of(0, 10));
-        // List<DiaryThumbnailResponse> diaries = diaryRankingCacheService.getTopDiaries();
+        StopWatch stopWatch = new StopWatch();
 
+        stopWatch.start("TopDiaries");
+//        List<DiaryThumbnailResponse> diaries = diaryService.getTopPopularDiaries(PageRequest.of(0, 10));
+        List<DiaryThumbnailResponse> diaries = diaryRankingCacheService.getTopDiaries();
         model.addAttribute("diaries", diaries);
+        stopWatch.stop();
 
-        // 가장 많이 작성된 도시의 여행일지의 썸네일들 ...
-        List<CityThumbnailResponse> thumbnails = diaryService.getTopCityThumbnails(PageRequest.of(0, 10));
-        model.addAttribute("thumbnails", thumbnails);
+//        stopWatch.start("TopCityThumbnails");
+//        List<CityThumbnailResponse> thumbnails = diaryService.getTopCityThumbnails(PageRequest.of(0, 10));
+//        model.addAttribute("thumbnails", thumbnails);
+//        stopWatch.stop();
 
-        // 최신 여행 모집글
+        stopWatch.start("LatestPosts");
         List<CompanionPostListResponse> posts = companionPostService.searchLatestPostList(10);
         model.addAttribute("posts", posts);
+        stopWatch.stop();
+
+//        log.info("📊 성능 측정 결과\n{}", stopWatch.prettyPrint());
 
         return "index";
     }
-
 }
