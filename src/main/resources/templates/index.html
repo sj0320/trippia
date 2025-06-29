@@ -217,24 +217,24 @@
     </div>
 
     <!--자주 기록된 도시들 -->
-    <div class="section-wrapper">
-        <h2 class="section-title">여행자들이 자주 기록한 도시들</h2>
-        <div class="slider-container">
-            <button class="arrow-btn prev-btn" data-slider-id="slider2" data-direction="-1">‹</button>
-            <div class="slider-wrapper" id="slider2">
-                <a th:each="thumb : ${thumbnails}"
-                   th:href="${thumb.linkUrl}"
-                   th:style="'background-image: url(' + ${thumb.imageUrl} + ')'"
-                   class="thumbnail">
-                    <div class="overlay-text" th:text="${thumb.cityName}"></div>
-                </a>
-            </div>
-            <button class="arrow-btn next-btn" data-slider-id="slider2" data-direction="1">›</button>
-        </div>
-        <div class="more-button-wrapper">
-            <a href="/diary/list" class="more-button">더 많은 여행일지 보기 →</a>
-        </div>
-    </div>
+<!--    <div class="section-wrapper">-->
+<!--        <h2 class="section-title">여행자들이 자주 기록한 도시들</h2>-->
+<!--        <div class="slider-container">-->
+<!--            <button class="arrow-btn prev-btn" data-slider-id="slider2" data-direction="-1">‹</button>-->
+<!--            <div class="slider-wrapper" id="slider2">-->
+<!--                <a th:each="thumb : ${thumbnails}"-->
+<!--                   th:href="${thumb.linkUrl}"-->
+<!--                   th:style="'background-image: url(' + ${thumb.imageUrl} + ')'"-->
+<!--                   class="thumbnail">-->
+<!--                    <div class="overlay-text" th:text="${thumb.cityName}"></div>-->
+<!--                </a>-->
+<!--            </div>-->
+<!--            <button class="arrow-btn next-btn" data-slider-id="slider2" data-direction="1">›</button>-->
+<!--        </div>-->
+<!--        <div class="more-button-wrapper">-->
+<!--            <a href="/diary/list" class="more-button">더 많은 여행일지 보기 →</a>-->
+<!--        </div>-->
+<!--    </div>-->
 
     <!-- ✈️ 여행자 모집 섹션 -->
     <div class="section-wrapper">
