@@ -26,7 +26,7 @@ public class HomeController {
     public String home(Model model) {
         // 인기 여행일지 Top 5
         List<DiaryThumbnailResponse> diaries = diaryService.getTopPopularDiaries(PageRequest.of(0, 10));
-//        List<DiaryThumbnailResponse> diaries = diaryRankingCacheService.getTopDiaries();
+        // List<DiaryThumbnailResponse> diaries = diaryRankingCacheService.getTopDiaries();
 
         model.addAttribute("diaries", diaries);
 
