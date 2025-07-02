@@ -18,7 +18,7 @@ spring:
   jpa:
     properties:
       hibernate:
-        default_batch_fetch_size: 50
+        default_batch_fetch_size: 10
 
   web:
     resource:
