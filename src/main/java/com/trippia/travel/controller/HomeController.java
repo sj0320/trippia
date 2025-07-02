@@ -6,6 +6,7 @@ import com.trippia.travel.domain.diarypost.diary.DiaryService;
 import com.trippia.travel.domain.diarypost.diary.cache.DiaryRankingCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StopWatch;
@@ -27,8 +28,8 @@ public class HomeController {
         StopWatch stopWatch = new StopWatch();
 
         stopWatch.start("TopDiaries");
-//        List<DiaryThumbnailResponse> diaries = diaryService.getTopPopularDiaries(PageRequest.of(0, 10));
-        List<DiaryThumbnailResponse> diaries = diaryRankingCacheService.getTopDiaries();
+        List<DiaryThumbnailResponse> diaries = diaryService.getTopPopularDiaries(PageRequest.of(0, 10));
+//        List<DiaryThumbnailResponse> diaries = diaryRankingCacheService.getTopDiaries();
         model.addAttribute("diaries", diaries);
         stopWatch.stop();
 
