@@ -1,7 +1,6 @@
 package com.trippia.travel.controller;
 
 import com.trippia.travel.controller.dto.diary.response.DiaryThumbnailResponse;
-import com.trippia.travel.controller.dto.post.response.CompanionPostListResponse;
 import com.trippia.travel.domain.companionpost.post.CompanionPostService;
 import com.trippia.travel.domain.diarypost.diary.DiaryService;
 import com.trippia.travel.domain.diarypost.diary.cache.DiaryRankingCacheService;
@@ -38,10 +37,10 @@ public class HomeController {
 //        model.addAttribute("thumbnails", thumbnails);
 //        stopWatch.stop();
 
-        stopWatch.start("LatestPosts");
-        List<CompanionPostListResponse> posts = companionPostService.searchLatestPostList(10);
-        model.addAttribute("posts", posts);
-        stopWatch.stop();
+//        stopWatch.start("LatestPosts");
+//        List<CompanionPostListResponse> posts = companionPostService.searchLatestPostList(10);
+//        model.addAttribute("posts", posts);
+//        stopWatch.stop();
 
 //        log.info("📊 성능 측정 결과\n{}", stopWatch.prettyPrint());
 
