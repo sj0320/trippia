@@ -20,7 +20,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-
 @Repository
 @RequiredArgsConstructor
 @Slf4j
@@ -31,9 +30,9 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
     @Override
     public Slice<Diary> searchDiariesWithConditions(DiarySearchCondition condition, CursorData cursorData, Pageable pageable) {
         QDiary diary = QDiary.diary;
-        QTheme themeEntity = QTheme.theme;
-        QDiaryTheme diaryThemeEntity = QDiaryTheme.diaryTheme;
-        QCity cityEntity = QCity.city;
+        QTheme theme = QTheme.theme;
+        QDiaryTheme diaryTheme = QDiaryTheme.diaryTheme;
+        QCity city = QCity.city;
 
         int pageSize = pageable.getPageSize();
 
@@ -43,24 +42,41 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
 
         Order direction = sortOrder.isAscending() ? Order.ASC : Order.DESC;
         String sortProperty = sortOrder.getProperty();
-        List<Diary> content = queryFactory
-                .selectFrom(diary)
-                .distinct()
-                .leftJoin(diary.city, cityEntity).fetchJoin()
-                .leftJoin(diaryThemeEntity).on(diary.eq(diaryThemeEntity.diary))
-                .leftJoin(diaryThemeEntity.theme, themeEntity)
+
+        // Step 1: diary_id 리스트만 페이징 + 정렬 조건으로 조회
+        List<Long> diaryIds = queryFactory
+                .select(diary.id)
+                .from(diary)
                 .where(
-                        eqThemeName(condition.getThemeName(), themeEntity),
-                        eqCountryName(condition.getCountryName(), cityEntity),
-                        eqCityName(condition.getCityName(), cityEntity),
+                        eqThemeName(condition.getThemeName(), theme),
+                        eqCountryName(condition.getCountryName(), city),
+                        eqCityName(condition.getCityName(), city),
                         containsKeyword(condition.getKeyword(), diary),
                         cursorPredicate(sortProperty, direction, cursorData, diary)
                 )
                 .orderBy(
                         new OrderSpecifier(direction, new PathBuilder<>(Diary.class, "diary").get(sortProperty)),
-                        new OrderSpecifier(direction, diary.id) // tie-breaker
+                        new OrderSpecifier(direction, diary.id)
                 )
                 .limit(pageSize + 1)
+                .fetch();
+
+        if (diaryIds.isEmpty()) {
+            return new SliceImpl<>(List.of(), pageable, false);
+        }
+
+        // Step 2: id 리스트 기반으로 fetch join 수행
+        List<Diary> content = queryFactory
+                .selectFrom(diary)
+                .distinct()
+                .leftJoin(diary.city, city).fetchJoin()
+                .leftJoin(diaryTheme).on(diaryTheme.diary.eq(diary))
+                .leftJoin(diaryTheme.theme, theme)
+                .where(diary.id.in(diaryIds))
+                .orderBy(
+                        new OrderSpecifier(direction, new PathBuilder<>(Diary.class, "diary").get(sortProperty)),
+                        new OrderSpecifier(direction, diary.id)
+                )
                 .fetch();
 
         boolean hasNext = content.size() > pageSize;
@@ -73,64 +89,47 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
 
     private BooleanExpression cursorPredicate(String property, Order direction, CursorData cursorData, QDiary diary) {
         if (property.equals("createdAt") && cursorData.getLastCreatedAt() != null) {
-            if (direction == Order.ASC) {
-                return diary.createdAt.gt(cursorData.getLastCreatedAt())
-                        .or(diary.createdAt.eq(cursorData.getLastCreatedAt())
-                                .and(diary.id.gt(cursorData.getLastId())));
-            } else {
-                return diary.createdAt.lt(cursorData.getLastCreatedAt())
-                        .or(diary.createdAt.eq(cursorData.getLastCreatedAt())
-                                .and(diary.id.lt(cursorData.getLastId())));
-            }
+            return direction == Order.ASC ?
+                    diary.createdAt.gt(cursorData.getLastCreatedAt())
+                            .or(diary.createdAt.eq(cursorData.getLastCreatedAt()).and(diary.id.gt(cursorData.getLastId()))) :
+                    diary.createdAt.lt(cursorData.getLastCreatedAt())
+                            .or(diary.createdAt.eq(cursorData.getLastCreatedAt()).and(diary.id.lt(cursorData.getLastId())));
         }
 
         if (property.equals("likeCount") && cursorData.getLastLikeCount() != null) {
-            if (direction == Order.ASC) {
-                return diary.likeCount.gt(cursorData.getLastLikeCount())
-                        .or(diary.likeCount.eq(cursorData.getLastLikeCount())
-                                .and(diary.id.gt(cursorData.getLastId())));
-            } else {
-                return diary.likeCount.lt(cursorData.getLastLikeCount())
-                        .or(diary.likeCount.eq(cursorData.getLastLikeCount())
-                                .and(diary.id.lt(cursorData.getLastId())));
-            }
+            return direction == Order.ASC ?
+                    diary.likeCount.gt(cursorData.getLastLikeCount())
+                            .or(diary.likeCount.eq(cursorData.getLastLikeCount()).and(diary.id.gt(cursorData.getLastId()))) :
+                    diary.likeCount.lt(cursorData.getLastLikeCount())
+                            .or(diary.likeCount.eq(cursorData.getLastLikeCount()).and(diary.id.lt(cursorData.getLastId())));
         }
 
         if (property.equals("viewCount") && cursorData.getLastViewCount() != null) {
-            if (direction == Order.ASC) {
-                return diary.viewCount.gt(cursorData.getLastViewCount())
-                        .or(diary.viewCount.eq(cursorData.getLastViewCount())
-                                .and(diary.id.gt(cursorData.getLastId())));
-            } else {
-                return diary.viewCount.lt(cursorData.getLastViewCount())
-                        .or(diary.viewCount.eq(cursorData.getLastViewCount())
-                                .and(diary.id.lt(cursorData.getLastId())));
-            }
+            return direction == Order.ASC ?
+                    diary.viewCount.gt(cursorData.getLastViewCount())
+                            .or(diary.viewCount.eq(cursorData.getLastViewCount()).and(diary.id.gt(cursorData.getLastId()))) :
+                    diary.viewCount.lt(cursorData.getLastViewCount())
+                            .or(diary.viewCount.eq(cursorData.getLastViewCount()).and(diary.id.lt(cursorData.getLastId())));
         }
 
         return null;
     }
 
     private BooleanExpression eqThemeName(String theme, QTheme themeEntity) {
-        log.info("theme조건 ={}", theme);
         return theme != null ? themeEntity.name.eq(theme) : null;
     }
 
     private BooleanExpression eqCountryName(String country, QCity cityEntity) {
-        log.info("country조건 = {}", country);
         return country != null ? cityEntity.country.name.eq(country) : null;
     }
 
     private BooleanExpression eqCityName(String city, QCity cityEntity) {
-        log.info("city조건 = {}", city);
         return city != null ? cityEntity.name.eq(city) : null;
     }
-
 
     private BooleanExpression containsKeyword(String keyword, QDiary diary) {
         return keyword != null ?
                 diary.title.containsIgnoreCase(keyword)
                         .or(diary.content.containsIgnoreCase(keyword)) : null;
     }
-
 }
