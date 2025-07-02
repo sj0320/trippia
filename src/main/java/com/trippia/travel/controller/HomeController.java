@@ -1,6 +1,8 @@
 package com.trippia.travel.controller;
 
+import com.trippia.travel.controller.dto.city.response.CityThumbnailResponse;
 import com.trippia.travel.controller.dto.diary.response.DiaryThumbnailResponse;
+import com.trippia.travel.controller.dto.post.response.CompanionPostListResponse;
 import com.trippia.travel.domain.companionpost.post.CompanionPostService;
 import com.trippia.travel.domain.diarypost.diary.DiaryService;
 import com.trippia.travel.domain.diarypost.diary.cache.DiaryRankingCacheService;
@@ -9,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
@@ -25,25 +26,15 @@ public class HomeController {
 
     @GetMapping
     public String home(Model model) {
-        StopWatch stopWatch = new StopWatch();
-
-        stopWatch.start("TopDiaries");
-        List<DiaryThumbnailResponse> diaries = diaryService.getTopPopularDiaries(PageRequest.of(0, 10));
-//        List<DiaryThumbnailResponse> diaries = diaryRankingCacheService.getTopDiaries();
+//        List<DiaryThumbnailResponse> diaries = diaryService.getTopPopularDiaries(PageRequest.of(0, 10));
+        List<DiaryThumbnailResponse> diaries = diaryRankingCacheService.getTopDiaries();
         model.addAttribute("diaries", diaries);
-        stopWatch.stop();
 
-//        stopWatch.start("TopCityThumbnails");
-//        List<CityThumbnailResponse> thumbnails = diaryService.getTopCityThumbnails(PageRequest.of(0, 10));
-//        model.addAttribute("thumbnails", thumbnails);
-//        stopWatch.stop();
+        List<CityThumbnailResponse> thumbnails = diaryService.getTopCityThumbnails(PageRequest.of(0, 10));
+        model.addAttribute("thumbnails", thumbnails);
 
-//        stopWatch.start("LatestPosts");
-//        List<CompanionPostListResponse> posts = companionPostService.searchLatestPostList(10);
-//        model.addAttribute("posts", posts);
-//        stopWatch.stop();
-
-//        log.info("📊 성능 측정 결과\n{}", stopWatch.prettyPrint());
+        List<CompanionPostListResponse> posts = companionPostService.searchLatestPostList(10);
+        model.addAttribute("posts", posts);
 
         return "index";
     }

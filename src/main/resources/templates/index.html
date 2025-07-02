@@ -216,25 +216,25 @@
         </div>
     </div>
 
-    <!--자주 기록된 도시들 -->
-<!--    <div class="section-wrapper">-->
-<!--        <h2 class="section-title">여행자들이 자주 기록한 도시들</h2>-->
-<!--        <div class="slider-container">-->
-<!--            <button class="arrow-btn prev-btn" data-slider-id="slider2" data-direction="-1">‹</button>-->
-<!--            <div class="slider-wrapper" id="slider2">-->
-<!--                <a th:each="thumb : ${thumbnails}"-->
-<!--                   th:href="${thumb.linkUrl}"-->
-<!--                   th:style="'background-image: url(' + ${thumb.imageUrl} + ')'"-->
-<!--                   class="thumbnail">-->
-<!--                    <div class="overlay-text" th:text="${thumb.cityName}"></div>-->
-<!--                </a>-->
-<!--            </div>-->
-<!--            <button class="arrow-btn next-btn" data-slider-id="slider2" data-direction="1">›</button>-->
-<!--        </div>-->
-<!--        <div class="more-button-wrapper">-->
-<!--            <a href="/diary/list" class="more-button">더 많은 여행일지 보기 →</a>-->
-<!--        </div>-->
-<!--    </div>-->
+    자주 기록된 도시들
+    <div class="section-wrapper">
+        <h2 class="section-title">여행자들이 자주 기록한 도시들</h2>
+        <div class="slider-container">
+            <button class="arrow-btn prev-btn" data-slider-id="slider2" data-direction="-1">‹</button>
+            <div class="slider-wrapper" id="slider2">
+                <a th:each="thumb : ${thumbnails}"
+                   th:href="${thumb.linkUrl}"
+                   th:style="'background-image: url(' + ${thumb.imageUrl} + ')'"
+                   class="thumbnail">
+                    <div class="overlay-text" th:text="${thumb.cityName}"></div>
+                </a>
+            </div>
+            <button class="arrow-btn next-btn" data-slider-id="slider2" data-direction="1">›</button>
+        </div>
+        <div class="more-button-wrapper">
+            <a href="/diary/list" class="more-button">더 많은 여행일지 보기 →</a>
+        </div>
+    </div>
 
     <!-- ✈️ 여행자 모집 섹션 -->
     <div class="section-wrapper">
@@ -244,45 +244,45 @@
             </a>
         </h2>
 
-<!--        <div class="companion-card-container">-->
-<!--            <div th:each="post : ${posts}" class="companion-card">-->
-<!--                <a th:href="@{/companion-post/{id}(id=${post.id})}" class="companion-thumbnail-link" style="flex-shrink: 0;">-->
-<!--                    <div class="companion-thumbnail"-->
-<!--                         th:style="'background-image: url(' + ${post.thumbnail} + ')'">-->
-<!--                    </div>-->
-<!--                </a>-->
+        <div class="companion-card-container">
+            <div th:each="post : ${posts}" class="companion-card">
+                <a th:href="@{/companion-post/{id}(id=${post.id})}" class="companion-thumbnail-link" style="flex-shrink: 0;">
+                    <div class="companion-thumbnail"
+                         th:style="'background-image: url(' + ${post.thumbnail} + ')'">
+                    </div>
+                </a>
 
-<!--                <div class="companion-info">-->
-<!--                    <div class="info-top">-->
-<!--                        <a th:href="@{/companion-post/{id}(id=${post.id})}" class="companion-title-link"-->
-<!--                           th:text="${post.title}"-->
-<!--                           style="font-weight: 600; font-size: 1.05rem; color: #222; text-decoration: none;">-->
-<!--                            제목-->
-<!--                        </a>-->
-<!--                        <div class="companion-date"-->
-<!--                             th:text="${#temporals.format(post.createdAt, 'yyyy.MM.dd')}"-->
-<!--                             style="font-size: 0.85rem; color: #999;">-->
-<!--                            2025.06.08-->
-<!--                        </div>-->
-<!--                    </div>-->
+                <div class="companion-info">
+                    <div class="info-top">
+                        <a th:href="@{/companion-post/{id}(id=${post.id})}" class="companion-title-link"
+                           th:text="${post.title}"
+                           style="font-weight: 600; font-size: 1.05rem; color: #222; text-decoration: none;">
+                            제목
+                        </a>
+                        <div class="companion-date"
+                             th:text="${#temporals.format(post.createdAt, 'yyyy.MM.dd')}"
+                             style="font-size: 0.85rem; color: #999;">
+                            2025.06.08
+                        </div>
+                    </div>
 
-<!--                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">-->
-<!--                        <a th:href="@{/users/{userId}(userId=${post.authorId})}"-->
-<!--                           class="companion-author"-->
-<!--                           th:text="'작성자: ' + ${post.authorNickname}"-->
-<!--                           style="font-size: 0.85rem; color: #777; text-decoration: none;">-->
-<!--                            작성자: 닉네임-->
-<!--                        </a>-->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                        <a th:href="@{/users/{userId}(userId=${post.authorId})}"
+                           class="companion-author"
+                           th:text="'작성자: ' + ${post.authorNickname}"
+                           style="font-size: 0.85rem; color: #777; text-decoration: none;">
+                            작성자: 닉네임
+                        </a>
 
-<!--                        <div class="companion-stats" style="font-size: 0.85rem; color: #666;">-->
-<!--                            조회수 <span th:text="${post.viewCount}">0</span>-->
-<!--                            &nbsp;&nbsp;-->
-<!--                            댓글 <span th:text="${post.commentCount}">0</span>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
+                        <div class="companion-stats" style="font-size: 0.85rem; color: #666;">
+                            조회수 <span th:text="${post.viewCount}">0</span>
+                            &nbsp;&nbsp;
+                            댓글 <span th:text="${post.commentCount}">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>
