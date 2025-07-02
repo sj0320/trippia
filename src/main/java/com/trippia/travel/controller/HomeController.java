@@ -28,8 +28,8 @@ public class HomeController {
         StopWatch stopWatch = new StopWatch();
 
         stopWatch.start("TopDiaries");
-        List<DiaryThumbnailResponse> diaries = diaryService.getTopPopularDiaries(PageRequest.of(0, 10));
-//        List<DiaryThumbnailResponse> diaries = diaryRankingCacheService.getTopDiaries();
+        // List<DiaryThumbnailResponse> diaries = diaryService.getTopPopularDiaries(PageRequest.of(0, 10));
+       List<DiaryThumbnailResponse> diaries = diaryRankingCacheService.getTopDiaries();
         model.addAttribute("diaries", diaries);
         stopWatch.stop();
 
