@@ -129,11 +129,19 @@
         <div class="selected-filters" style="margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
             <span th:if="${diaryListModel.searchCondition.themeName}" class="filter-chip">
                 테마: <b th:text="${diaryListModel.searchCondition.themeName}"></b>
-                <button onclick="removeFilter('themeName')" class="remove-btn">×</button>
+                <button
+                        class="remove-btn"
+                        th:attr="data-theme-id=${diaryListModel.searchCondition.themeId}"
+                        onclick="removeFilter('themeName', this.getAttribute('data-theme-id'))"
+                >×</button>
             </span>
-            <span th:if="${diaryListModel.searchCondition.countryName}" class="filter-chip">
+                        <span th:if="${diaryListModel.searchCondition.countryName}" class="filter-chip">
                 국가: <b th:text="${diaryListModel.searchCondition.countryName}"></b>
-                <button onclick="removeFilter('countryName')" class="remove-btn">×</button>
+                <button
+                        class="remove-btn"
+                        th:attr="data-country-id=${diaryListModel.searchCondition.countryId}"
+                        onclick="removeFilter('countryName', this.getAttribute('data-country-id'))"
+                >×</button>
             </span>
         <span th:if="${diaryListModel.searchCondition.keyword}" class="filter-chip">
             검색어: <b th:text="${diaryListModel.searchCondition.keyword}"></b>
