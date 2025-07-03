@@ -7,8 +7,8 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.trippia.travel.controller.dto.diary.request.CursorData;
 import com.trippia.travel.controller.dto.diary.request.DiarySearchCondition;
-import com.trippia.travel.domain.location.city.QCity;
 import com.trippia.travel.domain.diarypost.diarytheme.QDiaryTheme;
+import com.trippia.travel.domain.location.city.QCity;
 import com.trippia.travel.domain.theme.QTheme;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,9 +47,10 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
         List<Long> diaryIds = queryFactory
                 .select(diary.id)
                 .from(diary)
+                .leftJoin(diaryTheme).on(diaryTheme.diary.eq(diary))
                 .where(
-                        eqThemeName(condition.getThemeName(), theme),
-                        eqCountryName(condition.getCountryName(), city),
+                        eqThemeId(condition.getThemeId(), diaryTheme),
+                        eqCountryId(condition.getCountryId(), city),
                         eqCityName(condition.getCityName(), city),
                         containsKeyword(condition.getKeyword(), diary),
                         cursorPredicate(sortProperty, direction, cursorData, diary)
@@ -115,12 +116,12 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
         return null;
     }
 
-    private BooleanExpression eqThemeName(String theme, QTheme themeEntity) {
-        return theme != null ? themeEntity.name.eq(theme) : null;
+    private BooleanExpression eqThemeId(Long themeId, QDiaryTheme diaryTheme) {
+        return themeId != null ? diaryTheme.theme.id.eq(themeId) : null;
     }
 
-    private BooleanExpression eqCountryName(String country, QCity cityEntity) {
-        return country != null ? cityEntity.country.name.eq(country) : null;
+    private BooleanExpression eqCountryId(Long countryId, QCity city) {
+        return countryId != null ? city.country.id.eq(countryId) : null;
     }
 
     private BooleanExpression eqCityName(String city, QCity cityEntity) {
