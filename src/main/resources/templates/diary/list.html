@@ -66,7 +66,7 @@
                 <div class="category-list">
                     <a th:each="theme : ${themes}"
                        th:text="${theme.name}"
-                       th:attr="data-theme=${theme.name}"
+                       th:attr="data-theme-id=${theme.id}, data-theme=${theme.name}"
                        href="#"
                        class="category-item"
                        onclick="goToFilteredUrl(event)">테마명</a>
@@ -79,7 +79,7 @@
                 <div class="category-list">
                     <a th:each="country : ${countries}"
                        th:text="${country.name}"
-                       th:attr="data-country=${country.name}"
+                       th:attr="data-country-id=${country.id}, data-country=${country.name}"
                        href="#"
                        class="category-item"
                        onclick="goToFilteredUrl(event)">국가명</a>
@@ -125,16 +125,24 @@
         </div>
     </div>
 
-    <!-- 선택된 필터 -->
-    <div class="selected-filters" style="margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
-        <span th:if="${diaryListModel.searchCondition.themeName}" class="filter-chip">
-            테마: <b th:text="${diaryListModel.searchCondition.themeName}"></b>
-            <button onclick="removeFilter('themeName')" class="remove-btn">×</button>
-        </span>
-        <span th:if="${diaryListModel.searchCondition.countryName}" class="filter-chip">
-            국가: <b th:text="${diaryListModel.searchCondition.countryName}"></b>
-            <button onclick="removeFilter('countryName')" class="remove-btn">×</button>
-        </span>
+        <!-- 선택된 필터 -->
+        <div class="selected-filters" style="margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
+            <span th:if="${diaryListModel.searchCondition.themeName}" class="filter-chip">
+                테마: <b th:text="${diaryListModel.searchCondition.themeName}"></b>
+                <button
+                        class="remove-btn"
+                        th:attr="data-theme-id=${diaryListModel.searchCondition.themeId}"
+                        onclick="removeFilter('themeName', this.getAttribute('data-theme-id'))"
+                >×</button>
+            </span>
+                        <span th:if="${diaryListModel.searchCondition.countryName}" class="filter-chip">
+                국가: <b th:text="${diaryListModel.searchCondition.countryName}"></b>
+                <button
+                        class="remove-btn"
+                        th:attr="data-country-id=${diaryListModel.searchCondition.countryId}"
+                        onclick="removeFilter('countryName', this.getAttribute('data-country-id'))"
+                >×</button>
+            </span>
         <span th:if="${diaryListModel.searchCondition.keyword}" class="filter-chip">
             검색어: <b th:text="${diaryListModel.searchCondition.keyword}"></b>
             <button onclick="removeFilter('keyword')" class="remove-btn">×</button>
@@ -151,6 +159,7 @@
                   data-keyword=${diaryListModel.searchCondition.keyword ?: 'null'},
                   data-theme=${diaryListModel.searchCondition.themeName ?: 'null'},
                   data-country=${diaryListModel.searchCondition.countryName ?: 'null'},
+                  data-country-id=${diaryListModel.searchCondition.countryId ?: 'null'},
                   data-city=${diaryListModel.searchCondition.cityName ?: 'null'}">
     </div>
 

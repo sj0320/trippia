@@ -131,4 +131,4 @@ INSERT INTO city (city_id, name, country_id, city_type, image_url) VALUES (59, '
 INSERT INTO city (city_id, name, country_id, city_type, image_url) VALUES (60, '마닐라', 22, 'SOUTHEAST_ASIA', 'https://trippia-bucket.s3.ap-northeast-2.amazonaws.com/southeast_asia/manila.jpg');
 INSERT INTO city (city_id, name, country_id, city_type, image_url) VALUES (61, '방콕', 24, 'SOUTHEAST_ASIA', 'https://trippia-bucket.s3.ap-northeast-2.amazonaws.com/southeast_asia/bangkok.jpg');
 INSERT INTO city (city_id, name, country_id, city_type, image_url) VALUES (62, '푸켓', 24, 'SOUTHEAST_ASIA', 'https://trippia-bucket.s3.ap-northeast-2.amazonaws.com/southeast_asia/pucket.jpg');
-INSERT INTO city (city_id, name, country_id, city_type, image_url) VALUES (63, '하노이', 25, 'SOUTHEAST_ASIA', 'https://trippia-bucket.s3.ap-northeast-2.amazonaws.com/southeast_asia/hanoi.jpg');
+INSERT INTO city (city_id, name, country_id, city_type, image_url) VALUES (63, '하노이', 26, 'SOUTHEAST_ASIA', 'https://trippia-bucket.s3.ap-northeast-2.amazonaws.com/southeast_asia/hanoi.jpg');

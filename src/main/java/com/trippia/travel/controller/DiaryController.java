@@ -124,6 +124,8 @@ public class DiaryController {
             @ModelAttribute CursorData cursorData,
             @PageableDefault(size = 9) Pageable pageable
     ) {
+        System.out.println(searchCondition.getCountryName());
+        System.out.println(searchCondition.getCountryId());
         Sort sortOption = SortOption.from(searchCondition.getSort()).getSort();
         Pageable sortedpPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortOption);
         return diaryService.searchDiaryList(searchCondition, cursorData, sortedpPageable);
