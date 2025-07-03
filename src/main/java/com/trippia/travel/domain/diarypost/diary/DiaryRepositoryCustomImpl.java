@@ -59,7 +59,7 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
                         new OrderSpecifier(direction, new PathBuilder<>(Diary.class, "diary").get(sortProperty)),
                         new OrderSpecifier(direction, diary.id)
                 )
-                .limit(pageSize + 1)
+                .limit(pageSize * 3L)
                 .fetch();
 
         if (diaryIds.isEmpty()) {
@@ -70,14 +70,12 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
         List<Diary> content = queryFactory
                 .selectFrom(diary)
                 .distinct()
-                .leftJoin(diary.city, city).fetchJoin()
-                .leftJoin(diaryTheme).on(diaryTheme.diary.eq(diary))
-                .leftJoin(diaryTheme.theme, theme)
                 .where(diary.id.in(diaryIds))
                 .orderBy(
                         new OrderSpecifier(direction, new PathBuilder<>(Diary.class, "diary").get(sortProperty)),
                         new OrderSpecifier(direction, diary.id)
                 )
+                .limit(pageSize)
                 .fetch();
 
         boolean hasNext = content.size() > pageSize;

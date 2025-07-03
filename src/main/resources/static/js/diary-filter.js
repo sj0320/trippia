@@ -37,6 +37,15 @@ function goToFilteredUrl(event) {
 function removeFilter(type) {
     const url = new URL(window.location.href);
     url.searchParams.delete(type);
+
+    if (type === 'countryName') {
+        url.searchParams.delete('countryId');
+    } else if (type === 'themeName') {
+        url.searchParams.delete('themeId');
+    }
+
+    // 커서 정보도 삭제
     url.searchParams.delete('cursor');
+
     window.location.href = url.toString();
 }

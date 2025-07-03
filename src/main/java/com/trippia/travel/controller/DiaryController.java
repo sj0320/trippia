@@ -96,8 +96,6 @@ public class DiaryController {
             @PageableDefault(size = 9) Pageable pageable,
             Model model
     ) {
-        System.out.println(searchCondition.getThemeName());
-        System.out.println(searchCondition.getThemeId());
         Sort sortOption = SortOption.from(searchCondition.getSort()).getSort();
         Pageable sortedpPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortOption);
 
