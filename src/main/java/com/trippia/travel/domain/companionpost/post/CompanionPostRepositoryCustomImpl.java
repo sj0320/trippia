@@ -7,8 +7,9 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.trippia.travel.controller.dto.post.request.CursorData;
 import com.trippia.travel.controller.dto.post.request.PostSearchCondition;
-import com.trippia.travel.domain.companionpost.comment.QCompanionPostComment;
 import com.trippia.travel.domain.location.city.QCity;
+import com.trippia.travel.domain.location.country.QCountry;
+import com.trippia.travel.domain.user.QUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -30,22 +32,22 @@ public class CompanionPostRepositoryCustomImpl implements CompanionPostRepositor
     public Slice<CompanionPost> searchDiariesWithConditions(PostSearchCondition condition, CursorData cursorData, Pageable pageable) {
         QCompanionPost post = QCompanionPost.companionPost;
         QCity city = QCity.city;
-        QCompanionPostComment comment = QCompanionPostComment.companionPostComment;
+        QCountry country = QCountry.country;
+        QUser user = QUser.user;
 
         int pageSize = pageable.getPageSize();
 
         Sort.Order sortOrder = pageable.getSort().iterator().hasNext()
                 ? pageable.getSort().iterator().next()
                 : Sort.Order.desc("createdAt");
-
         Order direction = sortOrder.isAscending() ? Order.ASC : Order.DESC;
         String sortProperty = sortOrder.getProperty();
-
-        List<CompanionPost> content = queryFactory
-                .selectFrom(post)
-                .distinct()
-                .leftJoin(post.city, city).fetchJoin()
-                .leftJoin(post.comments, comment)
+        // Step 1: postIds 조회 (페이징)
+        List<Long> postIds = queryFactory
+                .select(post.id)
+                .from(post)
+                .leftJoin(post.city, city)
+                .leftJoin(city.country, country)
                 .where(
                         containsKeyword(condition.getKeyword(), post),
                         eqCityName(condition.getCityName(), city),
@@ -59,15 +61,28 @@ public class CompanionPostRepositoryCustomImpl implements CompanionPostRepositor
                 .limit(pageSize + 1)
                 .fetch();
 
-        boolean hasNext = content.size() > pageSize;
-        if (hasNext) {
-            content.remove(pageSize);
+        boolean hasNext = postIds.size() > pageSize;
+        if (hasNext) postIds.remove(pageSize);
+
+        if (postIds.isEmpty()) {
+            return new SliceImpl<>(Collections.emptyList(), pageable, false);
         }
 
-        log.info("[쿼리 결과] 조회된 개수: {}, hasNext: {}", content.size(), hasNext);
+        // Step 2: post + city + user + comment 조인 (comment는 fetchJoin X)
+        List<CompanionPost> content = queryFactory
+                .selectFrom(post)
+                .where(post.id.in(postIds))
+                .leftJoin(post.user, user).fetchJoin()
+                .orderBy(
+                        new OrderSpecifier(direction, new PathBuilder<>(CompanionPost.class, "companionPost").get(sortProperty)),
+                        new OrderSpecifier(direction, post.id)
+                )
+                .limit(pageSize)
+                .fetch();
 
         return new SliceImpl<>(content, pageable, hasNext);
     }
+
 
     private BooleanExpression cursorPredicate(String property, Order direction, CursorData cursorData, QCompanionPost post) {
         if (property.equals("createdAt") && cursorData.getLastCreatedAt() != null) {
