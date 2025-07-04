@@ -29,7 +29,7 @@ public class CompanionPostApiController {
     public Slice<CompanionPostListResponse> getPostList(@ModelAttribute PostSearchCondition condition,
                              @ModelAttribute CursorData cursorData,
                              @PageableDefault(size = 1) Pageable pageable){
-
+        System.out.println("커서 데이터!!!!!!!!! : "+cursorData.toString());
         Sort sortOption = SortOption.from(condition.getSort()).getSort();
         Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortOption);
         return companionPostService.searchPostList(condition, cursorData, sortedPageable);

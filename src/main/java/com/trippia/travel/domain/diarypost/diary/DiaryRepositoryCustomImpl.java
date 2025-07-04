@@ -9,7 +9,6 @@ import com.trippia.travel.controller.dto.diary.request.CursorData;
 import com.trippia.travel.controller.dto.diary.request.DiarySearchCondition;
 import com.trippia.travel.domain.diarypost.diarytheme.QDiaryTheme;
 import com.trippia.travel.domain.location.city.QCity;
-import com.trippia.travel.domain.theme.QTheme;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -30,7 +29,6 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
     @Override
     public Slice<Diary> searchDiariesWithConditions(DiarySearchCondition condition, CursorData cursorData, Pageable pageable) {
         QDiary diary = QDiary.diary;
-        QTheme theme = QTheme.theme;
         QDiaryTheme diaryTheme = QDiaryTheme.diaryTheme;
         QCity city = QCity.city;
 
