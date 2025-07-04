@@ -161,8 +161,8 @@
         <select name="sort">
           <option value="createdAt"
                   th:selected="${condition.sort} == null or condition.sort == 'createdAt'">최신순</option>
-          <option value="viewCount"
-                  th:selected="${condition.sort} == 'viewCount'">조회순</option>
+          <option value="views"
+                  th:selected="${condition.sort} == 'views'">조회순</option>
         </select>
 
       </div>
@@ -182,6 +182,7 @@
     let hasNext = true;
     let lastCursorId = null;
     let lastCreatedAt = null;
+    let lastViewCount = null; // 1. viewCount 추적 변수 추가
 
     async function fetchPosts() {
       if (isLoading || !hasNext) return;
@@ -199,8 +200,9 @@
         ...(countryName && { countryName }),
         ...(cityName && { cityName }),
         ...(sort && { sort }),
-        ...(lastCursorId && { id: lastCursorId }),
-        ...(lastCreatedAt && { createdAt: lastCreatedAt }),
+        ...(lastCursorId && { lastId: lastCursorId }),
+        ...(lastCreatedAt && { lastCreatedAt: lastCreatedAt }),
+        ...(lastViewCount !== null && { lastViewCount }),
         size: 10
       });
 
@@ -212,27 +214,27 @@
         const item = document.createElement("div");
         item.className = "post-item";
         item.innerHTML = `
-  <div class="thumbnail" onclick="location.href='/companion-post/${post.id}'" style="cursor: pointer;">
-    <img src="${post.thumbnail || 'https://via.placeholder.com/120x80'}" alt="썸네일">
-  </div>
-  <div class="post-content">
-    <div class="post-info">
-      <div class="post-title" onclick="location.href='/companion-post/${post.id}'" style="cursor: pointer;">
-        ${post.title}
-      </div>
-      <div class="post-meta">${formatDate(post.createdAt)}</div>
+    <div class="thumbnail" onclick="location.href='/companion-post/${post.id}'" style="cursor: pointer;">
+      <img src="${post.thumbnail || 'https://via.placeholder.com/120x80'}" alt="썸네일">
     </div>
-    <div class="post-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
-      <div class="post-author" onclick="location.href='/users/${post.authorId}'"
-           style="cursor: pointer; color: #1a73e8; text-decoration: underline;">
-        작성자: ${post.authorNickname}
+    <div class="post-content">
+      <div class="post-info">
+        <div class="post-title" onclick="location.href='/companion-post/${post.id}'" style="cursor: pointer;">
+          ${post.title}
+        </div>
+        <div class="post-meta">${formatDate(post.createdAt)}</div>
       </div>
-      <div>
-        👁️ ${post.viewCount} &nbsp;&nbsp; 💬 ${post.commentCount}
+      <div class="post-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+        <div class="post-author" onclick="location.href='/users/${post.authorId}'"
+             style="cursor: pointer; color: #1a73e8; text-decoration: underline;">
+          작성자: ${post.authorNickname}
+        </div>
+        <div>
+          👁️ ${post.viewCount} &nbsp;&nbsp; 💬 ${post.commentCount}
+        </div>
       </div>
     </div>
-  </div>
-`;
+  `;
         container.appendChild(item);
       });
 
@@ -240,6 +242,7 @@
         const last = result.content[result.content.length - 1];
         lastCursorId = last.id;
         lastCreatedAt = last.createdAt;
+        lastViewCount = last.viewCount; // 2. 마지막 viewCount 저장
       }
 
       hasNext = !result.last;
@@ -256,10 +259,20 @@
 
     fetchPosts();
 
+    let scrollTimer = null;
+
     window.addEventListener("scroll", () => {
-      if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 200) {
-        fetchPosts();
-      }
+      if (isLoading || !hasNext) return; // 🔒 먼저 차단
+      if (scrollTimer) clearTimeout(scrollTimer);
+
+      scrollTimer = setTimeout(() => {
+        const scrolledHeight = window.innerHeight + window.scrollY;
+        const fullHeight = document.documentElement.scrollHeight;
+
+        if (scrolledHeight >= fullHeight - 10) {
+          fetchPosts();
+        }
+      }, 150);
     });
   </script>
 </div>
