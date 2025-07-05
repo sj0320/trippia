@@ -17,35 +17,50 @@ tinymce.init({
     automatic_uploads: true,
     file_picker_types: 'image',
 
-    // 👇 여기만 수정!
-    images_upload_handler: function (blobInfo) {
-        return new Promise((resolve, reject) => {
-            const file = blobInfo.blob();
-            const formData = new FormData();
-            formData.append('upload', file);
+    images_upload_handler: function (blobInfo, success, failure) {
+        console.log("[UPLOAD] 이미지 업로드 시작");
 
-            const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+        const file = blobInfo.blob();
+        console.log("[UPLOAD] 업로드할 파일:", file);
 
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', '/api/file/upload', true);
-            xhr.setRequestHeader(csrfHeader, csrfToken);
+        const formData = new FormData();
+        formData.append('upload', file);
 
-            xhr.onload = function () {
-                if (xhr.status === 200) {
+        const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+        console.log("[UPLOAD] CSRF 설정 완료", csrfHeader, csrfToken);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/file/upload', true);
+        xhr.setRequestHeader(csrfHeader, csrfToken);
+
+        xhr.onload = function () {
+            console.log("[UPLOAD] 서버 응답 수신 상태코드:", xhr.status);
+            console.log("[UPLOAD] 응답 내용:", xhr.responseText);
+
+            if (xhr.status === 200) {
+                try {
                     const response = JSON.parse(xhr.responseText);
-                    resolve(response.url);  // ✅ 여기서 이미지 주소만 넘김
-                } else {
-                    reject(`Upload failed: ${xhr.status}`);
+                    console.log("[UPLOAD] 파싱된 응답 객체:", response);
+                    console.log("[UPLOAD] 파싱된 응답 객체2:", response.url);
+                    success(response.url);  // 여기가 포인트입니다.
+                } catch (e) {
+                    console.error("[UPLOAD] JSON 파싱 오류:", e);
+                    failure('Invalid JSON response');
                 }
-            };
+            } else {
+                console.error("[UPLOAD] 서버 에러:", xhr.status);
+                failure(`Upload failed: ${xhr.status}`);
+            }
+        };
 
-            xhr.onerror = function () {
-                reject('Upload failed due to a network error.');
-            };
+        xhr.onerror = function () {
+            console.error("[UPLOAD] 네트워크 오류 발생");
+            failure('Upload failed due to a network error.');
+        };
 
-            xhr.send(formData);
-        });
+        console.log("[UPLOAD] 요청 전송 시작");
+        xhr.send(formData);
     },
 
     content_style: `
