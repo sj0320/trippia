@@ -128,6 +128,7 @@ public class DiaryRankingCacheService {
             String value = objectMapper.writeValueAsString(DiaryThumbnailResponse.from(diary));
             redisTemplate.opsForValue().set(key, value, DIARY_CACHE_TTL);
             redisTemplate.opsForZSet().add("top_diaries", key, diary.getLikeCount());
+            redisTemplate.expire("top_diaries", DIARY_CACHE_TTL);
         }
     }
 
