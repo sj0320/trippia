@@ -12,7 +12,6 @@
 3. [ERD & 아키텍처](#-erd--아키텍처)
 4. [핵심 기능](#-핵심-기능)
 5. [시연 영상](#-시연-영상)
-6. [API 문서](#-api-문서)
 
 ---
 
@@ -55,9 +54,6 @@
 > ![image](https://github.com/user-attachments/assets/14e5f0c3-5bab-4568-b031-da0d309b96f0)
 
 
-
-
-
 ---
 
 ## 🚀 핵심 기능
@@ -66,7 +62,7 @@
 |------|-----------------------------|------|
 | 1    | 여행일지 관리          | 여행일지에 대한 생성, 조회, 수정, 삭제를 수행합니다.
 | 2    | 여행 동행자 모집 포스팅    | 여행 모집글을 포스팅하고 같이 여행을 떠날 동행자를 모집합니다. |
-| 3    | 여행 계획 세우기   | 여행 계획을 생성하여 여행 스케줄을 동행자와 함께 관리합니다.
+| 3    | 여행 계획 생성 및 관리   | 여행 계획을 생성하여 여행 스케줄을 동행자와 함께 관리합니다.
 | 4    | 마이페이지 관리            | 마이페이지를 통해 사용자 프로필 관리 및 활동이력을 관리하고 다가올 스케줄을 확인합니다. |
 ---
 
@@ -76,60 +72,55 @@
 
 - 📝 **설명**: 여행일지를 작성하고 조회하는 과정을 시연합니다.
 
-https://github.com/user-attachments/assets/b313b288-14ba-4a26-9ae9-c9581ca0e865
+https://github.com/user-attachments/assets/5bed7a43-42ea-43ea-b8af-f33b4d524847
 
-
----
-
-### 2. 가능한 날짜 투표 및 통계
-- 📹 **[영상 또는 GIF 링크 삽입]**
-- 📝 **설명**: 멤버들이 가능한 날짜를 선택하고, 그 결과를 바탕으로 통계를 집계해 확정 날짜를 제안하는 과정을 시연합니다.
-
-https://github.com/user-attachments/assets/60140683-8f30-418d-bf4b-0f4b7f75c173
 
 
 ---
 
-### 3. SSE 기반 실시간 알림
-- 📹 **[영상 또는 GIF 링크 삽입]**
-- 📝 **설명**: 친구 요청, 일정 생성, 일정 임박 시점 등에서 실시간 알림이 수신되는 모습을 보여줍니다.
+### 2. 여행 동행자 모집 포스팅
 
-#### 3-1. 친구 요청
+- 📝 **설명**: 여행 모집글을 작성하고 조회하는 과정을 시연합니다.
 
-https://github.com/user-attachments/assets/a928e68c-bd11-47ad-bdbe-3e72ab562e99
 
-#### 3-2. 일정 생성 및 일정 임박
 
-https://github.com/user-attachments/assets/9d3fa185-3b06-4c74-8664-73f9a58e7419
+https://github.com/user-attachments/assets/053f9373-56af-4b2d-b9d1-6a3f6c64b670
 
----
 
-### 3-3. 그룹 단체 채팅
-- 📹 **[영상 또는 GIF 링크 삽입]**
-- 📝 **설명**: 그룹원들과의 실시간 채팅 기능을 활용하는 시나리오를 담은 영상입니다.
-
-https://github.com/user-attachments/assets/d016605e-0a2e-4778-9424-464881606636
-
----
-
-### 5. 실시간 위치 공유
-- 📹 **[영상 또는 GIF 링크 삽입]**
-- 📝 **설명**: 약속 당일 참석자 간의 실시간 위치 공유 화면과 흐름을 확인할 수 있습니다.
-
----
-
-### 6. 친구 관리 및 추천 기능
-- 📹 **[영상 또는 GIF 링크 삽입]**
-- 📝 **설명**: 친구 요청 보내기, 수락/거절, 추천 친구 확인 기능을 시연합니다.
-
-https://github.com/user-attachments/assets/559a8b01-bfcd-41b2-94f2-95b317717db6
 
 
 ---
 
-## 📑 API 문서
+### 3. 여행 계획 생성 및 관리
 
-🔗 **[👉 API 명세 보기 (Swagger UI)](https://15.165.3.168.nip.io/swagger-ui/index.html)**  
+- 📝 **설명**: 여행 계획을 생성하고 여행 참여자와 함께 스케줄을 관리합니다.
+
+#### 3-1. 여행 계획 생성
+
+https://github.com/user-attachments/assets/c13299e3-3ddf-4bc0-838d-05f765587e04
+
+#### 3-2. 선택한 도시에 대한 여행지 추천
+
+https://github.com/user-attachments/assets/acc2d19f-b7c3-4f88-b5bd-58d7d1e61abc
+
+#### 3-3. 스케줄 편집
+
+https://github.com/user-attachments/assets/3c5d0567-a7aa-40b4-b95f-3f0a790d9c2a
 
 ---
 
+### 4. 마이페이지
+
+- 📝 **설명**: 마이페이지에서 사용자의 프로필 관리, 활동 이력 그리고 다가오는 일정 등을 확인하는 기능을 시연합니다.
+
+https://github.com/user-attachments/assets/b0c4d1d0-26cf-4f0c-9dfe-5ab17bf524ca
+
+---
+
+### 5. 여행일지 정렬 및 필터링 조회
+
+- 📝 **설명**: 여행일지를 정렬하거나 필터링하여 조회하는 과정을 시연합니다.
+
+https://github.com/user-attachments/assets/b443d267-afda-402d-8033-db48d531271a
+
+---
