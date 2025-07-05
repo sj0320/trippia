@@ -2,6 +2,8 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>게시글 작성</title>
     <link rel="stylesheet" href="/css/radiobutton.css">
     <link rel="stylesheet" href="/css/city-modal.css">
