@@ -4,7 +4,13 @@ function loadRecommendations(cityIds, query = '', containerId = 'recommendationL
     (query ? `&query=${encodeURIComponent(query)}` : '');
 
   fetch(`/api/places/recommend?${queryParam}`)
-    .then(res => res.json())
+    .then(res => {
+        if (!res.ok) {
+          // 예: 429 에러 메시지 표시
+          return res.text().then(text => { throw new Error(text || 'Error occurred'); });
+        }
+        return res.json();
+      })
     .then(places => {
       const list = document.getElementById(containerId);
       list.innerHTML = '';
