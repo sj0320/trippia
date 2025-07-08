@@ -69,14 +69,16 @@ public class PlaceService {
 
         for (String cityName : cityNames) {
             try {
+                log.info("자동완성 검색 시작 - city: {}, query: {}", cityName, query);
                 LatLng latLng = getCityLocation(cityName);
                 Set<RecommendPlaceResponse> places = findPlacesByTextSearch(query, latLng);
                 results.addAll(places);
+                log.info("자동완성 검색 완료 - city: {}, 결과 수: {}", cityName, places.size());
             } catch (Exception e) {
                 log.error("자동완성 검색 중 오류 - city: {}, error: {}", cityName, e.getMessage(), e);
             }
         }
-        log.info("Auto results={}", results);
+        log.info("전체 자동완성 결과 수: {}", results.size());
         return results;
     }
 
@@ -117,6 +119,7 @@ public class PlaceService {
         ));
 
         try {
+            log.info("장소 상세 조회 시작 - placeId: {}", placeId);
             String placeDetailsUrl = placeDetailsUrlFormat.formatted(placeId, fields);
             JsonNode placeDetails = getJsonResponseByUrl(placeDetailsUrl);
 
@@ -132,7 +135,7 @@ public class PlaceService {
                 String photoRef = photos.get(0).path("name").asText();
                 imageUrl = photoUrlFormat.formatted(photoRef);
             }
-
+            log.info("장소 상세 조회 성공 - placeId: {}, name: {}", placeId, name);
             return PlaceDetailsResponse.builder()
                     .placeId(placeId)
                     .name(name)
@@ -144,6 +147,7 @@ public class PlaceService {
                     .relatedDiaries(relatedDiaryResponse)
                     .build();
         } catch (IOException e) {
+            log.error("장소 상세 조회 실패 - placeId: {}, error: {}", placeId, e.getMessage(), e);
             throw new RuntimeException(e);
         }
 
@@ -252,18 +256,22 @@ public class PlaceService {
     }
 
     private JsonNode getJsonResponseByUrl(String url) throws IOException {
+        log.info("외부 API 호출 URL: {}", url);
         String response = httpClient.get(url);
-        log.info("url response={}", response);
+        log.info("외부 API 응답 길이: {}", response.length());
         return objectMapper.readTree(response);
     }
 
     private LatLng getCityLocation(String cityName) throws IOException {
+        log.info("도시 위치 조회 시도: {}", cityName);
         String geocodeUrl = geocodeUrlFormat.formatted(URLEncoder.encode(cityName, StandardCharsets.UTF_8));
         JsonNode geocodeJson = getJsonResponseByUrl(geocodeUrl);
         JsonNode location = geocodeJson.at("/results/0/geometry/location");
         if (location.isMissingNode()) {
+            log.error("도시 위치 조회 실패 - 도시명: {}", cityName);
             throw new CityException("해당 도시를 찾을 수 없습니다.");
         }
+        log.info("도시 위치 조회 성공 - 도시명: {}, 위도: {}, 경도: {}", cityName, location.get("lat").asDouble(), location.get("lng").asDouble());
         return new LatLng(location.get("lat").asDouble(), location.get("lng").asDouble());
     }
 
