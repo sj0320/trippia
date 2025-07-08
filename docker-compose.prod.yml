@@ -14,9 +14,9 @@ services:
       SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
     networks:
       - backend_network
-    restart: always
     volumes:
-      - /home/ubuntu/projects/logs:/logs
+      - /home/ubuntu/projects/logs:/logs:ro
+    restart: always
 
   mariadb:
     image: mariadb:latest
