@@ -16,7 +16,7 @@ services:
       - backend_network
     restart: always
     volumes:
-      - ./logs:/logs
+      - /home/ubuntu/projects/logs:/logs
 
   mariadb:
     image: mariadb:latest
