@@ -33,5 +33,7 @@ spring:
             redirect-uri: https://trippia.site/login/oauth2/code/kakao
 
 logging:
-  level:
-    root: info
+  file:
+    name: /logs/app.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
