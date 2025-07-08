@@ -59,6 +59,7 @@ public class PlanService {
 
     @Transactional
     public Long createPlan(String email, PlanCreateRequest request) {
+        log.info("[플랜 생성 요청] 사용자 email={}, 요청 데이터={}", email, request);
         User user = getUser(email);
 
         LocalDate startDate = LocalDate.parse(request.getStartDate());
@@ -68,9 +69,9 @@ public class PlanService {
         List<City> cities = cityRepository.findAllById(requestCityIds);
 
         String title = getDefaultTitleByCities(cities);
-
         Plan plan = Plan.createPlan(user.getEmail(), title, startDate, endDate);
 
+        // 일정과 도시 추가
         for (City city : cities) {
             PlanCity planCity = PlanCity.builder().city(city).plan(plan).build();
             plan.addPlanCity(planCity);
@@ -88,6 +89,7 @@ public class PlanService {
                 .status(ACCEPTED)
                 .build();
         planParticipantRepository.save(participant);
+        log.info("[플랜 생성 완료] 플랜ID={}, 생성자 email={}", savedPlan.getId(), email);
 
         return savedPlan.getId();
     }
@@ -160,15 +162,18 @@ public class PlanService {
 
     @Transactional
     public void invitePlan(String email, Long planId, String nickname) {
+        log.info("[플랜 참가자 초대 요청] 플랜ID={}, 초대자 email={}, 대상 닉네임={}", planId, email, nickname);
         Plan plan = getPlan(planId);
         plan.validateOwnerOf(email);
         User inviterUser = getUser(email);
         User invitedUser = userRepository.findByNickname(nickname)
-                .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> {
+                    log.warn("[초대 실패] 존재하지 않는 닉네임={}", nickname);
+                    return new UserException("사용자를 찾을 수 없습니다.");
+                });
 
         validateInviteCondition(invitedUser.getId(), planId);
 
-        // 저장
         PlanParticipant participant = PlanParticipant.builder()
                 .user(invitedUser)
                 .plan(plan)
@@ -177,6 +182,7 @@ public class PlanService {
                 .build();
 
         planParticipantRepository.save(participant);
+        log.info("[플랜 참가자 초대 완료] 플랜ID={}, 초대된 사용자ID={}", planId, invitedUser.getId());
 
         ParticipantInvitedNotificationDto notification = ParticipantInvitedNotificationDto.builder()
                 .user(invitedUser)
@@ -184,6 +190,7 @@ public class PlanService {
                 .planId(planId)
                 .build();
         notificationService.sendNotification(notification);
+        log.info("[초대 알림 발송] 플랜ID={}, 초대된 사용자ID={}", planId, invitedUser.getId());
     }
 
     @Transactional

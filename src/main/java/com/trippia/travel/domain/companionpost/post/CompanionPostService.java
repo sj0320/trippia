@@ -52,16 +52,19 @@ public class CompanionPostService {
         String thumbnailUrl = getThumbnailUrl(thumbnail, city);
         CompanionPost companionPost = request.toEntity(user, city, thumbnailUrl);
         companionPostRepository.save(companionPost);
+        log.info("[동행글 저장 요청] email={}, cityId={}, title={}", email, request.getCityId(), request.getTitle());
         return companionPost.getId();
     }
 
     public CompanionPostDetailsResponse getPostDetails(Long postId) {
+        log.info("[동행글 상세 조회] postId={}", postId);
         return CompanionPostDetailsResponse.from(getPost(postId));
     }
 
     public Slice<CompanionPostListResponse> searchPostList(PostSearchCondition condition, CursorData cursorData, Pageable pageable) {
         Slice<CompanionPost> posts = companionPostRepository.searchDiariesWithConditions(condition, cursorData, pageable);
         List<CompanionPostListResponse> content = CompanionPostListResponse.from(posts.getContent());
+        log.info("[동행글 리스트 검색] 조건={}, 커서={}, 페이지 정보={}", condition, cursorData, pageable);
         return new SliceImpl<>(content, pageable, posts.hasNext());
     }
 
@@ -72,6 +75,7 @@ public class CompanionPostService {
         if (Boolean.FALSE.equals(redisTemplate.hasKey(redisKey))) {
             CompanionPost post = getPost(postId);
             post.addViewCount();
+            log.info("[동행글 조회수 증가] postId={}, ip={}, userAgent={}", postId, ip, userAgent);
             redisTemplate.opsForValue().set(redisKey, "viewed", Duration.ofHours(24));
         }
     }
@@ -101,6 +105,7 @@ public class CompanionPostService {
         CompanionPost post = getPost(postId);
         user.validateAuthorOf(post);
         companionPostRepository.deleteById(postId);
+        log.info("[동행글 삭제 요청] email={}, postId={}", email, postId);
     }
 
     public List<CompanionPostListResponse> searchLatestPostList(int size) {

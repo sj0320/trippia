@@ -145,6 +145,7 @@ public class DiaryService {
         if (Boolean.FALSE.equals(redisTemplate.hasKey(redisKey))) {
             Diary diary = getDiary(diaryId);
             diary.addViewCount();
+            log.info("[조회수 증가] diaryId={}, ip={}, userAgent={}", diaryId, ip, userAgent);
             redisTemplate.opsForValue().set(redisKey, "viewed", Duration.ofHours(24));
         }
     }
@@ -162,6 +163,7 @@ public class DiaryService {
 
     @Transactional
     public void deleteDiary(String email, Long diaryId) {
+        log.info("[여행일지 삭제 요청] email={}, diaryId={}", email, diaryId);
         Diary diary = getDiary(diaryId);
         User user = getUser(email);
         user.validateAuthorOf(diary);
@@ -169,6 +171,7 @@ public class DiaryService {
         diaryClient.deleteDiaryThemeByDiaryId(diaryId);
         diaryClient.deleteDiaryById(diaryId);
         eventPublisher.publishEvent(new DiaryDeletedEvent(diaryId));
+        log.info("[여행일지 삭제 완료] diaryId={}", diaryId);
     }
 
     public List<DiaryThumbnailResponse> getTopPopularDiaries(Pageable pageable) {
@@ -180,20 +183,6 @@ public class DiaryService {
     public List<CityThumbnailResponse> getTopCityThumbnails(Pageable pageable) {
         return diaryClient.findTopCityThumbnails(pageable);
     }
-//    public List<CityThumbnailResponse> getTopCityThumbnails(Pageable pageable) {
-//        List<CityCountResponse> cities = diaryClient.findTopDiaryCities(pageable);
-//        return cities.stream()
-//                .map(city -> {
-//                    City foundCity = diaryClient.findCityById(city.getCityId())
-//                            .orElseThrow(() -> new CityException("해당 도시를 찾을 수 없습니다."));
-//
-//                    return new CityThumbnailResponse(
-//                            foundCity.getName(),
-//                            foundCity.getImageUrl()
-//                    );
-//                })
-//                .toList();
-//    }
 
 
     public List<DiarySummaryResponse> getDiarySummariesByUser(String email) {
