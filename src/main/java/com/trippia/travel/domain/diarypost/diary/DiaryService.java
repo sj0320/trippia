@@ -69,6 +69,9 @@ public class DiaryService {
         diaryClient.saveDiary(diary);
         saveDiaryThemes(request.getThemeIds(), diary);
 
+        log.info("[여행일지 저장] userId={}, email={}, cityName={}, themeIds={}, budget={}",
+                user.getId(), email, city.getName(), request.getThemeIds(), request.getTotalBudget());
+
         // 저장할 placeId가 Place 테이블에 이미 존재하면 저장하지 않음.
         List<String> placeIds = request.getPlaceIds();
         for (String placeId : placeIds) {
@@ -83,6 +86,8 @@ public class DiaryService {
                     .build();
             diaryPlaceRepository.save(diaryPlace);
         }
+
+        log.info("[다이어리 여행지 저장] diaryId={}, placeIds={}", diary.getId(), placeIds);
 
         return diary.getId();
     }

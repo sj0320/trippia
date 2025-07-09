@@ -38,7 +38,12 @@ public class SchedulePlaceService {
                 .orElse(0);
         int sequence = lastSequence + 1;
 
-        SchedulePlace schedulePlace = scheduleItemRepository.save(request.toEntity(schedule,sequence));
+        SchedulePlace schedulePlace = scheduleItemRepository.save(request.toEntity(schedule, sequence));
+
+        // 로그 추가
+        log.info("[스케줄 장소 추가] email={}, scheduleId={}, placeName={}",
+                email, schedule.getId(), schedulePlace.getName());
+
         return schedulePlace.getId();
     }
 
