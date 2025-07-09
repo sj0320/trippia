@@ -15,7 +15,7 @@ services:
     networks:
       - backend_network
     volumes:
-      - /home/ubuntu/projects/logss:/logs:ro
+      - /home/ubuntu/projects/logss:/logs
     restart: always
 
   mariadb:
