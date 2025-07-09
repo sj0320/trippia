@@ -82,3 +82,22 @@ button:hover {
     flex-direction: column;  /* 항목들을 수직으로 정렬 */
     align-items: center;  /* 항목들을 수평으로 중앙 정렬 */
 }
+
+.social-login-buttons {
+  display: flex;
+  justify-content: center; /* 가운데 정렬 */
+  gap: 20px;               /* 버튼 사이 간격 */
+  margin-top: 15px;
+}
+
+.social-login-buttons a img {
+  width: 48px;    /* 아이콘 크기 통일 */
+  height: 48px;
+  object-fit: contain;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.social-login-buttons a img:hover {
+  transform: scale(1.1);  /* 마우스 올리면 약간 확대 */
+}

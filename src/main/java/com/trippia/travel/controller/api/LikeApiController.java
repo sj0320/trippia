@@ -1,4 +1,4 @@
-package com.trippia.travel.controller;
+package com.trippia.travel.controller.api;
 
 import com.trippia.travel.annotation.CurrentUser;
 import com.trippia.travel.domain.diarypost.likes.LikeService;
@@ -7,13 +7,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-public class LikeController {
+@RequestMapping("/api")
+public class LikeApiController {
 
     private final LikeService likeService;
 
