@@ -31,29 +31,24 @@ public class PlaceApiController {
                                                          HttpServletRequest request) {
         String ip = request.getRemoteAddr();
         Bucket bucket = rateLimiterService.resolveBucket(ip);
-
+        log.info("[장소 추천 요청] ip={}, cityIds={}, query={}", ip, cityIds, query);
         if (!bucket.tryConsume(1)) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                     .body("요청이 너무 많습니다. 잠시 후 다시 시도해주세요.");
         }
 
         if (cityIds == null || cityIds.isEmpty()) {
-            log.info("글로벌 자동검색 실행");
             return ResponseEntity.ok(placeService.getAutocompletePlace(query));
         }
 
         if (query == null || query.isBlank()) {
-            log.info("검색창에 아무런 입력 없을 경우");
             return ResponseEntity.ok(placeService.getRecommendPlacesByType(cityIds, "관광"));
         }
 
         String type = PlaceTypeMapper.convertToGoogleType(query);
         if (type != null) {
-            log.info("검색창에 지정한 type을 그대로 입력한 경우 : 자동검색 + type에 대한 값");
             return ResponseEntity.ok(placeService.getRecommendPlacesByType(cityIds, query));
         }
-
-        log.info("국가에 속한 지역 자동 검색");
         return ResponseEntity.ok(placeService.getAutocompletePlaces(cityIds, query));
     }
 
