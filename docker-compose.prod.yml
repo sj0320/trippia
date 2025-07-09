@@ -18,6 +18,7 @@ services:
       - /home/ubuntu/projects/logs:/logs
     restart: always
 
+
   mariadb:
     image: mariadb:latest
     container_name: trp-mariadb

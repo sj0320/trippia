@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     likeButton.addEventListener("click", function () {
         const liked = likeButton.classList.contains("liked");
-        const url = liked ? `/diary/${diaryId}/unlike` : `/diary/${diaryId}/like`;
+        const url = liked ? `/api/diary/${diaryId}/unlike` : `/api/diary/${diaryId}/like`;
 
         fetch(url, {
             method: 'POST',

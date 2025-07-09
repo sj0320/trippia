@@ -36,7 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/diary/new").authenticated()
                         .requestMatchers("/companion-post/new").authenticated()
                         .requestMatchers("/", "/login","/images/**", "/css/**", "/js/**").permitAll()
-                        .requestMatchers( "/diary/list","/diary/list/data","/diary/*","/api/diary/*").permitAll()
+                        .requestMatchers( "/diary/list","/diary/list/data","/diary/*","/api/diary/**").permitAll()
                         .requestMatchers( "/companion-post/**","/api/companion-post/*").permitAll()
                         .requestMatchers( "/users/*","/users/password/new","/api/users/check-email",
                                 "/api/email/**", "/api/users/reset-password").permitAll()
